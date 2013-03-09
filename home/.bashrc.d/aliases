@@ -1,0 +1,52 @@
+# ls
+alias ls='ls --color=auto'
+alias ll='ls -l'
+alias la='ls -A'
+
+# Misc
+alias grep='grep --color=auto'
+alias d='stat -c "%A (%a) %8s %.19y %n" ' # usage: d <filename>
+alias apt-get='sudo /usr/bin/apt-get $@'
+alias sht='sheet'
+alias shtl='sheet ${@} | less'
+
+alias color='pygmentize -O style=monokai -f console256 -g'
+
+# Python HTTP server
+alias pyhttp="echo http://$(ip addr show dev eth0 | awk '/inet / {print gensub("/.*","","g",$2)}'):8080/; python -m SimpleHTTPServer 8080"
+
+# SSH
+alias sr='ssh -l root'
+alias srx='ssh -l root localhost'
+alias zonk='ssh zonk'
+
+# Git
+alias gcd='cdup=$(git rev-parse --show-toplevel) &&  cd "$cdup"'
+
+# Gitolite
+alias cgitolite='cd ~/admin/gitolite/admin'
+alias cgitolitesrc='cd ~/admin/gitolite/src'
+
+# Directories
+code=~/code
+rtcode=${code}/rt
+alias ccode='cd $code'
+alias crtcode='cd $rtcode'
+alias cdeploy='cd $rtcode/deploy'
+alias cgithub='cd $code/github'
+alias cdebian='cd $code/debian'
+
+alias cpuppet='cd ~/admin/puppet'
+
+alias cvim='cd ~/.vim'
+alias cdownloads='cd ~/downloads'
+alias ctmp='cd ~/tmp'
+
+# Ant
+alias vizant='ant -f $code/vizant.xml -Dbasedir=.'
+
+
+
+
+
+# vim: set ft=sh ts=2 sw=2 tw=0 :

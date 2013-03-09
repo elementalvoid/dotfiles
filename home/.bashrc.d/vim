@@ -1,0 +1,13 @@
+# make sure you know you're in a Vim :shell
+if [[ vim == $(ps c -p $PPID -o cmd --no-headers) ]]; then
+  export _VIMSHELL="(vimshell) "
+else
+  unset _VIMSHELL
+fi
+
+export VISUAL=vim
+export EDITOR=vim
+
+alias vi='vim'
+
+# vim: set ft=sh ts=2 sw=2 tw=0 :

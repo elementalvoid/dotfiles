@@ -1,0 +1,19 @@
+# don't put duplicate lines in the history. See bash(1) for more options
+# don't overwrite GNU Midnight Commander's setting of `ignorespace'.
+HISTCONTROL=$HISTCONTROL${HISTCONTROL+,}ignoredups
+# ... or force ignoredups and ignorespace
+HISTCONTROL=ignoreboth
+
+# append to the history file, don't overwrite it
+shopt -s histappend
+
+# share history between all shells
+# commented out to place this in the fancy-prompt instead
+#PROMPT_COMMAND="history -a"
+
+# keep the date/time of commands in history
+export HISTTIMEFORMAT='%F_%T '
+
+# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+export HISTFILESIZE=100000
+

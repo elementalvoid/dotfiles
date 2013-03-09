@@ -1,0 +1,7 @@
+# run deploy from anywhere
+export PATH=.:~/bin:$PATH:~/code/rt/deploy:/sbin:/usr/sbin:/usr/local/sbin
+
+# gems in my path
+export PATH=${PATH}:/var/lib/gems/1.8/bin
+
+# vim: set ft=sh ts=2 sw=2 tw=0 :

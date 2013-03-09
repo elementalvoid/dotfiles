@@ -1,0 +1,19 @@
+function tt {
+  (
+    cd /usr/local/tomcat/logs
+    if [[ $# -eq 0 ]]; then
+      tail -F -n0 cc.out cc_core.out palomar_latest.out catalina.out
+    else
+      tail -F -n0 $@
+    fi
+  )
+}
+
+function _complete_tt {
+  local log_dir=/usr/local/tomcat/logs/
+  local logs=$(cd $log_dir; ls)
+  COMPREPLY=($(compgen -W "$logs" -- $2))
+}
+complete -F _complete_tt tt
+
+# vim: set ft=sh ts=2 sw=2 tw=0 :

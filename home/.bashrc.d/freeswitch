@@ -1,0 +1,6 @@
+export PATH=${PATH}:/usr/local/freeswitch/bin
+
+alias fscli="fs_cli -r"
+alias fschan="fs_cli -x 'show channels' | grep 'total.$' | cut -d' ' -f 1"
+
+# vim: set ft=sh ts=2 sw=2 tw=0 :

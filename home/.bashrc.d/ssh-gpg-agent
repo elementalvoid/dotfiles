@@ -1,0 +1,23 @@
+# Initialize new agent and add authentication
+function start-gpg-agent {
+  local need_agent=true
+  local GPG_ENV_FILE="${HOME}/.gpg-agent-info"
+  if [[ -f ${GPG_ENV_FILE} ]]; then
+    source ${GPG_ENV_FILE} &> /dev/null
+    if [[ -S ${GPG_AGENT_INFO//:*/} ]]; then
+      need_agent=false
+    fi
+  fi
+  if [[ ${need_agent} == true ]]; then
+    eval $(gpg-agent --daemon --write-env-file ${GPG_ENV_FILE})
+    chmod 600 ${GPG_ENV_FILE}
+  fi
+  #GPG_TTY=$(tty)
+  #export GPG_TTY
+}
+[[ -n $(which gpg-agent) ]] && start-gpg-agent
+
+# SSH Agent
+[[ -f ~/.ssh/ssh-agent-setup ]] && source ~/.ssh/ssh-agent-setup
+
+# vim: set ft=sh ts=2 sw=2 tw=0 :
