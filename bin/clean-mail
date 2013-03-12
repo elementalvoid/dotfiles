@@ -1,0 +1,3 @@
+#!/bin/sh
+
+~/bin/clean-mail.pl -s apollo.readytalk.com -u matt.klich -f $@

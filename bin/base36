@@ -1,0 +1,14 @@
+#! /usr/bin/ruby
+
+if ARGV.length != 2
+    puts "usage: #{$0} [-d | -e] string-or-integer"
+    puts "  -d =>  decode base36 to decimal"
+    puts "  -e =>  encode decimal to base36"
+    exit 1
+end
+
+if ARGV[0] == '-d'
+        puts ARGV[1].to_i(36)
+elsif ARGV[0] == '-e'
+        puts ARGV[1].to_i.to_s(36)
+end

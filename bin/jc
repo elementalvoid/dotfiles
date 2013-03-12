@@ -1,0 +1,29 @@
+#!/bin/bash
+
+if [[ $# -lt 2 ]]; then
+  echo "usage: $(basename ${0}) <gateway> <hostname> [port]"
+  exit 1
+fi
+
+gateway=${1}
+jc_host=${2}
+jc_port=${3:-9000}
+
+# Find an open port
+port=
+ports_in_use=$(netstat -lnt 2>&1 | grep tcp | grep -v tcp6 | awk '{print $4}' | awk -F: '{print $2}' | xargs echo -n)
+while (true)
+do
+  port=$(($RANDOM+2000)) #random port between 2000 and 32767+2000
+  if ! [[ "${ports_in_use}" =~ "${port}" ]]
+  then
+    break
+  fi
+done
+
+ssh -N -D${port} ${gateway} &
+ssh_pid=$!
+
+jconsole -J-DsocksProxyHost=localhost -J-DsocksProxyPort=${port} service:jmx:rmi:///jndi/rmi://${jc_host}:${jc_port}/jmxrmi
+
+kill ${ssh_pid}

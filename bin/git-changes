@@ -1,0 +1,56 @@
+#!/bin/bash
+start_dir=$(pwd)
+
+function show-changes () {
+  local start=$1
+  local end=$2
+  shift; shift;
+  local repos=$@
+  if [[ -z $repos ]]; then
+    repos=$(basename $(pwd))
+    start_dir=${start_dir}/..
+  fi
+
+  for repo in $repos; do
+    (
+      local loc=${start_dir}/${repo}
+      if [[ -d $loc ]]; then
+        cd $loc
+      else
+        echo "============ $repo ============"
+        echo "Directory does not exist"
+        echo
+        continue
+      fi
+      if [[ -d .git ]]; then
+        git fetch &> /dev/null
+        if [[ ($(git tag -l) =~ $end || $(git branch -a) =~ $end) &&
+              ($(git tag -l) =~ $start || $(git branch -a) =~ $start) ]]; then
+          log=$(git log --format="%h	%an	(%aD):	%s" ${start}..${end})
+          echo "============ $repo (${start}..${end}) ============"
+          if [[ -n $log ]]; then 
+            echo -e "$log"
+          else
+            echo "no changes"
+          fi
+        else
+          echo "============ $repo (${start}..${end}) ============"
+          echo "One or both of <start> and <end> do not exist"
+        fi
+      else
+        echo "============ $repo ============"
+        echo "Is not a Git clone"
+      fi
+      echo
+    )
+  done
+}
+
+if [[ $# -ge 2 ]]; then
+  show-changes $@
+else
+  echo "Usage:"
+  echo " $(basename $0) <start> <end> [<dir>...]"
+  exit 1
+fi
+
