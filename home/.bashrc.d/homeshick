@@ -1,0 +1,10 @@
+if [[ -f ~/.homeshick && -d .homesick/repos/homeshick ]]; then
+  # we have homeshick installed, use it
+  alias homesick="~/.homeshick"
+  for hd in $(find ~/.homesick/repos/ -type d -maxdepth 1); do
+    [[ -d ${hd}/bin ]] && export PATH=${PATH}:${hd}/bin
+  done
+  unset hd
+fi
+
+# vim: set ft=sh ts=2 sw=2 tw=0 :

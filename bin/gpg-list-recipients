@@ -1,0 +1,28 @@
+#!/bin/bash
+
+if [ $# -ne 1 ]; then
+  echo "usage:"
+  echo "$basename $0) <encrypted_file>"
+  exit 4
+fi
+
+if [ ! -f $1 ]; then
+  echo "$1 - file does not exist"
+  exit 4
+fi
+
+keys=$(gpg --batch --list-only -d --status-fd 1 <(head -500 $1) 2> /dev/null | awk '/^\[GNUPG:\] ENC_TO / { print $3 }')
+echo "Number of recipients found: $(echo $keys | wc -w)"
+echo
+for key in $keys; do
+  echo "Current recipient key: $key"
+  keyout=$(gpg --list-keys $key 2> /dev/null)
+  if [ $? -ne 0 ]; then
+    echo "Error - public key not found"
+    echo "You can try fetching the key:"
+    echo "  gpg --recv-keys --keyserver keys.gnupg.net $key"
+  else
+    echo "$keyout"
+  fi
+  echo
+done
