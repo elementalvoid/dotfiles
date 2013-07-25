@@ -8,6 +8,7 @@ fi
 gateway=${1}
 jc_host=${2}
 jc_port=${3:-9000}
+shift 3
 
 # Find an open port
 port=
@@ -21,7 +22,7 @@ do
   fi
 done
 
-ssh -N -D${port} ${gateway} &
+ssh -n -f -o ExitOnForwardFailure=yes -N -D${port} ${gateway} &
 ssh_pid=$!
 
 jconsole -J-DsocksProxyHost=localhost -J-DsocksProxyPort=${port} service:jmx:rmi:///jndi/rmi://${jc_host}:${jc_port}/jmxrmi
