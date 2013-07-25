@@ -13,7 +13,7 @@ alias shtl='sheet ${@} | less'
 alias color='pygmentize -O style=monokai -f console256 -g'
 
 # Python HTTP server
-alias pyhttp="echo http://$(ip addr show dev eth0 | awk '/inet / {print gensub("/.*","","g",$2)}'):8080/; python -m SimpleHTTPServer 8080"
+alias pyhttp="python -m SimpleHTTPServer 10412"
 
 # SSH
 alias sr='ssh -l root'
