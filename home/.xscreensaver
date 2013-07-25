@@ -34,7 +34,7 @@ grabVideoFrames:    False
 chooseRandomImages: False
 imageDirectory:
 
-mode:		random
+mode:		blank
 selected:	-1
 
 textMode:	url
