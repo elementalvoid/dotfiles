@@ -3,3 +3,6 @@
 *.a
 *.class
 .svn/
+*.old
+*.bak
+
