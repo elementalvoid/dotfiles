@@ -2,6 +2,10 @@
 
 __powerline() {
 
+    # General config
+    PATH_MAX_LENGTH=32
+    HISTORY_APPEND="history -a"
+
     # Unicode symbols
     PS_SYMBOL_DARWIN=''
     PS_SYMBOL_LINUX='$'
@@ -53,7 +57,7 @@ __powerline() {
     RESET="\[$(tput sgr0)\]"
     BOLD="\[$(tput bold)\]"
 
-    __git_branch() { 
+    __git_branch() {
         [ -z "$(which git)" ] && return    # no git command found
 
         # try to get current branch or or SHA1 hash for detached head
@@ -93,18 +97,48 @@ __powerline() {
             PS_SYMBOL=$PS_SYMBOL_OTHER
     esac
 
+    __pwd() {
+      local PWD=$(pwd)
+      local PATH_IN_HOME=false
+      if [[ $PWD =~ $HOME ]]; then
+        PATH_IN_HOME=true
+      fi
+      PWD=${PWD/${HOME}/\~}
+      local PWD_LENGTH=${#PWD}
+      if (( $PWD_LENGTH > $PATH_MAX_LENGTH )); then
+        local PATH_CHOP_LENGTH=$((($PATH_MAX_LENGTH - 3)))
+        PWD=${PWD: -$PATH_CHOP_LENGTH:$PATH_CHOP_LENGTH}
+        if [[ $PATH_IN_HOME == true ]]; then
+          PWD="~..$PWD"
+        else
+          PWD="/..$PWD"
+        fi
+      fi
+      echo $PWD
+    }
+
+    __vim_shell_ps1() {
+      # make sure you know you're in a Vim :shell
+      if [[ vim == $(ps c -p $PPID -o cmd --no-headers) ]]; then
+        echo "$BG_ORANGE$FG_BASE3(vimshell)$RESET$BG_BASE1$FG_BASE3 "
+      fi
+    }
+
     ps1() {
         # Check the exit code of the previous command and display different
-        # colors in the prompt accordingly. 
+        # colors in the prompt accordingly.
         if [ $? -eq 0 ]; then
             local BG_EXIT="$BG_GREEN"
         else
             local BG_EXIT="$BG_RED"
         fi
 
-        PS1="$BG_BASE1$FG_BASE3 \w $RESET"
+        PS1="$(__vim_shell_ps1)"
+        PS1+="$BG_BASE1$FG_BASE3\h $(__pwd) $RESET"
         PS1+="$BG_BLUE$FG_BASE3$(__git_branch)$RESET"
         PS1+="$BG_EXIT$FG_BASE3 $PS_SYMBOL $RESET "
+
+        $HISTORY_APPEND
     }
 
     PROMPT_COMMAND=ps1
