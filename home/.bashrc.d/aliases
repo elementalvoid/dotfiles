@@ -20,27 +20,25 @@ alias sr='ssh -l root'
 alias srx='ssh -l root localhost'
 alias zonk='ssh zonk'
 
-# Gitolite
-alias cgitolite='cd ~/admin/gitolite/admin'
-alias cgitolitesrc='cd ~/admin/gitolite/src'
-
 # Directories
 code=~/code
 rtcode=${code}/rt
+
+# Code
 alias ccode='cd $code'
 alias crtcode='cd $rtcode'
 alias cdeploy='cd $rtcode/deploy'
 alias cgithub='cd $code/github'
 alias cdebian='cd $code/debian'
+alias cpuppet='cd $code/puppet'
 
-alias cpuppet='cd ~/admin/puppet'
+# Gitolite
+alias cgitolite='cd $code/gitolite/admin'
+alias cgitolitesrc='cd $code/gitolite/src'
 
 alias cvim='cd ~/.vim'
 alias cdownloads='cd ~/downloads'
 alias ctmp='cd ~/tmp'
-
-# Ant
-alias vizant='ant -f $code/vizant.xml -Dbasedir=.'
 
 
 
