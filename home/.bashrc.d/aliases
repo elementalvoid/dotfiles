@@ -30,7 +30,7 @@ alias crtcode='cd $rtcode'
 alias cdeploy='cd $rtcode/deploy'
 alias cgithub='cd $code/github'
 alias cdebian='cd $code/debian'
-alias cpuppet='cd $code/puppet'
+alias cpuppet='cd $rtcode/puppet'
 
 # Gitolite
 alias cgitolite='cd $code/gitolite/admin'
