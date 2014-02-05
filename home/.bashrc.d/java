@@ -1,5 +1,9 @@
 # Java
-export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
+if [[ -d /usr/lib/jvm/j2sdk1.7-oracle ]]; then
+  export JAVA_HOME=/usr/lib/jvm/j2sdk1.7-oracle
+else
+  export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
+fi
 export JDK_HOME=${JAVA_HOME}
 
 # see: https://awesome.naquadah.org/wiki/Problems_with_Java
