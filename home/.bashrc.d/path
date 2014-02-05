@@ -4,4 +4,15 @@ export PATH=.:~/bin:$PATH:~/code/rt/deploy:/sbin:/usr/sbin:/usr/local/sbin
 # gems in my path
 export PATH=${PATH}:/var/lib/gems/1.8/bin
 
+if [[ -d .homesick/repos/homeshick ]]; then
+  # we have homeshick installed, use it
+  source $HOME/.homesick/repos/homeshick/homeshick.sh
+
+  # now add all of the repos bin folders to our path
+  for hd in $(find ~/.homesick/repos/ -type d -maxdepth 1); do
+    [[ -d ${hd}/bin ]] && export PATH=${PATH}:${hd}/bin
+  done
+  unset hd
+fi
+
 # vim: set ft=sh ts=2 sw=2 tw=0 :
