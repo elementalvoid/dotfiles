@@ -1,0 +1,5 @@
+powerline_dir="${HOME}/.homesick/repos/powerline/"
+if [[ -d ${powerline_dir} ]]; then
+  . ${powerline_dir}/powerline/bindings/bash/powerline.sh
+fi
+unset powerline_dir
