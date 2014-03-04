@@ -1,0 +1,3 @@
+#!/bin/bash
+uptime=$(cut -f1 -d. /proc/uptime)
+echo "$((uptime/60/60/24))d $((uptime/60/60%24))h $((uptime/60%60))m"
