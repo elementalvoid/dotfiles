@@ -83,14 +83,13 @@ function __promptline_cwd {
   cwd="${cwd#\~}"
 
   while [[ "$cwd" == */* && "$cwd" != "/" ]]; do
+    [[ $part_count -eq $dir_limit ]] && first_char="$first_char$dir_sep$truncation" && break
     # pop off last part of cwd
     local part="${cwd##*/}"
     cwd="${cwd%/*}"
 
     formatted_cwd="$dir_sep$part$formatted_cwd"
     part_count=$((part_count+1))
-
-    [[ $part_count -eq $dir_limit ]] && first_char="$truncation" && break
   done
 
   printf "%s" "$first_char$formatted_cwd"
