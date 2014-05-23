@@ -1,0 +1,7 @@
+#!/bin/bash
+set -e
+if zenity --question --text="Hibernate??"; then
+  xscreensaver-command -lock
+  dbus-send --print-reply --system --dest=org.freedesktop.UPower \
+    /org/freedesktop/UPower org.freedesktop.UPower.Hibernate
+fi
