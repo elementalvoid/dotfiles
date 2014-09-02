@@ -1,0 +1,3 @@
+[[ -f ${HOME}/.local/bin/virtualenvwrapper.sh ]] && source ${HOME}/.local/bin/virtualenvwrapper.sh
+
+# vim: set ft=sh ts=2 sw=2 tw=0 :
