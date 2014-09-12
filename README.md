@@ -6,4 +6,4 @@ Homeshick style dotfiles
 
 Installation
 ============
-curl -L git.io/evoid-install | bash
+bash -i <(curl -Ls git.io/evoid-install) && source ~/.bashrc
