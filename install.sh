@@ -14,11 +14,12 @@ type homeshick &> /dev/null || source $HOME/.homesick/repos/homeshick/homeshick.
 repos="elementalvoid/dotfiles"
 for repo in ${repos}; do
   if homeshick list | grep -q ${repo}; then
-    homeshick pull ${repo/*\//}
+    homeshick --batch pull ${repo/*\//}
   else
-    homeshick clone ${repo}
+    homeshick --batch clone ${repo}
   fi
 done
+homeshick --force link
 
 ##
 # Vim
