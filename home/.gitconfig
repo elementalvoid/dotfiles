@@ -11,7 +11,6 @@
 [instaweb]
 	browser = google-chrome
 [alias]
-  commitv = commit -v
   cv = commit -v
   cva = commit -v -a
   cvaa = commit -v -a --amend
@@ -24,9 +23,9 @@
   logone = log --max-count=1
   logsone = log --stat --max-count=1
   logpsone = log -p --stat --max-count=1
-	diffstat = diff --stat --color
 	st = status
   b = branch
+  br = branch -r
   ba = branch -a
   #diverges = !sh -c 'git rev-list --boundary $1...$2 | grep ^- | cut -c2-'
   diverges = !bash -c 'git rev-parse $(diff <(git log --pretty=oneline ${1}) <(git log --pretty=oneline ${2}) | tail -1 | cut -c 3-42)^'
