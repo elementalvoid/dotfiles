@@ -32,16 +32,8 @@ alias cgithub='cd $code/github'
 alias cdebian='cd $code/debian'
 alias cpuppet='cd $rtcode/puppet'
 
-# Gitolite
-alias cgitolite='cd $code/gitolite/admin'
-alias cgitolitesrc='cd $code/gitolite/src'
-
 alias cvim='cd ~/.vim'
 alias cdownloads='cd ~/downloads'
 alias ctmp='cd ~/tmp'
-
-
-
-
 
 # vim: set ft=sh ts=2 sw=2 tw=0 :
