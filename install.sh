@@ -31,3 +31,8 @@ else
     git clone https://github.com/elementalvoid/vimrc.git ~/.vim
 fi
 ( cd ~/.vim; ./install.sh )
+
+##
+# Install sslyze
+##
+source ~/.bashrc.d/sslyze
