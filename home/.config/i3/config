@@ -154,7 +154,9 @@ assign [class="^HipChat$"] 2
 assign [class="^Google-chrome$"] 4
 
 # custom window settings
-for_window [class="^Google-chrome$" window_role="pop-up"] border 1pixel floating enable
+for_window [class="^Terminator$"] border 1pixel
+for_window [class="^X-terminal-emulator$"] border 1pixel
+for_window [class="^Google-chrome$" window_role="pop-up"] border 1pixel; floating enable
 for_window [class="^Google-chrome$"] border 1pixel
 for_window [class="^vncvier$"] floating enable
 for_window [class="^rdesktop$"] floating enable
@@ -162,10 +164,11 @@ for_window [class="^Meld$"] floating enable
 for_window [class="^gimp$"] floating enable
 for_window [class="^gMPlayer$"] floating enable
 for_window [class="^Conference Controls$"] floating enable
+for_window [class="^Vpnui$"] floating enable
 
 # tilda replacement
-#exec --no-startup-id terminator --role=tilda
-#for_window [class="^terminator$" window_role="tilda"] workspace scratchpad
+exec --no-startup-id terminator --role=tilda
+assign [class="^Terminator$" window_role="tilda"] scratchpad
 bindsym $mod+Shift+grave move scratchpad
 bindsym $mod+grave scratchpad show
 
