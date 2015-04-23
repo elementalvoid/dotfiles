@@ -1,0 +1,52 @@
+general {
+  colors = true
+  interval = 2
+}
+
+order += "disk /"
+order += "disk /home"
+order += "run_watch DHCP"
+order += "wireless wlan0"
+order += "ethernet eth0"
+order += "battery 0"
+order += "volume master"
+order += "load"
+order += "time"
+
+wireless wlan0 {
+  format_up = "W: (%quality %essid) %ip"
+  format_down = "W: down"
+}
+
+ethernet eth0 {
+  # sudo setcap cap_net_admin=ep $(which i3status)
+  format_up = "E: %ip (%speed)"
+  format_down = "E: down"
+}
+
+run_watch DHCP {
+  pidfile = "/var/run/dhclient*.pid"
+}
+
+battery 0 {
+  format = "%status %percentage %remaining"
+}
+
+time {
+  format = "%d-%m-%Y %H:%M"
+}
+
+load {
+  format = "%1min"
+}
+
+disk "/" {
+  format = "/ %free"
+}
+
+volume master {
+  format = "♪: %volume"
+  device = "default"
+  mixer = "Master"
+  mixer_idx = 0
+}
