@@ -35,8 +35,10 @@ bindsym $mod+Return exec i3-sensible-terminal
 # kill focused window
 bindsym $mod+Shift+q kill
 
-# start dmenu (a program launcher) - Use 'bash -c' to get custom PATH from ~/.bashrc
-bindsym $mod+d exec bash -c 'dmenu_run'
+# start dmenu (a program launcher)
+# - Use 'bash -lc' to list items from custom PATH in ~/.bashrc
+# - Use custom dmenu script to be able to *execute* items from custom PATH in ~/.bashrc
+bindsym $mod+d exec bash -lc 'dmenu_run_bashl'
 
 # change focus
 bindsym $mod+h focus left
