@@ -1,5 +1,7 @@
 # Java
-if [[ -d /usr/lib/jvm/j2sdk1.7-oracle ]]; then
+if [[ -d /usr/lib/jvm/jdk-8-oracle-x64/ ]]; then
+  export JAVA_HOME=/usr/lib/jvm/jdk-8-oracle-x64
+elif [[ -d /usr/lib/jvm/j2sdk1.7-oracle ]]; then
   export JAVA_HOME=/usr/lib/jvm/j2sdk1.7-oracle
 else
   export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64

@@ -28,6 +28,11 @@ if [[ -d ~/.vim ]]; then
   ( cd ~/.vim; git pull )
 else
     ssh -o StrictHostKeyChecking=no git@github.com || true
-    git clone git@github.com:elementalvoid/vimrc.git ~/.vim
+    git clone https://github.com/elementalvoid/vimrc.git ~/.vim
 fi
 ( cd ~/.vim; ./install.sh )
+
+##
+# Install sslyze
+##
+source ~/.bashrc.d/sslyze
