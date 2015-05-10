@@ -150,6 +150,9 @@ bindsym XF86AudioMute exec /usr/bin/pactl set-sink-volume 0 0
 bindsym XF86MonBrightnessUp exec /usr/bin/xbacklight -time 0 -steps 1 -inc 10
 bindsym XF86MonBrightnessDown exec /usr/bin/xbacklight -time 0 -steps 1 -dec 10
 
+# Look and feel
+hide_edge_borders both
+
 # workspace assignment (use "xprop")
 assign [class="^Pidgin$"] 2
 assign [class="^HipChat$"] 2
@@ -158,7 +161,7 @@ assign [class="^Google-chrome$"] 4
 # custom window settings
 for_window [class="^Terminator$"] border 1pixel
 for_window [class="^X-terminal-emulator$"] border 1pixel
-for_window [class="^Google-chrome$" window_role="pop-up"] border 1pixel; floating enable
+#for_window [class="^Google-chrome$" window_role="pop-up"] border 1pixel; floating enable
 for_window [class="^Google-chrome$"] border 1pixel
 for_window [class="^vncvier$"] floating enable
 for_window [class="^rdesktop$"] floating enable
@@ -169,13 +172,11 @@ for_window [class="^Conference Controls$"] floating enable
 for_window [class="^Vpnui$"] floating enable
 
 # tilda replacement
-exec --no-startup-id terminator --role=tilda
-assign [class="^Terminator$" window_role="tilda"] scratchpad
 bindsym $mod+Shift+grave move scratchpad
 bindsym $mod+grave scratchpad show
 
 # autostart apps
-exec --no-startup-id gnome-keyring-daemon --start --components=pkcs11
+#exec --no-startup-id gnome-keyring-daemon --start --components=pkcs11
 exec --no-startup-id xscreensaver
 exec --no-startup-id pidgin
 exec --no-startup-id parcellite
