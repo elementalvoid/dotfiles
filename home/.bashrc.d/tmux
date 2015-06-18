@@ -1,4 +1,14 @@
 # General settings/aliases/etc.
+function fix-ssh-auth-sock {
+  if command -pv tmux > /dev/null 2>&1; then
+    local _SSH_AUTH_SOCK="$(tmux show-environment 2>/dev/null | grep 'SSH_AUTH_SOCK')"
+    if [[ -n ${_SSH_AUTH_SOCK} ]]; then
+      export ${_SSH_AUTH_SOCK}
+    fi
+  fi
+}
+
+
 if [[ -n $(command -pv tmux 2> /dev/null) ]]; then
   alias tmux="$(command -pv tmux) -2"
 

@@ -265,13 +265,4 @@ else
   fi
 fi
 
-function __fix-ssh-auth-sock {
-  if command -pv tmux > /dev/null 2>&1; then
-    local _SSH_AUTH_SOCK="$(tmux show-environment | grep 'SSH_AUTH_SOCK')"
-    if [[ -n ${_SSH_AUTH_SOCK} ]]; then
-      export ${_SSH_AUTH_SOCK}
-    fi
-  fi
-}
-
-PROMPT_COMMAND='__fix-ssh-auth-sock; __promptline;'
+PROMPT_COMMAND='__promptline;'
