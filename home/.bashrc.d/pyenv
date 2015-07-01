@@ -1,0 +1,4 @@
+export PATH="$HOME/.pyenv/bin:$PATH"
+eval "$(pyenv init - 2>/dev/null)"
+eval "$(pyenv virtualenv-init - 2>/dev/null)"
+[[ $(type -t pyenv) == function ]] && pyenv virtualenvwrapper
