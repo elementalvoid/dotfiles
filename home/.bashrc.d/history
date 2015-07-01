@@ -15,5 +15,6 @@ shopt -s histappend
 export HISTTIMEFORMAT='%F_%T '
 
 # for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
-export HISTFILESIZE=100000
+export HISTSIZE=10000
+export HISTFILESIZE=10000
 
