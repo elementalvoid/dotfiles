@@ -32,6 +32,19 @@ else
 fi
 ( cd ~/.vim; ./install.sh )
 
+if [[ -n ${SSH_CLIENT} ]]; then
+  echo "Skipping powerline fonts installation on remote host (ssh)..."
+elif command -pv fc-cache > /dev/null 2>&1; then
+  if [[ -d ~/.fonts-powerline ]]; then
+    ( cd ~/.fonts-powerline; git pull; ./install.sh )
+  else
+    git clone https://github.com/Lokaltog/powerline-fonts.git ~/.fonts-powerline
+    ( cd ~/.fonts-powerline; ./install.sh )
+  fi
+else
+  echo "Skipping powerline fonts installation (missing fc-cache)..."
+fi
+
 ##
 # Install sslyze
 ##
