@@ -170,6 +170,7 @@ for_window [class="^gimp$"] floating enable
 for_window [class="^gMPlayer$"] floating enable
 for_window [class="^Conference Controls$"] floating enable
 for_window [class="^Vpnui$"] floating enable
+for_window [class="^feh$"] floating enable
 
 # tilda replacement
 bindsym $mod+Shift+grave move scratchpad

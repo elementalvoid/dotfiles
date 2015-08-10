@@ -36,4 +36,10 @@ alias cvim='cd ~/.vim'
 alias cdownloads='cd ~/downloads'
 alias ctmp='cd ~/tmp'
 
+# the standard 16x9 feh
+alias f="command feh --borderless --zoom auto --geometry 1366x768"
+
+# the standard 16x9 remote desktop with clipboard
+alias rdesktop="command rdesktop -r clipboard:PRIMARYCLIPBOARD -g 1366x768"
+
 # vim: set ft=sh ts=2 sw=2 tw=0 :
