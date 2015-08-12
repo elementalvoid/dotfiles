@@ -15,4 +15,9 @@ $if Bash
 
   # show completions instead of ringing bell
   set show-all-if-ambiguous on
+
+  # vi mode
+  set editing-mode vi
+  "\e.": yank-last-arg # restore Esc+.
+  "\C-x\C-r": re-read-init-file
 $endif
