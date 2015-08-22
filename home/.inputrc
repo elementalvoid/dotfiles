@@ -18,6 +18,15 @@ $if Bash
 
   # vi mode
   set editing-mode vi
-  "\e.": yank-last-arg # restore Esc+.
-  "\C-x\C-r": re-read-init-file
+    "\C-x\C-r": re-read-init-file
+    "\C-l": clear-screen
+    set keymap vi-insert
+      "\C-x\C-e": edit-and-execute-command
+      "\e.": yank-last-arg # restore Esc+.
+      "jj": vi-movement-mode
+    set keymap vi-command
+      "gg": beginning-of-history
+      "G": end-of-history
+      "?": reverse-search-history
+      "/": forward-search-history
 $endif
