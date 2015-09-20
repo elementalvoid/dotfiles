@@ -178,6 +178,7 @@ bindsym $mod+grave scratchpad show
 
 # autostart apps
 #exec --no-startup-id gnome-keyring-daemon --start --components=pkcs11
+exec --no-startup-id xrdb -merge ~/.Xresources
 exec --no-startup-id xscreensaver
 exec --no-startup-id pidgin
 exec --no-startup-id parcellite

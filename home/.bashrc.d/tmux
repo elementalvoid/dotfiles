@@ -10,8 +10,6 @@ function fix-ssh-auth-sock {
 
 
 if [[ -n $(command -pv tmux 2> /dev/null) ]]; then
-  alias tmux="$(command -pv tmux) -2"
-
   # Bash completion
   function _tmux_complete_client() {
     local IFS=$'\n'
