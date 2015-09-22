@@ -1,3 +1,5 @@
+[[ $- = *i* ]] || return
+
 function tt {
   (
     cd /usr/local/tomcat/logs

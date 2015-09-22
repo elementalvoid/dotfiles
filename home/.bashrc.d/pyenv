@@ -1,4 +1,8 @@
+[[ $- = *i* ]] || return
+
 export PATH="$HOME/.pyenv/bin:$PATH"
 eval "$(pyenv init - 2>/dev/null)"
 eval "$(pyenv virtualenv-init - 2>/dev/null)"
 [[ $(type -t pyenv) == function ]] && pyenv virtualenvwrapper
+
+# vim: set ft=sh ts=2 sw=2 tw=0 :

@@ -1,3 +1,5 @@
+[[ $- = *i* ]] || return
+
 # make less more colorful
 export LESS="-R"
 

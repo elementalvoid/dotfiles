@@ -1,2 +1,4 @@
 alias tl='tail -F $(ls -1tr | tail -n 1)'
 alias tf='tail -F'
+
+# vim: set ft=sh ts=2 sw=2 tw=0 :

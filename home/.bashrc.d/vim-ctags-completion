@@ -1,3 +1,5 @@
+[[ $- = *i* ]] || return
+
 _vim_ctags() {
     local cur prev
 

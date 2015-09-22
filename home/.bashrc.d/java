@@ -15,3 +15,4 @@ export _JAVA_AWT_WM_NONREPARENTING=1
 # https://bugs.launchpad.net/ubuntu/+source/eclipse/+bug/460269
 #export GDK_NATIVE_WINDOWS=true
 
+# vim: set ft=sh ts=2 sw=2 tw=0 :

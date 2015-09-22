@@ -1,3 +1,5 @@
+[[ $- = *i* ]] || return
+
 if [[ -f ${HOME}/.local/bin/virtualenvwrapper.sh ]]; then
   source ${HOME}/.local/bin/virtualenvwrapper.sh
 elif [[ -f /usr/local/bin/virtualenvwrapper.sh ]]; then

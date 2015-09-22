@@ -1,2 +1,6 @@
+[[ $- = *i* ]] || return
+
 export PATH="$HOME/.rbenv/bin:$PATH"
 eval "$(rbenv init - 2>/dev/null)"
+
+# vim: set ft=sh ts=2 sw=2 tw=0 :
