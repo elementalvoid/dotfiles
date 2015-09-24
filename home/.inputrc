@@ -9,12 +9,17 @@ $if Bash
   set mark-directories on
   # Completed names which are symlinks to dirs have a slash appended
   set mark-symlinked-directories on
+  # colored completions
+  set colored-stats on
 
   # ls -F for completion
   set visible-stats on
 
   # show completions instead of ringing bell
   set show-all-if-ambiguous on
+
+  # current vi mode prefixed to the prompt
+  set show-mode-in-prompt On
 
   # vi mode
   set editing-mode vi
