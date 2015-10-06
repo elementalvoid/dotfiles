@@ -160,8 +160,8 @@ assign [class="^Google-chrome$"] 4
 
 # custom window settings
 for_window [class="^Terminator$"] border 1pixel
+for_window [class="^X-terminal-emulator$" title="^Terminator Preferences$"] floating enable
 for_window [class="^X-terminal-emulator$"] border 1pixel
-#for_window [class="^Google-chrome$" window_role="pop-up"] border 1pixel; floating enable
 for_window [class="^Google-chrome$"] border 1pixel
 for_window [class="^vncvier$"] floating enable
 for_window [class="^rdesktop$"] floating enable
