@@ -1,9 +1,0 @@
-#Amazon cli tools
-export AWS_CREDENTIAL_FILE=~/.amazon/accesskey.creds
-export AWS_IAM_HOME=~/bin/amazon/iam
-export EC2_HOME=~/bin/amazon/ec2
-export EC2_PRIVATE_KEY=~/.amazon/mklich.key
-export EC2_CERT=~/.amazon/mklich.crt
-export PATH=${PATH}:${AWS_IAM_HOME}/bin:${EC2_HOME}/bin
-
-# vim: set ft=sh ts=2 sw=2 tw=0 :
