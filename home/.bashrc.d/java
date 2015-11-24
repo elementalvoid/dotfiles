@@ -8,9 +8,6 @@ else
 fi
 export JDK_HOME=${JAVA_HOME}
 
-# see: https://awesome.naquadah.org/wiki/Problems_with_Java
-export _JAVA_AWT_WM_NONREPARENTING=1
-
 # mainly to fix eclipse, but really any SWT Java app
 # https://bugs.launchpad.net/ubuntu/+source/eclipse/+bug/460269
 #export GDK_NATIVE_WINDOWS=true
