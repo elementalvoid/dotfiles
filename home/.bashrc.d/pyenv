@@ -8,7 +8,9 @@ eval "$(pyenv virtualenv-init - 2>/dev/null)"
 function check_for_virtual_env {
   if command -pv git &> /dev/null; then
     local ENV_NAME=$(git rev-parse --show-toplevel 2> /dev/null)
-    ENV_NAME="$(basename ${ENV_NAME%/.git} 2> /dev/null)"
+    [[ -z ${ENV_NAME} ]] && return
+
+    ENV_NAME="$(basename ${ENV_NAME})"
 
     if [[ "${VIRTUAL_ENV##*/}" != $ENV_NAME && -e $WORKON_HOME/$ENV_NAME/bin/activate ]]; then
       workon $ENV_NAME && export CD_VIRTUAL_ENV=$ENV_NAME
