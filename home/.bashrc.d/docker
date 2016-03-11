@@ -4,7 +4,8 @@ docker () {
         shift;
         ${cmd} ${@};
     else
-        command -p docker -- ${@};
+        #command -p docker -- ${@};
+        command docker -- ${@};
     fi
 }
 # vim: set ft=sh ts=2 sw=2 tw=0 :

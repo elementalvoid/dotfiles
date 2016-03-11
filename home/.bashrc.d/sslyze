@@ -10,10 +10,14 @@ function install-sslyze () {
   rm ${download}
 }
 
-if [[ ! -d ${_SSLYZE_DIR} ]]; then
-  install-sslyze
-fi
+if ! type brew > /dev/null 2>&1; then
+  if [[ ! -d ${_SSLYZE_DIR} ]]; then
+    install-sslyze
+  fi
 
-alias sslyze="python2.7 ${_SSLYZE_DIR}/sslyze.py --regular --hsts --chrome_sha1"
+  alias sslyze="python2.7 ${_SSLYZE_DIR}/sslyze.py --regular --hsts --chrome_sha1"
+else
+  alias sslyze="/usr/local/bin/sslyze --regular --hsts --chrome_sha1"
+fi
 
 # vim: set ft=sh ts=2 sw=2 tw=0 :
