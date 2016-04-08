@@ -1,9 +1,0 @@
-[[ $- = *i* ]] || return
-
-if [[ -f ${HOME}/.local/bin/virtualenvwrapper.sh ]]; then
-  source ${HOME}/.local/bin/virtualenvwrapper.sh
-elif [[ -f /usr/local/bin/virtualenvwrapper.sh ]]; then
-  source /usr/local/bin/virtualenvwrapper.sh
-fi
-
-# vim: set ft=sh ts=2 sw=2 tw=0 :
