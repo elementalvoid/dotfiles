@@ -1,0 +1,4 @@
+[[ $- = *i* ]] || return
+
+[[ -s ~/.nvm/nvm.sh ]] && source ~/.nvm/nvm.sh
+
