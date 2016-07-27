@@ -5,6 +5,8 @@
 .svn/
 *.old
 *.bak
+.ropeproject/
+.DS_Store
 
 
 # Elastic Beanstalk Files
