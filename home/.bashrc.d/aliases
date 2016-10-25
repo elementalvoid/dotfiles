@@ -4,6 +4,7 @@ alias ll='ls -l'
 alias la='ls -A'
 
 # Misc
+alias rg='~/bin/rg -N'
 alias grep='grep --color=auto'
 alias d='stat -c "%A (%a) %8s %.19y %n" ' # usage: d <filename>
 alias apt-get='sudo /usr/bin/apt-get $@'
