@@ -11,6 +11,8 @@ alias apt-get='sudo /usr/bin/apt-get $@'
 
 alias color='pygmentize -O style=monokai -f console256 -g'
 
+alias sbash='sudo -E bash'
+
 # Python HTTP server
 alias pyhttp="python -m SimpleHTTPServer 10412"
 
