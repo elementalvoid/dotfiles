@@ -28,7 +28,7 @@ $if Bash
     set keymap vi-insert
       "\C-x\C-e": edit-and-execute-command
       "\e.": yank-last-arg # restore Esc+.
-      "jj": vi-movement-mode
+      #"jj": vi-movement-mode
     set keymap vi-command
       "gg": beginning-of-history
       "G": end-of-history
