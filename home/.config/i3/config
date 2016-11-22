@@ -29,6 +29,9 @@ font pango:monospace 8
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
 
+# Disable mouse warp
+mouse_warping none
+
 # start a terminal
 bindsym $mod+Return exec i3-sensible-terminal
 
@@ -39,6 +42,7 @@ bindsym $mod+Shift+q kill
 # - Use 'bash -lc' to list items from custom PATH in ~/.bashrc
 # - Use custom dmenu script to be able to *execute* items from custom PATH in ~/.bashrc
 bindsym $mod+d exec bash -lc 'dmenu_run_bashl'
+bindsym $mod+Shift+d exec i3-dmenu-desktop
 
 # change focus
 bindsym $mod+h focus left
@@ -104,6 +108,10 @@ bindsym $mod+Shift+8 move container to workspace 8
 bindsym $mod+Shift+9 move container to workspace 9
 bindsym $mod+Shift+0 move container to workspace 10
 
+# move workspaces to left/right displays
+bindsym $mod+Control+Shift+h move workspace to output left
+bindsym $mod+Control+Shift+l move workspace to output right
+
 # switch workspace back and forth
 bindsym $mod+Escape workspace back_and_forth
 
@@ -155,8 +163,8 @@ hide_edge_borders both
 
 # workspace assignment (use "xprop")
 assign [class="^Pidgin$"] 2
-assign [class="^HipChat$"] 2
-assign [class="^Google-chrome$"] 4
+assign [class="^Slack$"] 2
+assign [class="^Google-chrome(-beta)?$"] 4
 
 # custom window settings
 for_window [class="^Terminator$"] border 1pixel
@@ -178,12 +186,14 @@ bindsym $mod+grave scratchpad show
 
 # autostart apps
 #exec --no-startup-id gnome-keyring-daemon --start --components=pkcs11
+exec --no-startup-id gnome-settings-daemon
 exec --no-startup-id xrdb -merge ~/.Xresources
 exec --no-startup-id xscreensaver
 exec --no-startup-id pidgin
 exec --no-startup-id parcellite
 exec --no-startup-id nm-applet
 exec --no-startup-id pasystray
+exec --no-startup-id 'synclient HorizTwoFingerScroll=1 VertEdgeScroll=0 PalmDetect=1 TapButton3=2 LockedDrags=1 VertScrollDelta=-114 HorizScrollDelta=-114'
 exec google-chrome
 
 # Start i3bar to display a workspace bar (plus the system information i3status

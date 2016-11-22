@@ -6,14 +6,14 @@ general {
 order += "disk /"
 order += "disk /home"
 order += "run_watch DHCP"
-order += "wireless wlan0"
+order += "wireless wlp4s0"
 order += "ethernet eth0"
 order += "battery 0"
 order += "volume master"
 order += "load"
 order += "time"
 
-wireless wlan0 {
+wireless wlp4s0 {
   format_up = "W: (%quality %essid) %ip"
   format_down = "W: down"
 }
