@@ -115,8 +115,8 @@ bindsym $mod+Control+Shift+l move workspace to output right
 # switch workspace back and forth
 bindsym $mod+Escape workspace back_and_forth
 
-# lockscreen
-bindsym $mod+BackSpace exec "xscreensaver-command -lock"
+# lockscreen $mod+Alt+BackSpace
+bindsym $mod+Mod1+BackSpace exec "xscreensaver-command -lock"
 
 # reload the configuration file
 bindsym $mod+Shift+c reload
