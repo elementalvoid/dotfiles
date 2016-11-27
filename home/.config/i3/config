@@ -152,8 +152,8 @@ mode "resize" {
 bindsym $mod+r mode "resize"
 
 # pulse audio volume control
-bindsym XF86AudioLowerVolume exec /usr/bin/pactl set-sink-volume 0 -- '-5%'
-bindsym XF86AudioRaiseVolume exec /usr/bin/pactl set-sink-volume 0 -- '+5%'
+bindsym XF86AudioLowerVolume exec /usr/bin/pactl set-sink-volume 0 '-5%'
+bindsym XF86AudioRaiseVolume exec /usr/bin/pactl set-sink-volume 0 '+5%'
 bindsym XF86AudioMute exec /usr/bin/pactl set-sink-volume 0 0
 bindsym XF86MonBrightnessUp exec /usr/bin/xbacklight -time 0 -steps 1 -inc 10
 bindsym XF86MonBrightnessDown exec /usr/bin/xbacklight -time 0 -steps 1 -dec 10
@@ -179,6 +179,7 @@ for_window [class="^gMPlayer$"] floating enable
 for_window [class="^Conference Controls$"] floating enable
 for_window [class="^Vpnui$"] floating enable
 for_window [class="^feh$"] floating enable
+for_window [class="^Pavucontrol$"] floating enable
 
 # tilda replacement
 bindsym $mod+Shift+grave move scratchpad
