@@ -3,3 +3,7 @@
 if [[ -x $(which kubectl 2> /dev/null) ]]; then
   source <(kubectl completion bash)
 fi
+
+if [[ -x $(which kops 2> /dev/null) ]]; then
+  source <(kops completion bash)
+fi

@@ -1,33 +1,33 @@
 [global_config]
-  enabled_plugins = APTURLHandler,
   borderless = True
+  enabled_plugins = APTURLHandler,
 [keybindings]
+[layouts]
+  [[default]]
+    [[[child1]]]
+      parent = window0
+      profile = solarized-dark
+      type = Terminal
+    [[[window0]]]
+      parent = ""
+      type = Window
+[plugins]
 [profiles]
   [[default]]
     background_image = None
   [[solarized-dark]]
-    scrollbar_position = hidden
-    palette = "#073642:#dc322f:#859900:#b58900:#268bd2:#d33682:#2aa198:#eee8d5:#002b36:#cb4b16:#586e75:#657b83:#839496:#6c71c4:#93a1a1:#fdf6e3"
-    font = Source Code Pro for Powerline Medium 8
-    background_image = None
-    word_chars = "-A-Za-z0-9,./?%&#_"
-    use_system_font = False
-    cursor_color = "#93a1a1"
-    foreground_color = "#839496"
-    scroll_on_output = False
-    icon_bell = False
-    show_titlebar = False
-    copy_on_selection = True
-    background_color = "#002b36"
     allow_bold = False
+    background_color = "#002b36"
+    background_image = None
+    copy_on_selection = True
+    cursor_color = "#93a1a1"
+    font = Hack 8
+    foreground_color = "#839496"
+    icon_bell = False
+    palette = "#073642:#dc322f:#859900:#b58900:#268bd2:#d33682:#2aa198:#eee8d5:#002b36:#cb4b16:#586e75:#657b83:#839496:#6c71c4:#93a1a1:#fdf6e3"
+    scroll_on_output = False
     scrollback_infinite = True
-[layouts]
-  [[default]]
-    [[[child1]]]
-      type = Terminal
-      parent = window0
-      profile = solarized-dark
-    [[[window0]]]
-      type = Window
-      parent = ""
-[plugins]
+    scrollbar_position = hidden
+    show_titlebar = False
+    use_system_font = False
+    word_chars = "-A-Za-z0-9,./?%&#_"

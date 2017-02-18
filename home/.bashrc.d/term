@@ -1,3 +1,5 @@
+[[ $- = *i* ]] || return
+
 if [[ -n ${TMUX} ]]; then
   export TERM="screen-256color"
 else

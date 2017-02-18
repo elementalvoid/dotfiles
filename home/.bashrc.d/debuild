@@ -1,3 +1,5 @@
+[[ $- = *i* ]] || return
+
 # Debian package building vars
 export DEBEMAIL="Matt Klich <matt.klich@readytalk.com>"
 

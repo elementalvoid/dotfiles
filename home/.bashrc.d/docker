@@ -1,3 +1,5 @@
+[[ $- = *i* ]] || return
+
 docker () {
     local cmd=$(command -v docker-${1});
     if [[ -n ${cmd} ]]; then

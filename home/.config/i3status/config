@@ -5,9 +5,10 @@ general {
 
 order += "disk /"
 order += "disk /home"
+order += "run_watch VPN"
 order += "run_watch DHCP"
 order += "wireless wlp4s0"
-order += "ethernet eth0"
+order += "ethernet enx0050b6d73075"
 order += "battery 0"
 order += "volume master"
 order += "load"
@@ -18,10 +19,14 @@ wireless wlp4s0 {
   format_down = "W: down"
 }
 
-ethernet eth0 {
+ethernet enx0050b6d73075 {
   # sudo setcap cap_net_admin=ep $(which i3status)
   format_up = "E: %ip (%speed)"
   format_down = "E: down"
+}
+
+run_watch VPN {
+  pidfile = "/proc/sys/net/ipv4/conf/tun0"
 }
 
 run_watch DHCP {

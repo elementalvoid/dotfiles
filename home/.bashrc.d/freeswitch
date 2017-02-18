@@ -1,3 +1,5 @@
+[[ $- = *i* ]] || return
+
 export PATH=${PATH}:/usr/local/freeswitch/bin
 
 alias fscli="test -x /usr/bin/fs_cli && /usr/bin/fs_cli -r || /usr/local/freeswitch/bin/fs_cli -r"

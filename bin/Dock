@@ -1,2 +1,8 @@
 #!/bin/sh
-xrandr --output HDMI1 --off --output LVDS1 --off --output DP1 --off --output VGA1 --primary --mode 1600x1200 --pos 0x0 --rotate normal
+xrandr --output DP2-1 --mode 2560x1440 --pos 0x0 --primary
+xrandr --output DP2-2 --mode 2560x1440 --pos 2560x0
+xrandr --output eDP1  --mode 2560x1440 --pos 5120x360 --scale 0.75x0.75
+
+xinput set-prop "Logitech MX Master"  "Evdev Scrolling Distance" -1 1 1
+
+~/.fehbg &

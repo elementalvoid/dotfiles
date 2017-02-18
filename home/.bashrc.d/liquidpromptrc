@@ -1,3 +1,4 @@
+[[ $- = *i* ]] || return
 
 ####################################
 # LIQUID PROMPT CONFIGURATION FILE #

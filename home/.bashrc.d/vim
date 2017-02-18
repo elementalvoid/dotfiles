@@ -1,3 +1,5 @@
+[[ $- = *i* ]] || return
+
 export VISUAL=vim
 export EDITOR=vim
 

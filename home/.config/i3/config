@@ -118,6 +118,10 @@ bindsym $mod+Escape workspace back_and_forth
 # lockscreen $mod+Alt+BackSpace
 bindsym $mod+Mod1+BackSpace exec "xscreensaver-command -lock"
 
+# dock/undock
+bindsym $mod+Mod1+Return exec bash -lc 'Dock'
+bindsym $mod+Control+Mod1+Return exec bash -lc 'Undock'
+
 # reload the configuration file
 bindsym $mod+Shift+c reload
 # restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
@@ -152,9 +156,9 @@ mode "resize" {
 bindsym $mod+r mode "resize"
 
 # pulse audio volume control
-bindsym XF86AudioLowerVolume exec /usr/bin/pactl set-sink-volume 0 '-5%'
-bindsym XF86AudioRaiseVolume exec /usr/bin/pactl set-sink-volume 0 '+5%'
-bindsym XF86AudioMute exec /usr/bin/pactl set-sink-volume 0 0
+bindsym XF86AudioLowerVolume exec bash -l pavol down
+bindsym XF86AudioRaiseVolume exec bash -l pavol up
+bindsym XF86AudioMute exec bash -l pavol toggle
 bindsym XF86MonBrightnessUp exec /usr/bin/xbacklight -time 0 -steps 1 -inc 10
 bindsym XF86MonBrightnessDown exec /usr/bin/xbacklight -time 0 -steps 1 -dec 10
 
@@ -163,8 +167,8 @@ hide_edge_borders both
 
 # workspace assignment (use "xprop")
 assign [class="^Pidgin$"] 2
-assign [class="^Slack$"] 2
-assign [class="^Google-chrome(-beta)?$"] 4
+assign [class="^Slack$"] 3
+assign [class="^Google-chrome(-beta)?$"] 2
 
 # custom window settings
 for_window [class="^Terminator$"] border 1pixel
@@ -176,8 +180,6 @@ for_window [class="^rdesktop$"] floating enable
 for_window [class="^Meld$"] floating enable
 for_window [class="^gimp$"] floating enable
 for_window [class="^gMPlayer$"] floating enable
-for_window [class="^Conference Controls$"] floating enable
-for_window [class="^Vpnui$"] floating enable
 for_window [class="^feh$"] floating enable
 for_window [class="^Pavucontrol$"] floating enable
 
@@ -186,15 +188,11 @@ bindsym $mod+Shift+grave move scratchpad
 bindsym $mod+grave scratchpad show
 
 # autostart apps
-#exec --no-startup-id gnome-keyring-daemon --start --components=pkcs11
 exec --no-startup-id gnome-settings-daemon
-exec --no-startup-id xrdb -merge ~/.Xresources
 exec --no-startup-id xscreensaver
-exec --no-startup-id pidgin
 exec --no-startup-id parcellite
 exec --no-startup-id nm-applet
 exec --no-startup-id pasystray
-exec --no-startup-id 'synclient HorizTwoFingerScroll=1 VertEdgeScroll=0 PalmDetect=1 TapButton3=2 LockedDrags=1 VertScrollDelta=-114 HorizScrollDelta=-114 AreaBottomEdge=4000'
 exec google-chrome
 exec slack
 

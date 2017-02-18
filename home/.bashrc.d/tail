@@ -1,3 +1,5 @@
+[[ $- = *i* ]] || return
+
 alias tl='tail -F $(ls -1tr | tail -n 1)'
 alias tf='tail -F'
 
