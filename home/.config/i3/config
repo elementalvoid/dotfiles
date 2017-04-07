@@ -182,6 +182,7 @@ for_window [class="^gimp$"] floating enable
 for_window [class="^gMPlayer$"] floating enable
 for_window [class="^feh$"] floating enable
 for_window [class="^Pavucontrol$"] floating enable
+for_window [class="^VirtualBox$"] floating enable
 
 # tilda replacement
 bindsym $mod+Shift+grave move scratchpad

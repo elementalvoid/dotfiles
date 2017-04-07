@@ -1,5 +1,7 @@
 [[ $- = *i* ]] || return
 
+source ~/.bashrc.d/aliases-completion-support.disabled
+
 # ls
 alias ls='ls --color=auto'
 alias ll='ls -l'
