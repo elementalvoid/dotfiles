@@ -2,7 +2,7 @@
 ! Colors and Fonts
 !!!
 *.font: Xft:Hack-Regular:pixelsize=12
-
+Xcursor.size: 24
 
 urlLauncher: google-chrome
 

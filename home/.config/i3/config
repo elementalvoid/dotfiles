@@ -156,9 +156,9 @@ mode "resize" {
 bindsym $mod+r mode "resize"
 
 # pulse audio volume control
-bindsym XF86AudioLowerVolume exec bash -l pavol down
-bindsym XF86AudioRaiseVolume exec bash -l pavol up
-bindsym XF86AudioMute exec bash -l pavol toggle
+bindsym XF86AudioLowerVolume exec bash -l pavol down && pkill -RTMIN+1 i3blocks
+bindsym XF86AudioRaiseVolume exec bash -l pavol up && pkill -RTMIN+1 i3blocks
+bindsym XF86AudioMute exec bash -l pavol toggle && pkill -RTMIN+1 i3blocks
 bindsym XF86MonBrightnessUp exec /usr/bin/xbacklight -time 0 -steps 1 -inc 10
 bindsym XF86MonBrightnessDown exec /usr/bin/xbacklight -time 0 -steps 1 -dec 10
 
@@ -183,23 +183,28 @@ for_window [class="^gMPlayer$"] floating enable
 for_window [class="^feh$"] floating enable
 for_window [class="^Pavucontrol$"] floating enable
 for_window [class="^VirtualBox$"] floating enable
+for_window [class="^(terminology|x-terminal-emulator)$"] border 1pixel
 
 # tilda replacement
 bindsym $mod+Shift+grave move scratchpad
 bindsym $mod+grave scratchpad show
 
 # autostart apps
-exec --no-startup-id gnome-settings-daemon
+exec --no-startup-id ~/.fehbg
+exec --no-startup-id /usr/lib/gnome-settings-daemon/gsd-xsettings
+exec --no-startup-id pkill notify-osd
+exec --no-startup-id dunst
 exec --no-startup-id xscreensaver
 exec --no-startup-id parcellite
 exec --no-startup-id nm-applet
 exec --no-startup-id pasystray
+exec --no-startup-id ~/.xsession
 exec google-chrome
 exec slack
 
 # Start i3bar to display a workspace bar (plus the system information i3status
 # finds out, if available)
 bar {
-        status_command i3status
+        status_command i3blocks
         tray_output primary
 }
