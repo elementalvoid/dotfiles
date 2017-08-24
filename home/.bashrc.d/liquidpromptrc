@@ -28,7 +28,7 @@ LP_TEMP_THRESHOLD=60
 
 # The maximum percentage of the screen width used to display the path
 # Recommended value is 35
-LP_PATH_LENGTH=35
+LP_PATH_LENGTH=25
 
 # How many directories to keep at the beginning of a shortened path
 # Recommended value is 2

@@ -1,9 +1,9 @@
 [[ $- = *i* ]] || return
 
-export PATH="$HOME/.pyenv/bin:$PATH"
-eval "$(pyenv init - 2>/dev/null)"
-eval "$(pyenv virtualenv-init - 2>/dev/null)"
-[[ $(type -t pyenv) == function ]] && pyenv virtualenvwrapper
+#export PATH="$HOME/.pyenv/bin:$PATH"
+#eval "$(pyenv init - 2>/dev/null)"
+#eval "$(pyenv virtualenv-init - 2>/dev/null)"
+#[[ $(type -t pyenv) == function ]] && pyenv virtualenvwrapper
 
 function check_for_virtual_env {
   if command -pv git &> /dev/null; then

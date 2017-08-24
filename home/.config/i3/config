@@ -183,7 +183,6 @@ for_window [class="^gMPlayer$"] floating enable
 for_window [class="^feh$"] floating enable
 for_window [class="^Pavucontrol$"] floating enable
 for_window [class="^VirtualBox$"] floating enable
-for_window [class="^(terminology|x-terminal-emulator)$"] border 1pixel
 
 # tilda replacement
 bindsym $mod+Shift+grave move scratchpad

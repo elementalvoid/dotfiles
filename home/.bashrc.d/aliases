@@ -15,6 +15,7 @@ alias apt-get='sudo /usr/bin/apt-get $@'
 alias color='pygmentize -O style=monokai -f console256 -g'
 alias sslyze="/usr/local/bin/sslyze --regular --hsts --chrome_sha1"
 alias sbash='sudo -E bash'
+alias bd='. bd -si'
 
 # Python HTTP server
 alias pyhttp="python -m SimpleHTTPServer 10412"

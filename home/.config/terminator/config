@@ -1,12 +1,13 @@
 [global_config]
   borderless = True
   enabled_plugins = APTURLHandler,
+  smart_copy = False
 [keybindings]
 [layouts]
   [[default]]
     [[[child1]]]
       parent = window0
-      profile = solarized-dark
+      profile = solarized-light
       type = Terminal
     [[[window0]]]
       parent = ""
@@ -14,20 +15,32 @@
 [plugins]
 [profiles]
   [[default]]
-    background_image = None
+    cursor_color = "#aaaaaa"
   [[solarized-dark]]
     allow_bold = False
     background_color = "#002b36"
-    background_image = None
     copy_on_selection = True
     cursor_color = "#93a1a1"
     font = Hack 8
     foreground_color = "#839496"
     icon_bell = False
     palette = "#073642:#dc322f:#859900:#b58900:#268bd2:#d33682:#2aa198:#eee8d5:#002b36:#cb4b16:#586e75:#657b83:#839496:#6c71c4:#93a1a1:#fdf6e3"
-    scroll_on_output = False
     scrollback_infinite = True
     scrollbar_position = hidden
     show_titlebar = False
     use_system_font = False
-    word_chars = "-A-Za-z0-9,./?%&#_"
+    word_chars = "-A-Za-z0-9,./?%&#_|"
+  [[solarized-light]]
+    allow_bold = False
+    background_color = "#fdf6e3"
+    copy_on_selection = True
+    cursor_color = "#002b36"
+    font = Hack 9
+    foreground_color = "#657b83"
+    icon_bell = False
+    palette = "#073642:#dc322f:#859900:#b58900:#268bd2:#d33682:#2aa198:#eee8d5:#002b36:#cb4b16:#586e75:#657b83:#839496:#6c71c4:#93a1a1:#fdf6e3"
+    scrollback_infinite = True
+    scrollbar_position = hidden
+    show_titlebar = False
+    use_system_font = False
+    word_chars = "-A-Za-z0-9,./?%&#_|"
