@@ -1,4 +1,6 @@
 [[ $- = *i* ]] || return
+# this is disabled because the `aliases` file sources it directly
+
 # See: https://github.com/cykerway/complete-alias/
 
 

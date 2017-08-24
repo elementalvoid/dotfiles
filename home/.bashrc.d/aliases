@@ -1,5 +1,6 @@
 [[ $- = *i* ]] || return
 
+# pull in bash completion for aliases
 source ~/.bashrc.d/aliases-completion-support.disabled
 
 # ls
