@@ -1,13 +1,7 @@
 #!/bin/bash
-displays=$(xrandr --listmonitors)
-if echo ${displays} | grep -q HDMI2 &> /dev/null; then
-  xrandr --output HDMI2 --mode 2560x1440 --pos 0x0 --primary
-  xrandr --output eDP1  --mode 2560x1440 --pos 2560x360 --scale 0.75x0.75
-else
-  xrandr --output DP2-1 --mode 2560x1440 --pos 0x0 --primary
-  xrandr --output eDP1  --mode 2560x1440 --pos 2560x360 --scale 0.75x0.75
-fi
+xrandr --output HDMI2 --mode 2560x1440 --pos 0x0 --primary || xrandr --output DP2-1 --mode 2560x1440 --pos 0x0 --primary
+xrandr --output eDP1  --mode 2560x1440 --pos 2560x360 --scale 0.75x0.75
 
-#xinput set-prop "pointer: Logitech MX Master"  "Evdev Scrolling Distance" -1 1 1
+xmodmap ~/.Xmodmap
 
 #~/.fehbg &

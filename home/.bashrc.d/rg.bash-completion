@@ -12,7 +12,7 @@ _rg() {
             rg)
                 cmd="rg"
                 ;;
-            
+
             ripgrep)
                 cmd+="__ripgrep"
                 ;;
@@ -23,19 +23,19 @@ _rg() {
 
     case "${cmd}" in
         rg)
-            opts=" -a -c -F -i -n -N -q -u -v -w -l -H -L -0 -o -p -s -S -h -V -e -E -g -t -T -A -B -C -f -m -r -j -M  --files --type-list --text --count --fixed-strings --ignore-case --line-number --no-line-number --quiet --unrestricted --invert-match --word-regexp --column --debug --files-with-matches --files-without-match --with-filename --no-filename --heading --no-heading --hidden --follow --mmap --no-messages --no-mmap --no-ignore --no-ignore-parent --no-ignore-vcs --null --only-matching --pretty --case-sensitive --smart-case --sort-files --vimgrep --help --version --regexp --color --colors --encoding --glob --type --type-not --after-context --before-context --context --context-separator --file --ignore-file --max-count --max-filesize --maxdepth --path-separator --replace --threads --max-columns --type-add --type-clear  <pattern> <path>... "
+            opts=" -a -c -F -i -n -N -q -u -v -w -x -l -H -L -0 -o -p -s -S -h -V -e -E -g -t -T -A -B -C -f -m -r -j -M  --files --type-list --text --count --fixed-strings --ignore-case --line-number --no-line-number --quiet --unrestricted --invert-match --word-regexp --line-regexp --column --debug --files-with-matches --files-without-match --with-filename --no-filename --heading --no-heading --hidden --follow --mmap --no-messages --no-mmap --no-ignore --no-ignore-parent --no-ignore-vcs --null --only-matching --pretty --case-sensitive --smart-case --sort-files --vimgrep --help --version --regexp --color --colors --encoding --glob --iglob --type --type-not --after-context --before-context --context --context-separator --dfa-size-limit --file --ignore-file --max-count --max-filesize --maxdepth --path-separator --replace --regex-size-limit --threads --max-columns --type-add --type-clear  <PATTERN> <path>... "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
                 return 0
             fi
             case "${prev}" in
-                
+
                 --regexp)
-                    COMPREPLY=("<pattern>...")
+                    COMPREPLY=("<PATTERN>...")
                     return 0
                     ;;
                     -e)
-                    COMPREPLY=("<pattern>...")
+                    COMPREPLY=("<PATTERN>...")
                     return 0
                     ;;
                 --color)
@@ -59,6 +59,10 @@ _rg() {
                     return 0
                     ;;
                     -g)
+                    COMPREPLY=("<GLOB>...")
+                    return 0
+                    ;;
+                --iglob)
                     COMPREPLY=("<GLOB>...")
                     return 0
                     ;;
@@ -106,6 +110,10 @@ _rg() {
                     COMPREPLY=("<SEPARATOR>")
                     return 0
                     ;;
+                --dfa-size-limit)
+                    COMPREPLY=("<NUM+SUFFIX?>")
+                    return 0
+                    ;;
                 --file)
                     COMPREPLY=("<FILE>...")
                     return 0
@@ -146,6 +154,10 @@ _rg() {
                     COMPREPLY=("<ARG>")
                     return 0
                     ;;
+                --regex-size-limit)
+                    COMPREPLY=("<NUM+SUFFIX?>")
+                    return 0
+                    ;;
                 --threads)
                     COMPREPLY=("<ARG>")
                     return 0
@@ -177,7 +189,7 @@ _rg() {
             COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
             return 0
             ;;
-        
+
     esac
 }
 

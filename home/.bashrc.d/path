@@ -1,10 +1,8 @@
 export PATH=.:~/bin:~/.local/bin/:$PATH:/sbin:/usr/sbin:/usr/local/sbin
 
-# run deploy from anywhere
-export PATH=$PATH:~/code/rt/deploy
-
 # gems in my path
 export PATH=${PATH}:/var/lib/gems/1.8/bin
+export PATH=${PATH}:~/.gem/ruby/2.3.0/bin
 
 if [[ -d .homesick/repos/homeshick ]]; then
   # we have homeshick installed, use it

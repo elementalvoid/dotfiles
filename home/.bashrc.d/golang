@@ -1,11 +1,12 @@
-[[ $- = *i* ]] || return
-
+# Need these everywhere
 export GOROOT=~/.local/go
 export PATH=${GOROOT}/bin/:$PATH
 
 export GOPATH=~/code/go
 export PATH=${GOPATH}/bin/:$PATH
 
+# Below is just for interactive shells
+[[ $- = *i* ]] || return
 alias cgo="cd $GOPATH"
 
 # https://github.com/skelterjohn/go-pkg-complete/blob/master/go-pkg-complete.bash.inc

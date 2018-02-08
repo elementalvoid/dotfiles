@@ -16,6 +16,7 @@
 [profiles]
   [[default]]
     cursor_color = "#aaaaaa"
+    word_chars = "-,./?%&#:_,"
   [[solarized-dark]]
     allow_bold = False
     background_color = "#002b36"
