@@ -33,7 +33,7 @@ floating_modifier $mod
 mouse_warping none
 
 # start a terminal
-bindsym $mod+Return exec i3-sensible-terminal
+bindsym $mod+Return exec ~/bin/alacritty
 
 # kill focused window
 bindsym $mod+Shift+q kill
@@ -172,6 +172,7 @@ assign [class="^Google-chrome(-beta)?$"] 2
 
 # custom window settings
 for_window [class="^Terminator$"] border 1pixel
+for_window [class="^Alacritty$"] border 1pixel
 for_window [class="^X-terminal-emulator$" title="^Terminator Preferences$"] floating enable
 for_window [class="^X-terminal-emulator$"] border 1pixel
 for_window [class="^Google-chrome$"] border 1pixel
