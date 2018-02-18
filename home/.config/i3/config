@@ -13,7 +13,7 @@ set $mod Mod4
 
 # Font for window titles. Will also be used by the bar unless a different font
 # is used in the bar {} block below.
-font pango:monospace 8
+font pango:Hack-Regular 8
 
 # This font is widely installed, provides lots of unicode glyphs, right-to-left
 # text rendering and scalability on retina/hidpi displays (thanks to pango).
@@ -159,8 +159,8 @@ bindsym $mod+r mode "resize"
 bindsym XF86AudioLowerVolume exec bash -l pavol down && pkill -RTMIN+1 i3blocks
 bindsym XF86AudioRaiseVolume exec bash -l pavol up && pkill -RTMIN+1 i3blocks
 bindsym XF86AudioMute exec bash -l pavol toggle && pkill -RTMIN+1 i3blocks
-bindsym XF86MonBrightnessUp exec /usr/bin/xbacklight -time 0 -steps 1 -inc 10
-bindsym XF86MonBrightnessDown exec /usr/bin/xbacklight -time 0 -steps 1 -dec 10
+bindsym XF86MonBrightnessUp exec xbacklight -time 0 -steps 1 -inc 5
+bindsym XF86MonBrightnessDown exec xbacklight -time 0 -steps 1 -dec 5
 
 # Look and feel
 hide_edge_borders both
