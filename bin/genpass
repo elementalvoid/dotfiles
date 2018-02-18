@@ -1,9 +1,8 @@
 #!/bin/bash
+size=64
+if [[ -n $1 ]]; then
+  # Custom size
+  size=$1
+fi
 TR=$(type -p gtr || type -p tr)
-cat /dev/urandom | $TR -dc 'a-zA-Z0-9-_!@#$%^&*()_+{}|:<>?=' | fold -w 64 | head -n 32
-
-echo
-echo
-
-
-cat /dev/urandom | $TR -dc 'a-zA-Z0-9-_!@#$%^&*()_+{}|:<>?=' | fold -w 32 | head -n 32
+cat /dev/urandom | $TR -dc 'a-zA-Z0-9-_!@#$%^&*()_+{}|:<>?=' | fold -w ${size} | head -n 32
