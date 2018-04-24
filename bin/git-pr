@@ -1,0 +1,5 @@
+#!/bin/bash
+git fetch origin refs/pull/$1/head:pr-$1
+git config --add branch.pr-$1.merge refs/pull/$1/head
+git config --add branch.pr-$1.remote origin
+git checkout pr-$1
