@@ -38,10 +38,13 @@ bindsym $mod+Return exec ~/bin/alacritty
 # kill focused window
 bindsym $mod+Shift+q kill
 
+bindsym $mod+s exec maim -s ~/scrot_$(date +%F_%H%M%S).jpg
+bindsym $mod+Shift+s exec maim -s | xclip -selection clipboard -t image/png
+
 # start dmenu (a program launcher)
 # - Use 'bash -lc' to list items from custom PATH in ~/.bashrc
 # - Use custom dmenu script to be able to *execute* items from custom PATH in ~/.bashrc
-bindsym $mod+d exec bash -lc 'dmenu_run_bashl'
+bindsym $mod+d exec zsh -ic 'dmenu_run_bashl'
 bindsym $mod+Shift+d exec i3-dmenu-desktop
 
 # change focus
@@ -68,7 +71,7 @@ bindsym $mod+minus split v
 bindsym $mod+f fullscreen toggle
 
 # change container layout (stacked, tabbed, toggle split)
-bindsym $mod+s layout stacking
+#bindsym $mod+s layout stacking
 bindsym $mod+w layout tabbed
 bindsym $mod+e layout toggle split
 
