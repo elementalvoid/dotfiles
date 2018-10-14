@@ -7,9 +7,12 @@
 *.bak
 .ropeproject/
 .DS_Store
+.vscode/
 
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+.project/
+.project

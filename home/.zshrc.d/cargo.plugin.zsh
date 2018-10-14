@@ -1,0 +1,4 @@
+path=(
+  ~/.cargo/bin
+  $path
+)
