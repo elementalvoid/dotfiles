@@ -8,7 +8,7 @@ alias ll='ls -l'
 alias la='ls -A'
 
 # Misc
-alias rg='~/bin/rg -N'
+alias vi='vim'
 alias grep='grep --color=auto'
 alias d='stat -c "%A (%a) %8s %.19y %n" ' # usage: d <filename>
 alias apt-get='sudo /usr/bin/apt-get $@'
@@ -25,8 +25,9 @@ code=~/code
 
 # Code
 alias ccode='cd $code'
+alias cgo='cd $code/go'
 alias cgithub='cd $code/github'
-alias csstk='cd $code/sstk'
+alias cibotta='cd $code/ibotta'
 
 alias cvim='cd ~/.vim'
 alias cdownloads='cd ~/Downloads'

@@ -1,4 +1,3 @@
-#export GOROOT=~/.local/go
 export GOPATH=~/code/go
 
 path=(

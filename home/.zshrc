@@ -1,3 +1,6 @@
+# Profiling!!
+#zmodload zsh/zprof
+
 # Lines configured by zsh-newuser-install
 unsetopt beep
 
@@ -29,7 +32,6 @@ export LESS="R"
 
 alias ls='ls --color=auto'
 alias ll='ls -l'
-[[ -f ~/.dircolors ]] && eval $(dircolors ~/.dircolors)
 
 # Ensure path arrays do not contain duplicates.
 typeset -gU cdpath fpath mailpath path
@@ -40,6 +42,11 @@ path=(
   /usr/local/{bin,sbin}
   /usr/sbin
   $path
+)
+
+fpath=(
+  $HOME/.zsh-fpath.d
+  $fpath
 )
 
 if [[ -d ~/.homesick/repos/homeshick ]]; then
@@ -62,3 +69,12 @@ fi
 # STUFF
 
 source ~/.zplug/init.zsh
+
+# Depends on one of my dotfile "plugins"
+[[ -f ~/.dircolors ]] && eval $(dircolors ~/.dircolors)
+
+# added by travis gem
+[ -f /Users/matt.klich/.travis/travis.sh ] && source /Users/matt.klich/.travis/travis.sh
+
+# Profiling!!
+#zprof

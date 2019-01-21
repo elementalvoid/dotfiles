@@ -60,7 +60,7 @@ draw_bold_text_with_bright_colors: false
 font:
   # The normal (roman) font face to use.
   normal:
-    family: Hack # should be "Menlo" or something on macOS.
+    family: Menlo # should be "Menlo" or something on macOS.
     # Style can be specified to pick a specific face.
     # style: Regular
 

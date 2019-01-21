@@ -22,7 +22,14 @@ zplug "b4b4r07/enhancd", use:init.sh
 zplug "plugins/cargo", from:oh-my-zsh
 
 # Prompt line
-zplug "agkozak/agkozak-zsh-theme"
+zplug mafredri/zsh-async, from:github
+zplug sindresorhus/pure, use:pure.zsh, from:github, as:theme
+
+# NVM
+export NVM_AUTO_USE=false
+export NVM_LAZY_LOAD=true
+zplug "lukechilds/zsh-nvm"
+#zplug "Sparragus/zsh-auto-nvm-use"
 
 zplug "jhawthorn/fzy", \
   as:command, \
@@ -31,7 +38,7 @@ zplug "jhawthorn/fzy", \
 #zplug "aperezdc/zsh-fzy"
 
 # Now all my local stuff
-zplug "~/.zshrc.d", from:local, use:"*.zsh"
+zplug "~/.zshrc.d", from:local, use:"*.zsh", defer:2
 
 
 # Install plugins if there are plugins that have not been installed

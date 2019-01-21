@@ -1,15 +1,22 @@
 #!/bin/bash
 set -xe
 
+## ZPlug
+if [[ ! -d ~/.zplug ]]; then
+  git clone https://github.com/zplug/zplug.git ~/.zplug
+else
+  ( cd ~/.zplug; git pull )
+fi
+
 ##
 # Homeshick
 ##
-if [[ ! -d $HOME/.homesick/repos/homeshick ]]; then
-  git clone https://github.com/andsens/homeshick.git $HOME/.homesick/repos/homeshick
+if [[ ! -d ~/.homesick/repos/homeshick ]]; then
+  git clone https://github.com/andsens/homeshick.git ~/.homesick/repos/homeshick
 else
-  ( cd $HOME/.homesick/repos/homeshick; git pull )
+  ( cd ~/.homesick/repos/homeshick; git pull )
 fi
-type homeshick &> /dev/null || source $HOME/.homesick/repos/homeshick/homeshick.sh
+type homeshick &> /dev/null || source ~/.homesick/repos/homeshick/homeshick.sh
 
 repos="elementalvoid/dotfiles elementalvoid/liquidprompt junegunn/fzf"
 for repo in ${repos}; do
