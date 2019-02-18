@@ -1,5 +1,9 @@
 # Profiling!!
 #zmodload zsh/zprof
+# Or ... https://github.com/raboof/zshprof
+#PS4=$'\\\011%D{%s%6.}\011%x\011%I\011%N\011%e\011'
+#exec 3>&2 2>/tmp/zshstart.$$.log
+#setopt xtrace prompt_subst
 
 # Lines configured by zsh-newuser-install
 unsetopt beep
@@ -7,6 +11,7 @@ unsetopt beep
 # vi keybindings
 bindkey -v
 # End of lines configured by zsh-newuser-install
+
 # The following lines were added by compinstall
 zstyle :compinstall filename '/home/mklich/.zshrc'
 
@@ -14,7 +19,7 @@ autoload -Uz compinit
 compinit
 # End of lines added by compinstall
 
-# maybe works?
+# bash completion support
 autoload -Uz bashcompinit
 bashcompinit
 
@@ -73,8 +78,8 @@ source ~/.zplug/init.zsh
 # Depends on one of my dotfile "plugins"
 [[ -f ~/.dircolors ]] && eval $(dircolors ~/.dircolors)
 
-# added by travis gem
-[ -f /Users/matt.klich/.travis/travis.sh ] && source /Users/matt.klich/.travis/travis.sh
-
 # Profiling!!
 #zprof
+# Or ... https://github.com/raboof/zshprof
+#unsetopt xtrace
+#exec 2>&3 3>&-

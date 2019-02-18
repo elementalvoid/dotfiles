@@ -25,12 +25,6 @@ zplug "plugins/cargo", from:oh-my-zsh
 zplug mafredri/zsh-async, from:github
 zplug sindresorhus/pure, use:pure.zsh, from:github, as:theme
 
-# NVM
-export NVM_AUTO_USE=false
-export NVM_LAZY_LOAD=true
-zplug "lukechilds/zsh-nvm"
-#zplug "Sparragus/zsh-auto-nvm-use"
-
 zplug "jhawthorn/fzy", \
   as:command, \
   rename-to:fzy, \
