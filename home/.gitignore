@@ -8,6 +8,7 @@
 .ropeproject/
 .DS_Store
 .vscode/
+*.iml
 
 
 # Elastic Beanstalk Files

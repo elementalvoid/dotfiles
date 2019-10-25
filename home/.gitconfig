@@ -1,9 +1,8 @@
 [color]
 	ui = true
 [user]
-  email = matt.klich@ibotta.com
+  email = matt@elementalvoid.com
   name = Matt Klich
-  signingkey = AAB212FD
 [core]
   excludesfile = ~/.gitignore
   pager = less -+$LESS -R
@@ -50,3 +49,5 @@
 #  tool = intellij
 #[difftool "intellij"]
 #  cmd = /Applications/IntelliJ\ IDEA.app/Contents/MacOS/idea diff $(cd $(dirname "$LOCAL") && pwd)/$(basename "$LOCAL") $(cd $(dirname "$REMOTE") && pwd)/$(basename "$REMOTE")
+[diff "sopsdiffer"]
+	textconv = sops -d
