@@ -42,9 +42,12 @@ alias ll='ls -l'
 typeset -gU cdpath fpath mailpath path
 
 path=(
+  .
   $HOME/bin
-  $HOME/{.local,.cargo}/bin
+  $HOME/{.local,.cargo,code/go}/bin
+  $HOME/.krew/bin
   /usr/local/{bin,sbin}
+  /usr/local/opt/mysql-client/bin
   /usr/sbin
   $path
 )

@@ -17,19 +17,27 @@ zplug "github/hub", \
 zplug "bobsoppe/zsh-ssh-agent", use:ssh-agent.zsh, from:github
 zplug "zsh-users/zsh-completions"
 zplug "zdharma/fast-syntax-highlighting" # should be before zsh-history-substring-search
-#zplug "zsh-users/zsh-history-substring-search"
-zplug "b4b4r07/enhancd", use:init.sh
 zplug "plugins/cargo", from:oh-my-zsh
+
+# Enhanced CD -- depends on fzy or peco or .....
+export ENHANCD_FILTER="peco:fzy"
+zplug "b4b4r07/enhancd", use:init.sh
+zplug "peco/peco", \
+  as:command, \
+  rename-to:peco, \
+  hook-build:"go build -o peco cmd/peco/peco.go"
+zplug "jhawthorn/fzy", \
+  as:command, \
+  rename-to:fzy, \
+  hook-build:"make"
 
 # Prompt line
 zplug mafredri/zsh-async, from:github
 zplug sindresorhus/pure, use:pure.zsh, from:github, as:theme
 
-zplug "jhawthorn/fzy", \
-  as:command, \
-  rename-to:fzy, \
-  hook-build:"make"
-#zplug "aperezdc/zsh-fzy"
+# kubectl
+zplug superbrothers/zsh-kubectl-prompt, from:github
+export RPROMPT='%{$fg[$color]%}($ZSH_KUBECTL_PROMPT)%{$reset_color%}'
 
 # Now all my local stuff
 zplug "~/.zshrc.d", from:local, use:"*.zsh", defer:2
