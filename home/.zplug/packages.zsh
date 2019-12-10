@@ -35,12 +35,13 @@ zplug "jhawthorn/fzy", \
 zplug mafredri/zsh-async, from:github
 zplug sindresorhus/pure, use:pure.zsh, from:github, as:theme
 
-# kubectl
-zplug superbrothers/zsh-kubectl-prompt, from:github
-export RPROMPT='%{$fg[$color]%}($ZSH_KUBECTL_PROMPT)%{$reset_color%}'
-
 # Now all my local stuff
 zplug "~/.zshrc.d", from:local, use:"*.zsh", defer:2
+
+# kubectl -- deferred after the dot.d dir since it changes the $path var
+# and that swaps the `stat` command used by the kube prompt
+zplug superbrothers/zsh-kubectl-prompt, from:github, defer:3
+export RPROMPT='%{$fg[$color]%}($ZSH_KUBECTL_PROMPT)%{$reset_color%}'
 
 
 # Install plugins if there are plugins that have not been installed
