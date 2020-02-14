@@ -51,3 +51,6 @@
 #  cmd = /Applications/IntelliJ\ IDEA.app/Contents/MacOS/idea diff $(cd $(dirname "$LOCAL") && pwd)/$(basename "$LOCAL") $(cd $(dirname "$REMOTE") && pwd)/$(basename "$REMOTE")
 [diff "sopsdiffer"]
 	textconv = sops -d
+
+[includeIf "gitdir:~/code/ibotta/"]
+        path = ~/code/ibotta/.gitconfig
