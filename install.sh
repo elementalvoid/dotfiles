@@ -18,7 +18,7 @@ else
 fi
 type homeshick &> /dev/null || source ~/.homesick/repos/homeshick/homeshick.sh
 
-repos="elementalvoid/dotfiles elementalvoid/liquidprompt junegunn/fzf"
+repos="elementalvoid/dotfiles elementalvoid/dotfiles-private elementalvoid/liquidprompt junegunn/fzf"
 for repo in ${repos}; do
   if homeshick list | grep -q ${repo}; then
     homeshick --batch pull ${repo/*\//}
