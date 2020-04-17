@@ -12,3 +12,4 @@ COMMANDTEMPLATE
 
 function render-shell-template () {
     render-shell-template-file <(echo "${@}")
+}

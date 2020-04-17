@@ -3,9 +3,11 @@
 alias history='history -iD'
 
 # ls
-alias ls='ls --color=auto'
+alias ls='exa -F'
 alias ll='ls -l'
-alias la='ls -A'
+alias la='ls -a'
+alias lt='ls -T'
+alias llt='ll -T'
 
 # Misc
 alias vi='vim'
