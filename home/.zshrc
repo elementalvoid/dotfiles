@@ -1,5 +1,5 @@
-module_path+=( "/Users/matt.klich/.zinit/bin/zmodules/Src" )
-zmodload zdharma/zplugin
+#module_path+=( "/Users/matt.klich/.zinit/bin/zmodules/Src" )
+#zmodload zdharma/zplugin
 
 # Lines configured by zsh-newuser-install
 unsetopt beep
