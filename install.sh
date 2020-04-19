@@ -1,13 +1,6 @@
 #!/bin/bash
 set -xe
 
-## ZPlug
-if [[ ! -d ~/.zplug ]]; then
-  git clone https://github.com/zplug/zplug.git ~/.zplug
-else
-  ( cd ~/.zplug; git pull )
-fi
-
 ##
 # Homeshick
 ##
@@ -38,8 +31,3 @@ else
     git clone https://github.com/elementalvoid/vimrc.git ~/.vim
 fi
 ( cd ~/.vim; ./install.sh )
-
-##
-# Install sslyze
-##
-source ~/.bashrc.d/sslyze
