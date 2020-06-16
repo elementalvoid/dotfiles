@@ -69,9 +69,6 @@ fi
 # STUFF
 # STUFF
 
-# Depends on one of my dotfile "plugins"
-#[[ -f ~/.dircolors ]] && eval $(dircolors ~/.dircolors)
-
 ### Added by Zinit's installer
 if [[ ! -f $HOME/.zinit/bin/zinit.zsh ]]; then
     print -P "%F{33}▓▒░ %F{220}Installing %F{33}DHARMA%F{220} Initiative Plugin Manager (%F{33}zdharma/zinit%F{220})…%f"
@@ -117,13 +114,12 @@ zinit ice lucid wait'!0'
 zinit ice blockf
 zinit light zsh-users/zsh-completions
 
-zinit ice lucid wait'!0' atinit'ZINIT[COMPINIT_OPTS]=-C; zicompinit; zicdreplay'
+# TODO: WTF was I doing with this atinit?? it breaks some completions!
+zinit ice lucid wait'!0' #atinit'ZINIT[COMPINIT_OPTS]=-C; zicompinit; zicdreplay'
 zinit light zdharma/fast-syntax-highlighting
 
 zinit ice lucid wait'!0' atload'bindkey -M vicmd "k" history-substring-search-up; bindkey -M vicmd "j" history-substring-search-down'
 zinit light zsh-users/zsh-history-substring-search
-#bindkey '^[[A' history-substring-search-up
-#bindkey '^[[B' history-substring-search-down
 
 zinit ice lucid wait'!0'
 zinit ice from'gh-r' as'program' mv'peco_*/peco -> peco'
@@ -142,7 +138,10 @@ zinit ice depth=1
 zinit light romkatv/powerlevel10k
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-# local stuff
+# local fpath
+zinit add-fpath ~/.zsh-fpath.d
+
+# local plugins
 zinit ice lucid wait'!0'
 zinit ice multisrc'*.plugin.zsh' pick'/dev/null'
 zinit light ~/.zshrc.d
