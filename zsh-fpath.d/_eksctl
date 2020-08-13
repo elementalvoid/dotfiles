@@ -1,0 +1,52 @@
+#compdef eksctl
+
+_arguments \
+  '1: :->level1' \
+  '2: :->level2' \
+  '3: :_files'
+case $state in
+  level1)
+    case $words[1] in
+      eksctl)
+        _arguments '1: :(create get update delete scale drain utils completion version help)'
+      ;;
+      *)
+        _arguments '*: :_files'
+      ;;
+    esac
+  ;;
+  level2)
+    case $words[2] in
+      create)
+        _arguments '2: :(cluster nodegroup iamserviceaccount iamidentitymapping)'
+      ;;
+      get)
+        _arguments '2: :(cluster nodegroup iamserviceaccount iamidentitymapping)'
+      ;;
+      update)
+        _arguments '2: :(cluster)'
+      ;;
+      delete)
+        _arguments '2: :(cluster nodegroup iamserviceaccount iamidentitymapping)'
+      ;;
+      scale)
+        _arguments '2: :(nodegroup)'
+      ;;
+      drain)
+        _arguments '2: :(nodegroup)'
+      ;;
+      utils)
+        _arguments '2: :(wait-nodes write-kubeconfig describe-stacks update-cluster-stack update-kube-proxy update-aws-node update-coredns update-cluster-logging associate-iam-oidc-provider)'
+      ;;
+      completion)
+        _arguments '2: :(bash zsh)'
+      ;;
+      *)
+        _arguments '*: :_files'
+      ;;
+    esac
+  ;;
+  *)
+    _arguments '*: :_files'
+  ;;
+esac

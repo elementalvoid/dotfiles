@@ -1,0 +1,43 @@
+#compdef argo
+
+_arguments \
+  '1: :->level1' \
+  '2: :->level2' \
+  '3: :_files'
+case $state in
+  level1)
+    case $words[1] in
+      argo)
+        _arguments '1: :(archive auth cluster-template completion cron delete get lint list logs resubmit resume retry server stop submit suspend template terminate version wait watch)'
+      ;;
+      *)
+        _arguments '*: :_files'
+      ;;
+    esac
+  ;;
+  level2)
+    case $words[2] in
+      auth)
+        _arguments '2: :(token)'
+      ;;
+      cluster-template)
+        _arguments '2: :(create delete get lint list)'
+      ;;
+      cron)
+        _arguments '2: :(create delete get lint list resume suspend)'
+      ;;
+      template)
+        _arguments '2: :(create delete get lint list)'
+      ;;
+      archive)
+        _arguments '2: :(delete get list)'
+      ;;
+      *)
+        _arguments '*: :_files'
+      ;;
+    esac
+  ;;
+  *)
+    _arguments '*: :_files'
+  ;;
+esac
