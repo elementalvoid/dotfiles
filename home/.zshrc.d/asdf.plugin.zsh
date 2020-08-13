@@ -3,7 +3,7 @@
 asdf_location=~/.asdf/
 if [[ -d ${asdf_location} ]]; then
   source ${asdf_location}/asdf.sh
-  source ${asdf_location}/completions/asdf.bash
+  #zinit add-fpath ${asdf_location}/completions
 fi
 unset asdf_location
 

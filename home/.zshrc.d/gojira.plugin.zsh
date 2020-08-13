@@ -1,8 +1,4 @@
-[[ $- = *i* ]] || return
-
 #compdef jira
-#autoload -U compinit && compinit
-#autoload -U bashcompinit && bashcompinit
 
 _jira_bash_autocomplete() {
     local cur prev opts base
