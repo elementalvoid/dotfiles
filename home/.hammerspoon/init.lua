@@ -13,7 +13,7 @@ hs.hotkey.bind(hypers, "r", hs.reload)
 hs.hotkey.bind(hyper, "i", function() hs.application.launchOrFocus("IntelliJ IDEA") end)
 hs.hotkey.bind(hyper, "s", function() hs.application.launchOrFocus("Slack") end)
 hs.hotkey.bind(hyper, "t", function() hs.application.launchOrFocus("iTerm") end)
-hs.hotkey.bind(hyper, "b", function() hs.application.launchOrFocus("Brave Browser") end)
+hs.hotkey.bind(hyper, "b", function() hs.application.launchOrFocus("Brave Browser Beta") end)
 hs.hotkey.bind(hyper, "f", function() hs.application.launchOrFocus("Finder") end)
 
 -- KSheet spoon to show current application hotkeys
