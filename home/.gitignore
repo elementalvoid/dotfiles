@@ -1,1 +1,4 @@
 *.zwc
+*.iml
+.idea
+.vscode
