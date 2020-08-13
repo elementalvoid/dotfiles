@@ -1,5 +1,8 @@
-#module_path+=( "/Users/matt.klich/.zinit/bin/zmodules/Src" )
-#zmodload zdharma/zplugin
+# Optional binary module
+if [[ -f "$HOME/.zinit/bin/zmodules/Src/zdharma/zplugin.so" ]]; then
+	module_path+=( "$HOME/.zinit/bin/zmodules/Src" )
+	zmodload zdharma/zplugin
+fi
 
 # Lines configured by zsh-newuser-install
 unsetopt beep
@@ -9,7 +12,7 @@ bindkey -v
 # End of lines configured by zsh-newuser-install
 
 # The following lines were added by compinstall
-zstyle :compinstall filename '/home/mklich/.zshrc'
+#zstyle :compinstall filename '/home/mklich/.zshrc'
 
 autoload -Uz compinit
 compinit
@@ -43,11 +46,6 @@ path=(
   /usr/local/opt/mysql-client/bin
   /usr/sbin
   $path
-)
-
-fpath=(
-  $HOME/.zsh-fpath.d
-  $fpath
 )
 
 if [[ -d ~/.homesick/repos/homeshick ]]; then
@@ -90,58 +88,40 @@ autoload -Uz _zinit
 
 ### End of Zinit's installer chunk
 
-zinit ice lucid wait'!0'
-zinit light mollifier/cd-gitroot
-alias gcd='cd-gitroot'
 
-# a tad silly but this is only cloned in order to use the completion file
-zinit ice lucid wait'!0'
-zinit ice cp'etc/hub.zsh_completion -> etc/_hub'
-zinit light github/hub
-zinit add-fpath github/hub etc/
-
-# a tad silly but this is only cloned in order to use the completion file
-zinit ice lucid wait'!0'
-zinit ice cp'contrib/completions.zsh -> contrib/_exa'
-zinit light ogham/exa
-zinit add-fpath ogham/exa contrib
-
-zinit ice lucid wait'!0'
-zinit light bobsoppe/zsh-ssh-agent
-
-# Bunch'o'completions
-zinit ice lucid wait'!0'
-zinit ice blockf
-zinit light zsh-users/zsh-completions
-
-# TODO: WTF was I doing with this atinit?? it breaks some completions!
-zinit ice lucid wait'!0' #atinit'ZINIT[COMPINIT_OPTS]=-C; zicompinit; zicdreplay'
-zinit light zdharma/fast-syntax-highlighting
-
-zinit ice lucid wait'!0' atload'bindkey -M vicmd "k" history-substring-search-up; bindkey -M vicmd "j" history-substring-search-down'
-zinit light zsh-users/zsh-history-substring-search
-
-zinit ice lucid wait'!0'
-zinit ice from'gh-r' as'program' mv'peco_*/peco -> peco'
-zinit load peco/peco
+# Prompt
+zinit ice depth=1 atload'source ~/.p10k.zsh; _p9k_precmd' nocd
+zinit load romkatv/powerlevel10k
 
 export ENHANCD_FILTER='peco'
 export ENHANCD_DISABLE_HOME=1
-zinit ice lucid wait'!0'
-zinit light b4b4r07/enhancd
+alias gcd='cd-gitroot'
+zinit wait lucid depth=1 for \
+    mollifier/cd-gitroot \
+    bobsoppe/zsh-ssh-agent \
+    b4b4r07/enhancd \
+    jimeh/zsh-peco-history \
+    eastokes/aws-plugin-zsh \
+    OMZ::plugins/asdf/asdf.plugin.zsh \
+    OMZ::plugins/thefuck/thefuck.plugin.zsh \
+  atinit"zicompinit; zicdreplay" \
+    zdharma/fast-syntax-highlighting \
+  as"completion" cp'contrib/completions.zsh -> contrib/_exa' ogham/exa \
+  as"completion" cp'etc/hub.zsh_completion -> etc/_hub' github/hub \
+  as"completion" https://raw.githubusercontent.com/rbirnie/oh-my-zsh-keybase/master/keybase/_keybase \
+  as"completion" OMZ::plugins/docker/_docker \
+  atload'bindkey -M vicmd "k" history-substring-search-up; bindkey -M vicmd "j" history-substring-search-down' \
+    zsh-users/zsh-history-substring-search \
+  from'gh-r' as'program' mv'peco_*/peco -> peco' \
+    peco/peco \
+  blockf multisrc'*.plugin.zsh' pick'/dev/null' \
+    ~/.zshrc.d \
+  as"completion" \
+    elementalvoid/dotfiles
 
-zinit ice lucid wait'!0'
-zinit light jimeh/zsh-peco-history
+# Bunch'o'completions
+# Recommended Be Loaded Last.
+zinit ice wait blockf lucid atpull'zinit creinstall -q .; rm -f ~/.zinit/completions/*.fish'
+zinit load zsh-users/zsh-completions
 
-# Prompt
-zinit ice depth=1
-zinit light romkatv/powerlevel10k
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-
-# local fpath
-zinit add-fpath ~/.zsh-fpath.d
-
-# local plugins
-zinit ice lucid wait'!0'
-zinit ice multisrc'*.plugin.zsh' pick'/dev/null'
-zinit light ~/.zshrc.d
+zinit cdreplay &> /dev/null
