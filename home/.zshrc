@@ -11,9 +11,6 @@ unsetopt beep
 bindkey -v
 # End of lines configured by zsh-newuser-install
 
-# The following lines were added by compinstall
-#zstyle :compinstall filename '/home/mklich/.zshrc'
-
 autoload -Uz compinit
 compinit
 # End of lines added by compinstall
@@ -99,17 +96,19 @@ alias gcd='cd-gitroot'
 zinit wait lucid depth=1 for \
     mollifier/cd-gitroot \
     bobsoppe/zsh-ssh-agent \
+  atinit atpull'zinit cclear' \
     b4b4r07/enhancd \
     jimeh/zsh-peco-history \
     eastokes/aws-plugin-zsh \
     OMZ::plugins/asdf/asdf.plugin.zsh \
     OMZ::plugins/thefuck/thefuck.plugin.zsh \
-  atinit"zicompinit; zicdreplay" \
     zdharma/fast-syntax-highlighting \
-  as"completion" cp'contrib/completions.zsh -> contrib/_exa' ogham/exa \
-  as"completion" cp'etc/hub.zsh_completion -> etc/_hub' github/hub \
-  as"completion" https://raw.githubusercontent.com/rbirnie/oh-my-zsh-keybase/master/keybase/_keybase \
-  as"completion" OMZ::plugins/docker/_docker \
+  as"completion" cp'contrib/completions.zsh -> contrib/_exa' \
+    ogham/exa \
+  as"completion" \
+    https://raw.githubusercontent.com/rbirnie/oh-my-zsh-keybase/master/keybase/_keybase \
+  as"completion" \
+    OMZ::plugins/docker/_docker \
   atload'bindkey -M vicmd "k" history-substring-search-up; bindkey -M vicmd "j" history-substring-search-down' \
     zsh-users/zsh-history-substring-search \
   from'gh-r' as'program' mv'peco_*/peco -> peco' \
@@ -119,9 +118,13 @@ zinit wait lucid depth=1 for \
   as"completion" \
     elementalvoid/dotfiles
 
+# Couldn't get this to work reliably above ..
+zinit ice wait lucid depth=1 blockf as'completion' cp'etc/hub.zsh_completion -> etc/_hub'
+zinit load github/hub
+
 # Bunch'o'completions
-# Recommended Be Loaded Last.
-zinit ice wait blockf lucid atpull'zinit creinstall -q .; rm -f ~/.zinit/completions/*.fish'
+# Recommended to be loaded last.
+zinit ice wait blockf lucid atpull'zinit creinstall -q .'
 zinit load zsh-users/zsh-completions
 
-zinit cdreplay &> /dev/null
+zinit cdreplay -q
