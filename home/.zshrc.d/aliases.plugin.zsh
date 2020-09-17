@@ -15,9 +15,10 @@ alias grep='grep --color=auto'
 alias d='stat -c "%A (%a) %8s %.19y %n" ' # usage: d <filename>
 alias apt-get='sudo /usr/bin/apt-get $@'
 alias color='pygmentize -O style=monokai -f console256 -g'
-alias sslyze="/usr/local/bin/sslyze --regular --hsts --chrome_sha1"
 alias sbash='sudo -E bash'
-alias bd='. bd -si'
+
+# kubernetes
+alias kfoo='kubectl run --generator=run-pod/v1 --image elementalvoid/net-tools:latest --stdin --tty --restart=Never --rm mkfoo'
 
 # Python HTTP server
 alias pyhttp="python -m SimpleHTTPServer 10412"

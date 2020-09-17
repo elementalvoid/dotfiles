@@ -101,10 +101,7 @@ zinit wait lucid depth=1 for \
     jimeh/zsh-peco-history \
     eastokes/aws-plugin-zsh \
     OMZ::plugins/asdf/asdf.plugin.zsh \
-    OMZ::plugins/thefuck/thefuck.plugin.zsh \
     zdharma/fast-syntax-highlighting \
-  as"completion" cp'contrib/completions.zsh -> contrib/_exa' \
-    ogham/exa \
   as"completion" \
     https://raw.githubusercontent.com/rbirnie/oh-my-zsh-keybase/master/keybase/_keybase \
   as"completion" \
@@ -115,7 +112,7 @@ zinit wait lucid depth=1 for \
     peco/peco \
   blockf multisrc'*.plugin.zsh' pick'/dev/null' \
     ~/.zshrc.d \
-  as"completion" \
+  as"completion" atpull'zinit creinstall .'\
     elementalvoid/dotfiles
 
 # Couldn't get this to work reliably above ..
