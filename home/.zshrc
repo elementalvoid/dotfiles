@@ -4,20 +4,10 @@ if [[ -f "$HOME/.zinit/bin/zmodules/Src/zdharma/zplugin.so" ]]; then
 	zmodload zdharma/zplugin
 fi
 
-# Lines configured by zsh-newuser-install
 unsetopt beep
 
 # vi keybindings
 bindkey -v
-# End of lines configured by zsh-newuser-install
-
-autoload -Uz compinit
-compinit
-# End of lines added by compinstall
-
-# bash completion support
-autoload -Uz bashcompinit
-bashcompinit
 
 # STUFF
 # STUFF
@@ -83,10 +73,6 @@ autoload -Uz _zinit
 #    zinit-zsh/z-a-patch-dl \
 #    zinit-zsh/z-a-as-monitor
 
-### End of Zinit's installer chunk
-
-
-# Prompt
 zinit ice depth=1 atload'source ~/.p10k.zsh; _p9k_precmd' nocd
 zinit load romkatv/powerlevel10k
 
@@ -124,4 +110,8 @@ zinit load github/hub
 zinit ice wait blockf lucid atpull'zinit creinstall -q .'
 zinit load zsh-users/zsh-completions
 
+autoload -Uz compinit
+compinit
+autoload -Uz bashcompinit
+bashcompinit
 zinit cdreplay -q
