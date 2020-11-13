@@ -79,14 +79,15 @@ zinit load romkatv/powerlevel10k
 export ENHANCD_FILTER='peco'
 export ENHANCD_DISABLE_HOME=1
 alias gcd='cd-gitroot'
-zinit wait lucid depth=1 for \
+zinit light-mode wait lucid depth=1 for \
     mollifier/cd-gitroot \
     bobsoppe/zsh-ssh-agent \
   atinit atpull'zinit cclear' \
     b4b4r07/enhancd \
     jimeh/zsh-peco-history \
     eastokes/aws-plugin-zsh \
-    OMZ::plugins/asdf/asdf.plugin.zsh \
+  as"completion" \
+    https://raw.githubusercontent.com/asdf-vm/asdf/master/completions/_asdf \
     zdharma/fast-syntax-highlighting \
   as"completion" \
     https://raw.githubusercontent.com/rbirnie/oh-my-zsh-keybase/master/keybase/_keybase \
@@ -102,12 +103,12 @@ zinit wait lucid depth=1 for \
     elementalvoid/dotfiles
 
 # Couldn't get this to work reliably above ..
-zinit ice wait lucid depth=1 blockf as'completion' cp'etc/hub.zsh_completion -> etc/_hub'
+zinit ice light-mode wait lucid depth=1 blockf as'completion' cp'etc/hub.zsh_completion -> etc/_hub'
 zinit load github/hub
 
 # Bunch'o'completions
 # Recommended to be loaded last.
-zinit ice wait blockf lucid atpull'zinit creinstall -q .'
+zinit ice light-mode wait blockf lucid atpull'zinit creinstall -q .'
 zinit load zsh-users/zsh-completions
 
 autoload -Uz compinit
