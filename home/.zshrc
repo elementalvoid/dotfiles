@@ -95,7 +95,6 @@ zinit light-mode wait lucid depth=1 for \
   atinit atpull'zinit cclear' \
     b4b4r07/enhancd \
     jimeh/zsh-peco-history \
-    eastokes/aws-plugin-zsh \
   as"completion" \
     https://raw.githubusercontent.com/asdf-vm/asdf/master/completions/_asdf \
     zdharma/fast-syntax-highlighting \
@@ -118,14 +117,8 @@ zinit load github/hub
 
 # Bunch'o'completions
 # Recommended to be loaded last.
-zinit ice light-mode wait blockf lucid atpull'zinit creinstall -q .'
-zinit load zsh-users/zsh-completions
-
-autoload -Uz compinit
-compinit
-autoload -Uz bashcompinit
-bashcompinit
-zinit cdreplay -q
+zinit wait lucid atload"zicompinit; zicdreplay" blockf for \
+      zsh-users/zsh-completions
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
