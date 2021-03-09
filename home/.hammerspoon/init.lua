@@ -15,20 +15,31 @@ hs.hotkey.bind(hyper, "s", function() hs.application.launchOrFocus("Slack") end)
 hs.hotkey.bind(hyper, "t", function() hs.application.launchOrFocus("iTerm") end)
 hs.hotkey.bind(hyper, "b", function() hs.application.launchOrFocus("Brave Browser Beta") end)
 hs.hotkey.bind(hyper, "f", function() hs.application.launchOrFocus("Finder") end)
+hs.hotkey.bind(hyper, "j", function() hs.application.launchOrFocus("Joplin") end)
+hs.hotkey.bind(hyper, "z", function() hs.application.launchOrFocus("zoom.us") end)
+
+-- SpoonInstall: installed manually
+hs.loadSpoon("SpoonInstall")
 
 -- KSheet spoon to show current application hotkeys
-k = hs.loadSpoon('KSheet')
+--k = hs.loadSpoon('KSheet')
+spoon.SpoonInstall:andUse("KSheet")
 local cheat_visible = false
 function toggleCheatSheet()
   if not cheat_visible then
-    k:show()
+    spoon.KSheet:show()
     cheat_visible = true
   else
-    k:hide()
+    spoon.KSheetk:hide()
     cheat_visible = false
   end
 end
 hs.hotkey.bind(hyper, '/', toggleCheatSheet)
+
+-- Keychain access
+--spoon.SpoonInstall:andUse("Keychain")
+--pass = spoon.Keychain:getItem({service="onelogin.com"})
+
 
 -- grid based window movement/arrangement
 hs.window.animationDuration = 0
