@@ -91,7 +91,6 @@ export ENHANCD_DISABLE_HOME=1
 alias gcd='cd-gitroot'
 zinit light-mode wait lucid depth=1 for \
     mollifier/cd-gitroot \
-    bobsoppe/zsh-ssh-agent \
   atinit atpull'zinit cclear' \
     b4b4r07/enhancd \
     jimeh/zsh-peco-history \
