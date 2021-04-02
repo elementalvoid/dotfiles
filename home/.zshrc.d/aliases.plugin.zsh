@@ -18,7 +18,7 @@ alias color='pygmentize -O style=monokai -f console256 -g'
 alias sbash='sudo -E bash'
 
 # kubernetes
-alias kfoo='kubectl run --generator=run-pod/v1 --image elementalvoid/net-tools:latest --stdin --tty --restart=Never --rm mkfoo'
+alias kfoo='kubectl run --image elementalvoid/net-tools:latest --stdin --tty --restart=Never --rm mkfoo'
 
 # Python HTTP server
 alias pyhttp="python -m SimpleHTTPServer 10412"
