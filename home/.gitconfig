@@ -7,8 +7,6 @@
   excludesfile = ~/.gitignore
   pager = less -+$LESS -R
   preloadindex = true
-[instaweb]
-  browser = google-chrome
 [alias]
   cv = commit -v
   cva = commit -v -a
@@ -26,7 +24,6 @@
   b = branch
   br = branch -r
   ba = branch -a
-  #diverges = !sh -c 'git rev-list --boundary $1...$2 | grep ^- | cut -c2-'
   diverges = !bash -c 'git rev-parse $(diff <(git log --pretty=oneline ${1}) <(git log --pretty=oneline ${2}) | tail -1 | cut -c 3-42)^'
   oldest-ancestor = !bash -c 'diff -u <(git rev-list --first-parent \"${1:-master}\") <(git rev-list --first-parent \"${2:-HEAD}\") | sed -ne \"s/^ //p\" | head -1' -
   d = diff
@@ -45,10 +42,6 @@
 [mergetool "intellij"]
   cmd = idea merge $(cd $(dirname \"$LOCAL\") && pwd)/$(basename \"$LOCAL\") $(cd $(dirname \"$REMOTE\") && pwd)/$(basename \"$REMOTE\") $(cd $(dirname \"$BASE\") && pwd)/$(basename \"$BASE\") $(cd $(dirname \"$MERGED\") && pwd)/$(basename \"$MERGED\")
 	trustExitCode = false
-#[diff]
-#  tool = intellij
-#[difftool "intellij"]
-#  cmd = /Applications/IntelliJ\ IDEA.app/Contents/MacOS/idea diff $(cd $(dirname "$LOCAL") && pwd)/$(basename "$LOCAL") $(cd $(dirname "$REMOTE") && pwd)/$(basename "$REMOTE")
 [diff "sopsdiffer"]
 	textconv = sops -d
 
