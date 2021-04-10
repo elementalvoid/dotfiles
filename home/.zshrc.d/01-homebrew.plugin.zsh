@@ -1,8 +1,10 @@
 [[ $- = *i* ]] || return
 
-export HOMEBREW_CASK_OPTS="--appdir=~/Applications"
+if [[ -n $(command -pv brew) ]]; then
+  export HOMEBREW_CASK_OPTS="--appdir=~/Applications"
 
-path=(
-  /usr/local/opt/*/libexec/gnubin
-  $path
-)
+  path=(
+    /usr/local/opt/*/libexec/gnubin
+    $path
+  )
+fi
