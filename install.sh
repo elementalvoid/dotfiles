@@ -40,3 +40,23 @@ else
     git clone git@github.com:elementalvoid/vimrc.git ~/.vim
 fi
 ( cd ~/.vim; ./install.sh )
+
+##
+# asdf
+##
+asdf_plugins="argo awscli bitwarden brig conftest eksctl golang gradle helm helm-docs helmfile hub java jq kubectl kustomize linkerd nodejs nova octant pluto poetry popeye python ruby saml2aws sinker sops sopstool stern terraform terraform-docs terraform-validator tflint tfsec tmux yq"
+if [[ -d ~/.asdf ]]; then
+  source ~/.asdf/asdf.sh
+  asdf update
+else
+  git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.8.1
+fi
+
+set +e
+asdf plugin add util git@github.com:elementalvoid/asdf-util.git
+
+for plugin in ${asdf_plugins}; do
+  asdf plugin add ${plugin}
+done
+
+asdf install
