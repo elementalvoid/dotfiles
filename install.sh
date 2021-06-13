@@ -50,6 +50,7 @@ if [[ -d ~/.asdf ]]; then
   asdf update
 else
   git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.8.1
+  asdf update
 fi
 
 set +e
