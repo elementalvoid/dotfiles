@@ -1,17 +1,27 @@
 #!/bin/bash
 set -xe
 
+# Cache github server key
+ssh -o StrictHostKeyChecking=no git@github.com || true
+
+# Require private key!
+if [[ ! -f ~/.ssh/id_rsa ]]; then
+  echo "SSH private key not found. Add before running installer."
+  echo "A private key is required to clone GitHub repositories."
+  exit 1
+fi
+
 ##
 # Homeshick
 ##
 if [[ ! -d ~/.homesick/repos/homeshick ]]; then
-  git clone https://github.com/andsens/homeshick.git ~/.homesick/repos/homeshick
+  git clone git@github.com:andsens/homeshick.git ~/.homesick/repos/homeshick
 else
   ( cd ~/.homesick/repos/homeshick; git pull )
 fi
 type homeshick &> /dev/null || source ~/.homesick/repos/homeshick/homeshick.sh
 
-repos="elementalvoid/dotfiles git@github.com:elementalvoid/dotfiles-private.git"
+repos="git@github.com:elementalvoid/dotfiles git@github.com:elementalvoid/dotfiles-private"
 for repo in ${repos}; do
   if homeshick list | grep -q ${repo}; then
     homeshick --batch pull ${repo/*\//}
@@ -27,7 +37,6 @@ homeshick --force link
 if [[ -d ~/.vim ]]; then
   ( cd ~/.vim; git pull )
 else
-    ssh -o StrictHostKeyChecking=no git@github.com || true
-    git clone https://github.com/elementalvoid/vimrc.git ~/.vim
+    git clone git@github.com:elementalvoid/vimrc.git ~/.vim
 fi
 ( cd ~/.vim; ./install.sh )
