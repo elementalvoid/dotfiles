@@ -1,7 +1,3 @@
--- Load tools/addons first
-require "tools/clipboard" -- https://github.com/VFS/.hammerspoon
-require "tools/slowq" -- https://github.com/dbmrq/dotfiles/blob/master/home/.hammerspoon/slowq.lua
-
 -- A global variable for the Hyper Mode
 hyper =  {"command", "control", "option"}	-- caps lock held down
 hypers =  {"command", "control", "option", "shift"}	-- caps lock and shift held down
@@ -20,6 +16,14 @@ hs.hotkey.bind(hyper, "z", function() hs.application.launchOrFocus("zoom.us") en
 
 -- SpoonInstall: installed manually
 hs.loadSpoon("SpoonInstall")
+
+spoon.SpoonInstall:andUse("ClipboardTool")
+spoon.ClipboardTool. show_copied_alert = false
+spoon.ClipboardTool:start()
+spoon.ClipboardTool:bindHotkeys({show_clipboard = {hyper, "c"}})
+
+spoon.SpoonInstall:andUse("HoldToQuit")
+spoon.HoldToQuit:start()
 
 -- KSheet spoon to show current application hotkeys
 --k = hs.loadSpoon('KSheet')
