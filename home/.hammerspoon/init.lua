@@ -26,7 +26,6 @@ spoon.SpoonInstall:andUse("HoldToQuit")
 spoon.HoldToQuit:start()
 
 -- KSheet spoon to show current application hotkeys
---k = hs.loadSpoon('KSheet')
 spoon.SpoonInstall:andUse("KSheet")
 local cheat_visible = false
 function toggleCheatSheet()
