@@ -42,6 +42,15 @@ fi
 ( cd ~/.vim; ./install.sh )
 
 ##
+# Homebrew
+##
+if [[ $OSTYPE =~ darwin.* ]]; then
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  export HOMEBREW_CASK_OPTS="--appdir=~/Applications"
+  brew bundle install
+fi
+
+##
 # asdf
 ##
 asdf_plugins="argo awscli bitwarden brig conftest eksctl golang gradle helm helm-docs helmfile hub java jq kubectl kustomize linkerd nodejs nova octant pluto poetry popeye python ruby saml2aws sinker sops sopstool stern terraform terraform-docs terraform-validator tflint tfsec tmux yq"
