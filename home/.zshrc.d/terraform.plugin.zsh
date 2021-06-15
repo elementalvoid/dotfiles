@@ -3,6 +3,7 @@
 function tfgen() {
   local tfdir=$(basename $(pwd))
   echo "${tfdir}: Formatting..."
+  terraform fmt .
   if [[ -f .terraform-docs.yml ]]; then
     echo "${tfdir}: Generating docs..."
     terraform-docs . > README.md
