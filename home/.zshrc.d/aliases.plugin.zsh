@@ -49,4 +49,15 @@ fi
 alias urldecode='python3 -c "import sys, urllib.parse as ul; print(ul.unquote_plus(sys.argv[1]))"'
 alias urlencode='python3 -c "import sys, urllib.parse as ul; print (ul.quote_plus(sys.argv[1]))"'
 
+function tfdocs() {
+  if [[ -f .terraform-docs.yml ]]; then
+    echo "Generating docs for $(basename $(pwd))..."
+    terraform-docs . > README.md
+  else
+    echo "No terraform-docs configuration found for $(basename $(pwd))..."
+    return 1
+  fi
+}
+alias tfdocs-all='for i in *; do (cd $i; tfdocs); done'
+
 # vim: set ft=sh ts=2 sw=2 tw=0 :
