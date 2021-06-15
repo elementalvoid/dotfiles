@@ -1,0 +1,20 @@
+[[ $- = *i* ]] || return
+
+function tfgen() {
+  local tfdir=$(basename $(pwd))
+  echo "${tfdir}: Formatting..."
+  if [[ -f .terraform-docs.yml ]]; then
+    echo "${tfdir}: Generating docs..."
+    terraform-docs . > README.md
+  else
+    echo "${tfdir}: Skipping docs; terraform-docs configuration file not found..."
+  fi
+}
+
+function tfgen-all() {
+  for i in *; do
+    (cd $i; tfgen)
+  done
+}
+
+# vim: set ft=sh ts=2 sw=2 tw=0 :
