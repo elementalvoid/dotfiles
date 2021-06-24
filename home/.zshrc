@@ -100,8 +100,6 @@ zinit light-mode wait lucid depth=1 for \
     zdharma/fast-syntax-highlighting \
   as"completion" \
     https://raw.githubusercontent.com/rbirnie/oh-my-zsh-keybase/master/keybase/_keybase \
-  as"completion" \
-    OMZ::plugins/docker/_docker \
   atload'bindkey -M vicmd "k" history-substring-search-up; bindkey -M vicmd "j" history-substring-search-down' \
     zsh-users/zsh-history-substring-search \
   from'gh-r' as'program' mv'peco_*/peco -> peco' \

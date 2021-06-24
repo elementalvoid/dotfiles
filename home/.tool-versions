@@ -37,3 +37,5 @@ tmux 3.2
 awscli 2.2.5
 go-jira 1.0.27
 hey v0.1.4
+shellcheck 0.7.2
+grpcurl 1.8.1
