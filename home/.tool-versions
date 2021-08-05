@@ -12,7 +12,7 @@ gradle 7.0-milestone-3
 octant 0.19.0
 terraform-docs 0.13.0
 poetry 1.1.6
-python 3.9.4
+python 3.9.5
 bitwarden v1.9.1
 conftest 0.9.1
 hub v2.14.2
