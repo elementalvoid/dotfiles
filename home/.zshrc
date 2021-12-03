@@ -46,13 +46,8 @@ if [[ -d ~/.homesick/repos/homeshick ]]; then
   # we have homeshick installed, use it
   #source $HOME/.homesick/repos/homeshick/homeshick.sh
   # now add all of the repos bin folders to our path
-  for hd in $(find ~/.homesick/repos/ -maxdepth 1 -type d); do
-    if [[ -d $hd/bin ]]; then
-      path=(
-        $path
-        $hd/bin
-      )
-    fi
+  for hd in $(find ~/.homesick/repos -maxdepth 2 -type d -name bin); do
+    path+=($hd)
   done
   unset hd
 
