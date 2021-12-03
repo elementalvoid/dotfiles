@@ -85,13 +85,15 @@ zinit load romkatv/powerlevel10k
 export ENHANCD_FILTER='peco'
 export ENHANCD_DISABLE_HOME=1
 alias gcd='cd-gitroot'
+zinit pack for ls_colors
 zinit light-mode wait lucid depth=1 for \
-    mollifier/cd-gitroot \
+  mollifier/cd-gitroot \
   atinit atpull'zinit cclear' \
     b4b4r07/enhancd \
-    jimeh/zsh-peco-history \
+  jimeh/zsh-peco-history \
   as"completion" \
     https://raw.githubusercontent.com/asdf-vm/asdf/master/completions/_asdf \
+  atinit"ZINIT[COMPINIT_OPTS]=-C; zicompinit; zicdreplay" \
     zdharma-continuum/fast-syntax-highlighting \
   as"completion" \
     https://raw.githubusercontent.com/rbirnie/oh-my-zsh-keybase/master/keybase/_keybase \
