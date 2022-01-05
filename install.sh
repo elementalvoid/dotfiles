@@ -1,5 +1,5 @@
 #!/bin/bash
-set -xe
+set -e
 
 # Cache github server key
 ssh -o StrictHostKeyChecking=no git@github.com || true
@@ -14,8 +14,8 @@ fi
 ##
 # Chezmoi
 ##
-sh -c "$(curl -fsLS git.io/chezmoi)" -- -b ~/.local/bin/ init --apply elementalvoid/dotfiles
-sh -c "$(curl -fsLS git.io/chezmoi)" -- -b ~/.local/bin/ init --apply elementalvoid/dotfiles-private
+sh -c "$(curl -fsLS git.io/chezmoi)" -- -b ~/.local/bin init --ssh --apply --verbose elementalvoid/dotfiles
+sh -c "$(curl -fsLS git.io/chezmoi)" -- -b ~/.local/bin init --ssh --apply --verbose --source ~/.local/share/chezmoi-private elementalvoid/dotfiles-private
 
 ##
 # Vim
@@ -33,7 +33,7 @@ fi
 if [[ $OSTYPE =~ darwin.* ]]; then
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   export HOMEBREW_CASK_OPTS="--appdir=~/Applications"
-  brew bundle install
+  ( cd ~/.local/share/chezmoi; brew bundle install )
 fi
 
 ##
@@ -53,4 +53,10 @@ for plugin in $(awk '{print $1}' ~/.tool-versions); do
   asdf plugin add ${plugin}
 done
 
+asdf util global upgrade
 asdf install
+
+##
+# Pivot
+##
+which zsh && exec zsh
