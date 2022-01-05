@@ -1,7 +1,0 @@
-#!/bin/bash
-xrandr --output HDMI2 --mode 2560x1440 --pos 0x0 --primary || xrandr --output DP2-1 --mode 2560x1440 --pos 0x0 --primary
-xrandr --output eDP1  --mode 2560x1440 --pos 2560x360 --scale 0.75x0.75
-
-xmodmap ~/.Xmodmap
-
-#~/.fehbg &

@@ -1,3 +1,0 @@
-[[ $- = *i* ]] || return
-
-which minikube 2>&1 > /dev/null && source <(minikube completion bash)

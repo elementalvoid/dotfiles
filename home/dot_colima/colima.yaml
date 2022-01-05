@@ -1,0 +1,9 @@
+vm:
+    cpu: 2
+    disk: 60
+    memory: 2
+    mounts: []
+runtime: docker
+kubernetes:
+    enabled: false
+    version: v1.22.2

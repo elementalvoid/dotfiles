@@ -1,8 +1,0 @@
-[[ $- = *i* ]] || return
-
-export VISUAL=vim
-export EDITOR=vim
-
-alias vi='vim'
-
-# vim: set ft=sh ts=2 sw=2 tw=0 :
