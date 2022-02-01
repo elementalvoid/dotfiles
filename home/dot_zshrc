@@ -14,12 +14,7 @@ fi
 unsetopt beep
 
 # vi keybindings
-#bindkey -v
 setopt vi
-
-# STUFF
-# STUFF
-# STUFF
 
 # Esc-. inserts last word from previous commands
 bindkey '\e.' insert-last-word
@@ -43,9 +38,10 @@ path=(
   $path
 )
 
-# STUFF
-# STUFF
-# STUFF
+fpath=(
+  ~/.zsh_completions
+  $fpath
+)
 
 ### Added by Zinit's installer
 if [[ ! -f $HOME/.zinit/bin/zinit.zsh ]]; then
@@ -92,8 +88,8 @@ zinit light-mode wait lucid depth=1 for \
   unixorn/fzf-zsh-plugin \
   blockf multisrc'*.plugin.zsh' pick'/dev/null' \
     ~/.zshrc.d \
-  as"completion" atpull'zinit creinstall .'\
-    elementalvoid/dotfiles
+  blockf multisrc'*.plugin.zsh' pick'/dev/null' \
+    ~/.zshrc-private.d
 
 # Couldn't get this to work reliably above ..
 zinit ice light-mode wait lucid depth=1 blockf as'completion' cp'etc/hub.zsh_completion -> etc/_hub'

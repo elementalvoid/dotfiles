@@ -52,15 +52,3 @@
 
 [hub]
   protocol = ssh
-#[credential]
-#	helper = store
-#[url "https://user@hostname"]
-#	insteadOf = ssh://git@hostname
-#[url "https://x-access-token@github.com"]
-#	insteadOf = ssh://git@github.com
-#[url "https://x-access-token@127.0.0.1:57264"]
-#	insteadOf = ssh://git@127.0.0.1:57264
-#[url "https://x-access-token@some-host"]
-#	insteadOf = ssh://git@some-host
-#[url "https://x-access-token@127.0.0.1:58466"]
-#	insteadOf = ssh://git@127.0.0.1:58466
