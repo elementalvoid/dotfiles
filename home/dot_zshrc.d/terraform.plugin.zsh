@@ -2,9 +2,13 @@
 
 function tfgen() {
   local tfdir=$(basename $(pwd))
+  echo "${tfdir}: Installing Terraform..."
+  asdf install terraform
   echo "${tfdir}: Formatting..."
   terraform fmt .
   if [[ -f .terraform-docs.yml ]]; then
+    echo "${tfdir}: Installing Terraform Docs..."
+    asdf install terraform-docs
     echo "${tfdir}: Generating docs..."
     terraform-docs . > README.md
   else

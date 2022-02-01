@@ -35,9 +35,8 @@ typeset -gU cdpath fpath mailpath path
 path=(
   .
   $HOME/bin
-  $HOME/{.local,.cargo,code/go}/bin
+  $HOME/{.local,code/go}/bin
   $HOME/.local/share/{chezmoi,chezmoi-private}/bin
-  $HOME/.krew/bin
   /usr/local/{bin,sbin}
   /usr/local/opt/mysql-client/bin
   /usr/sbin
