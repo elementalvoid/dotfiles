@@ -6,14 +6,11 @@ function tfgen() {
   asdf install terraform
   echo "${tfdir}: Formatting..."
   terraform fmt .
-  if [[ -f .terraform-docs.yml ]]; then
-    echo "${tfdir}: Installing Terraform Docs..."
-    asdf install terraform-docs
-    echo "${tfdir}: Generating docs..."
-    terraform-docs . > README.md
-  else
-    echo "${tfdir}: Skipping docs; terraform-docs configuration file not found..."
-  fi
+
+  echo "${tfdir}: Installing Terraform Docs..."
+  asdf install terraform-docs
+  echo "${tfdir}: Generating docs..."
+  terraform-docs . > README.md
 }
 
 function tfgen-all() {
