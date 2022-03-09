@@ -5,12 +5,6 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-# Optional binary module
-if [[ -f "$HOME/.zinit/bin/zmodules/Src/zdharma/zplugin.so" ]]; then
-	module_path+=( "$HOME/.zinit/bin/zmodules/Src" )
-	zmodload zdharma/zplugin
-fi
-
 unsetopt beep
 
 # vi keybindings
