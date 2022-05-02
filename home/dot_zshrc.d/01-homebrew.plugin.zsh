@@ -2,6 +2,6 @@
 
 export HOMEBREW_CASK_OPTS="--appdir=~/Applications"
 path=(
-    /usr/local/opt/*/libexec/gnubin
+    $(brew --prefix)/opt/*/libexec/gnubin
     $path
   )
