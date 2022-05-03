@@ -32,6 +32,7 @@ fi
 ##
 if [[ $OSTYPE =~ darwin.* ]]; then
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  eval $(/opt/homebrew/bin/brew shellenv) || eval $(/usr/local/bin/brew shellenv)
   export HOMEBREW_CASK_OPTS="--appdir=~/Applications"
   ( cd ~/.local/share/chezmoi; brew bundle install )
 fi
