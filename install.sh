@@ -57,7 +57,6 @@ for plugin in $(awk '{print $1}' ~/.tool-versions); do
 done
 
 asdf util global upgrade
-asdf install
 
 ##
 # Pivot
