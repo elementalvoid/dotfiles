@@ -9,4 +9,3 @@ runtime: docker
 kubernetes:
     enabled: false
     version: v1.22.2
-port_interface: ""

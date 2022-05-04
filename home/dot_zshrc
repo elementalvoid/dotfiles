@@ -26,8 +26,7 @@ path=(
   $HOME/bin
   $HOME/{.local,code/go}/bin
   $HOME/.local/share/{chezmoi,chezmoi-private}/bin
-  $(brew --prefix)/{bin,sbin}
-  $(brew --prefix)/opt/mysql-client/bin
+  /opt/homebrew/{bin,sbin}
   /usr/sbin
   $path
 )
