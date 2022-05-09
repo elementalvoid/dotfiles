@@ -15,13 +15,17 @@ hs.hotkey.bind(hyper, "j", function() hs.application.launchOrFocus("Joplin") end
 hs.hotkey.bind(hyper, "z", function() hs.application.launchOrFocus("zoom.us") end)
 hs.hotkey.bind(hyper, "k", function() hs.application.launchOrFocus("Keybase") end)
 
+-- Fancy paste -- pretends to be a keyboard
+hs.hotkey.bind({"cmd", "alt", "shift"}, "V", function() hs.eventtap.keyStrokes(hs.pasteboard.getContents()) end)
+
 -- SpoonInstall: installed manually (managed by chezmoi)
 hs.loadSpoon("SpoonInstall")
 
 spoon.SpoonInstall:andUse("ClipboardTool")
-spoon.ClipboardTool. show_copied_alert = false
+spoon.ClipboardTool.show_copied_alert = false
 spoon.ClipboardTool:start()
 spoon.ClipboardTool:bindHotkeys({show_clipboard = {hyper, "c"}})
+hs.hotkey.bind(hypers, "c", function() spoon.ClipboardTool:clearAll() end)
 
 spoon.SpoonInstall:andUse("HoldToQuit")
 spoon.HoldToQuit:start()
