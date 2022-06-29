@@ -33,7 +33,7 @@ popeye v0.9.8
 helm-docs 1.9.1
 sinker 0.16.0
 tmux 3.2a
-awscli 2.6.1
+awscli 2.7.2
 go-jira 1.0.27
 shellcheck 0.8.0
 grpcurl 1.8.6
