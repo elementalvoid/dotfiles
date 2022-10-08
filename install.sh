@@ -12,7 +12,13 @@ if [[ ! -f ~/.ssh/id_rsa ]]; then
 fi
 
 ##
-# Homebrew
+# Chezmoi -- in /tmp because asdf will later manage the real install
+##
+sh -c "$(curl -fsLS git.io/chezmoi)" -- -b /tmp/ init --ssh --apply --verbose elementalvoid/dotfiles
+sh -c "$(curl -fsLS git.io/chezmoi)" -- -b /tmp/ init --ssh --apply --verbose --source ~/.local/share/chezmoi-private elementalvoid/dotfiles-private
+
+##
+# Homebrew -- before asdf for deps
 ##
 if [[ $OSTYPE =~ darwin.* ]]; then
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -37,16 +43,10 @@ set +e
 asdf plugin add util git@github.com:elementalvoid/asdf-util.git
 
 for plugin in $(awk '{print $1}' ~/.tool-versions); do
-  asdf plugin add ${plugin}
+  asdf plugin add "${plugin}"
 done
 
 asdf util global upgrade
-
-##
-# Chezmoi
-##
-chezmoi init --ssh --apply --verbose elementalvoid/dotfiles
-chezmoi init --ssh --apply --verbose --source ~/.local/share/chezmoi-private elementalvoid/dotfiles-private
 
 ##
 # Pivot
