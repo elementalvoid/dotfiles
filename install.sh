@@ -12,22 +12,6 @@ if [[ ! -f ~/.ssh/id_rsa ]]; then
 fi
 
 ##
-# Chezmoi
-##
-sh -c "$(curl -fsLS git.io/chezmoi)" -- -b ~/.local/bin init --ssh --apply --verbose elementalvoid/dotfiles
-sh -c "$(curl -fsLS git.io/chezmoi)" -- -b ~/.local/bin init --ssh --apply --verbose --source ~/.local/share/chezmoi-private elementalvoid/dotfiles-private
-
-##
-# Vim
-##
-if [[ -d ~/.vim ]]; then
-  ( cd ~/.vim; git pull )
-else
-    git clone git@github.com:elementalvoid/vimrc.git ~/.vim
-fi
-( cd ~/.vim; ./install.sh )
-
-##
 # Homebrew
 ##
 if [[ $OSTYPE =~ darwin.* ]]; then
@@ -57,6 +41,12 @@ for plugin in $(awk '{print $1}' ~/.tool-versions); do
 done
 
 asdf util global upgrade
+
+##
+# Chezmoi
+##
+chezmoi init --ssh --apply --verbose elementalvoid/dotfiles
+chezmoi init --ssh --apply --verbose --source ~/.local/share/chezmoi-private elementalvoid/dotfiles-private
 
 ##
 # Pivot
