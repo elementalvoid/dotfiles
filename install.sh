@@ -14,8 +14,8 @@ fi
 ##
 # Chezmoi -- in /tmp because asdf will later manage the real install
 ##
-sh -c "$(curl -fsLS git.io/chezmoi)" -- -b /tmp/ init --ssh --apply --verbose elementalvoid/dotfiles
-sh -c "$(curl -fsLS git.io/chezmoi)" -- -b /tmp/ init --ssh --apply --verbose --source ~/.local/share/chezmoi-private elementalvoid/dotfiles-private
+sh -c "$(curl -fsLS git.io/chezmoi)" -- -b /tmp/ init --ssh --apply --refresh-externals --verbose elementalvoid/dotfiles
+sh -c "$(curl -fsLS git.io/chezmoi)" -- -b /tmp/ init --ssh --apply --refresh-externals --verbose --source ~/.local/share/chezmoi-private elementalvoid/dotfiles-private
 
 ##
 # Homebrew -- before asdf for deps
