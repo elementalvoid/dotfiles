@@ -10,7 +10,7 @@ alias lt='ls -T'
 alias llt='ll -T'
 
 # Misc
-alias vi='vim'
+alias vi='nvim'
 alias grep='grep --color=auto'
 alias d='stat -c "%A (%a) %8s %.19y %n" ' # usage: d <filename>
 alias apt-get='sudo /usr/bin/apt-get $@'

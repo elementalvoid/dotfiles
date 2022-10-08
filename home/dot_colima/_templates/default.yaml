@@ -24,12 +24,12 @@ kubernetes:
   # Enable kubernetes.
   # Default: false
   enabled: false
-  
+
   # Kubernetes version to use.
   # This needs to exactly match a k3s version https://github.com/k3s-io/k3s/releases
   # Default: latest stable release
   version: v1.22.9+k3s1
-  
+
   # Enable the traefik ingress controller
   # Default: false
   ingress: false
@@ -40,7 +40,7 @@ network:
   # NOTE: this is currently macOS only and ignored on Linux.
   # Default: false
   address: false
-  
+
   # Custom DNS nameservers for the virtual machine.
   #
   # EXAMPLE
