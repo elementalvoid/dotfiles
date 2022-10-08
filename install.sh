@@ -26,6 +26,8 @@ if [[ $OSTYPE =~ darwin.* ]]; then
   brew analytics off
   export HOMEBREW_CASK_OPTS="--appdir=~/Applications"
   ( cd ~/.local/share/chezmoi; brew bundle install )
+else
+  sudo apt install --yes neovim git findutils gawk rsync thefuck tree watch wget zsh build-essential zlib1g-dev libssl-dev libbz2-dev libffi-dev libreadline-dev libncurses-dev
 fi
 
 ##
