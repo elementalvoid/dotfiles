@@ -21,20 +21,20 @@ tfsec 1.28.0
 terraform-validator 3.1.3
 yq 4.28.1
 sopstool 1.1.0
-saml2aws 2.36.0
+#saml2aws 2.36.0 # doesn't support ARM
 tflint 0.41.0
 pluto 5.11.1
 argo 3.4.1
 argocd 2.4.14
 kustomize 4.5.7
 nova 3.4.0
-java openjdk-15
+java corretto-19.0.0.36.1
 popeye v0.9.8
 helm-docs 1.11.0
 sinker 0.17.0
 tmux 3.2a
 awscli 2.8.2
-go-jira 1.0.27
+#go-jira 1.0.27 # doesn't support arm
 shellcheck 0.8.0
 grpcurl 1.8.7
 k9s 0.26.6

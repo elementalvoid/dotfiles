@@ -13,8 +13,8 @@ setopt vi
 # Esc-. inserts last word from previous commands
 bindkey '\e.' insert-last-word
 
-export EDITOR='vi'
-export VISUAL='vi'
+export EDITOR='nvim'
+export VISUAL='nvim'
 
 export LESS="R"
 
