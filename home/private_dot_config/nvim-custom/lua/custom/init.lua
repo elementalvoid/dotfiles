@@ -11,4 +11,3 @@ vim.opt.spelllang = { 'en_us' }
 
 -- MAPPINGS
 --local map = nvchad.map
-

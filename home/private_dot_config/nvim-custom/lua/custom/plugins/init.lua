@@ -1,7 +1,11 @@
 return {
   -- auto close quotes/parens/etc. <- neovim uses nvim-autopairs but it doesn't support quotes
-  ["spf13/vim-autoclose"] = {},
+  -- ["spf13/vim-autoclose"] = {},
   -- ["m4xshen/autoclose.nvim"] = {},
+  ["ZhiyuanLck/smart-pairs"] = {
+    event = 'InsertEnter',
+    config = function() require('pairs'):setup() end
+  },
 
   -- change, delete, add surroungings
   ["tpope/vim-surround"] = {},
@@ -35,6 +39,8 @@ return {
   ["dhruvasagar/vim-table-mode"] = {},
 
   ["mbbill/undotree"] = {},
+
+  ["ethanholz/nvim-lastplace"] = {},
 
   ["majutsushi/tagbar"] = {
     -- cond = function()
@@ -195,8 +201,9 @@ return {
         "yaml"
       }
     }
-  }
+  },
 
   -- remove plugin example
   -- ["neovim/nvim-lspconfig"] = false
+  ["windwp/nvim-autopairs"] = false
 }

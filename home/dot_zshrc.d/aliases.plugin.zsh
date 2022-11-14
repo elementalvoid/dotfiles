@@ -2,12 +2,11 @@
 
 alias history='history -iD'
 
-# ls
-alias ls='exa -F'
-alias ll='ls -l'
-alias la='ls -a'
-alias lt='ls -T'
-alias llt='ll -T'
+alias cat='bat --theme OneHalfLight'
+
+#procs
+alias p='procs'
+alias pt='procs -t'
 
 # Misc
 alias vi='nvim'
@@ -35,6 +34,7 @@ alias cgo='cd $code/go'
 alias cgithub='cd $code/github'
 alias cibotta='cd $code/ibotta'
 
+alias gcd='cd-gitroot' # alias to plugin
 alias cvim='cd ~/.vim'
 alias cdownloads='cd ~/Downloads'
 alias ctmp='cd ~/tmp'
@@ -48,6 +48,7 @@ alias rdesktop="command rdesktop -r clipboard:PRIMARYCLIPBOARD -g 1366x768"
 if command -v hub &> /dev/null; then
   alias git=hub
 fi
+
 
 alias urldecode='python3 -c "import sys, urllib.parse as ul; print(ul.unquote_plus(sys.argv[1]))"'
 alias urlencode='python3 -c "import sys, urllib.parse as ul; print (ul.quote_plus(sys.argv[1]))"'

@@ -5,19 +5,6 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-unsetopt beep
-
-# vi keybindings
-setopt vi
-
-# Esc-. inserts last word from previous commands
-bindkey '\e.' insert-last-word
-
-export EDITOR='nvim'
-export VISUAL='nvim'
-
-export LESS="R"
-
 # Ensure path arrays do not contain duplicates.
 typeset -gU cdpath fpath mailpath path
 
@@ -56,41 +43,116 @@ autoload bashcompinit && bashcompinit
 #    zinit-zsh/z-a-patch-dl \
 #    zinit-zsh/z-a-as-monitor
 
-zinit ice depth=1 atload'source ~/.p10k.zsh; _p9k_precmd' nocd
-zinit load romkatv/powerlevel10k
+zi light-mode for zdharma-continuum/zinit-annex-bin-gem-node
 
-export ENHANCD_FILTER='fzf'
-export FZF_DEFAULT_OPTS='--height 40%' #' --layout=reverse --border'
-export ENHANCD_DISABLE_HOME=1
-alias gcd='cd-gitroot'
-zinit pack for ls_colors
-zinit light-mode wait lucid depth=1 for \
-  mollifier/cd-gitroot \
-  atinit atpull'zinit cclear' \
-    b4b4r07/enhancd \
-  as"completion" \
-    https://raw.githubusercontent.com/asdf-vm/asdf/master/completions/_asdf \
-  atinit"ZINIT[COMPINIT_OPTS]=-C; zicompinit; zicdreplay" \
-    zdharma-continuum/fast-syntax-highlighting \
-  as"completion" \
-    https://raw.githubusercontent.com/rbirnie/oh-my-zsh-keybase/master/keybase/_keybase \
+zi light-mode lucid depth=1 for romkatv/powerlevel10k
+
+zi pack for ls_colors
+
+zi for \
+    atclone'cp -vf completions/exa.zsh _exa'  \
+    from'gh-r' \
+    sbin'**/exa -> exa' \
+  ogham/exa
+
+# bunch'o exa aliases
+ zi for TwoPizza9621536/zsh-exa
+
+zi for \
+    from'gh-r' \
+    sbin'**/bat -> bat' \
+  @sharkdp/bat
+
+zi for \
+    from'gh-r'  \
+    sbin'**/fd -> fd' \
+  @sharkdp/fd
+
+zi for \
+    from'gh-r'  \
+    sbin'fzf'   \
+  junegunn/fzf \
+  https://github.com/junegunn/fzf/raw/master/shell/{'completion','key-bindings'}.zsh
+# Below has conflicts on keybinds and doesn't work reliably.
+# Keeping above bindings because they're handy.
+#zi for joshskidmore/zsh-fzf-history-search
+
+zi for \
+    from'gh-r' \
+    sbin'**/nvim -> nvim' \
+  neovim/neovim
+
+zi for \
+    from'gh-r' \
+    as'completions' \
+    atclone'procs --completion zsh' \
+    atpull'%atclone' \
+    sbin'**/procs -> procs' \
+  dalance/procs
+
+zi for \
+    from'gh-r' \
+    sbin'g*x -> grex' \
+  pemistahl/grex
+
+zi for \
+    from'gh-r' \
+    as'completion' \
+    atclone'cp hub**/etc/hub.zsh_completion _hub' \
+    atpull'%atclone' \
+    sbin'hub**/bin/hub -> hub' \
+  @github/hub
+
+zi for \
+    as'completion' \
+    nocompile \
+    id-as'docker-completion/_docker' \
+    is-snippet \
+  https://raw.githubusercontent.com/docker/cli/master/contrib/completion/zsh/_docker
+
+zi for \
+    as"completion" \
+    nocompile \
+    id-as'asdf-completion/_asdf' \
+    is-snippet \
+  https://raw.githubusercontent.com/asdf-vm/asdf/master/completions/_asdf
+
+zi for \
+  mollifier/cd-gitroot
+
+zi for \
+  zdharma-continuum/fast-syntax-highlighting
+if [ $(fast-theme -s | awk '/active/ {print $4}') != base16 ]; then
+  fast-theme base16 &> /dev/null
+fi
+
+# Poetry auto-pyenv activation
+#zi for darvid/zsh-poetry
+
+# jq interactive query builder -- doesn't bind right in iterm2, haven't bothered to fix
+#zi for reegnz/jq-zsh-plugin
+
+# krew: https://github.com/zdharma-continuum/zinit/blob/main/tests/gh-r.zunit#L417
+# bitwarden: https://github.com/kalsowerus/zsh-bitwarden
+
+#zi for \
+#    as'completion' \
+#    nocompile \
+#    id-as'keybase-completion/_keybase' \
+#    is-snippet \
+#  https://raw.githubusercontent.com/rbirnie/oh-my-zsh-keybase/master/keybase/_keybase
+
+zi light-mode wait lucid depth=1 for \
   atload'bindkey -M vicmd "k" history-substring-search-up; bindkey -M vicmd "j" history-substring-search-down' \
     zsh-users/zsh-history-substring-search \
-  from"gh-r" as"command" \
-    junegunn/fzf-bin \
-  unixorn/fzf-zsh-plugin \
   blockf multisrc'*.plugin.zsh' pick'/dev/null' \
     ~/.zshrc.d \
   blockf multisrc'*.plugin.zsh' pick'/dev/null' \
     ~/.zshrc-private.d
 
-# Couldn't get this to work reliably above ..
-zinit ice light-mode wait lucid depth=1 blockf as'completion' cp'etc/hub.zsh_completion -> etc/_hub'
-zinit load github/hub
-
 # Bunch'o'completions
 # Recommended to be loaded last.
-zinit wait lucid atload"zicompinit; zicdreplay" blockf for \
+zi wait lucid atload"zicompinit; zicdreplay" blockf for \
       zsh-users/zsh-completions
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
