@@ -1,11 +1,11 @@
-[".config/nvim"]
-  type = "git-repo"
-  url = "https://github.com/AstroNvim/AstroNvim.git"
-  exact = true
-  stripComponents = 1
-  refreshPeriod = "168h"
-  [".config/nvim".pull]
-    args = ["--ff-only"]
+#[".config/nvim"]
+#  type = "git-repo"
+#  url = "https://github.com/AstroNvim/AstroNvim.git"
+#  exact = true
+#  stripComponents = 1
+#  refreshPeriod = "168h"
+#  [".config/nvim".pull]
+#    args = ["--ff-only"]
 
 [".tmux/plugins/tpm"]
   type = "git-repo"
