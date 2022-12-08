@@ -13,6 +13,11 @@ if [[ -f "$ASDF_DIR/asdf.sh" ]]; then
     #fi
 fi
 
+# Required (currently) for M1 + XCode Tools 14. Or something.
+# In any case, this makes it possible to install ruby again.
+# https://github.com/rbenv/ruby-build/discussions/1961
+export RUBY_CONFIGURE_OPTS='--enable-shared'
+
 #if [[ -f ~/.asdf/plugins/java/set-java-home.sh ]]; then
 #  . ~/.asdf/plugins/java/set-java-home.sh
 #fi

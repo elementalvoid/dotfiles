@@ -13,7 +13,7 @@ memory: 4
 
 # Architecture of the virtual machine (x86_64, aarch64, host).
 # Default: host
-arch: x86_64
+# arch: x86_64
 
 # Container runtime to be used (docker, containerd).
 # Default: docker
@@ -34,94 +34,12 @@ kubernetes:
   # Default: false
   ingress: false
 
-# Network configurations for the virtual machine.
-network:
-  # Assign reachable IP address to the virtual machine.
-  # NOTE: this is currently macOS only and ignored on Linux.
-  # Default: false
-  address: false
-
-  # Custom DNS nameservers for the virtual machine.
-  #
-  # EXAMPLE
-  # dns: [1.1.1.1, 8.8.8.8]
-  #
-  # Default: []
-  dns: []
-
-# ===================================================================== #
-# ADVANCED CONFIGURATION
-# ===================================================================== #
-
 # Forward the host's SSH agent to the virtual machine.
 # Default: false
-forwardAgent: false
-
-# Docker daemon configuration that maps directly to daemon.json.
-# https://docs.docker.com/engine/reference/commandline/dockerd/#daemon-configuration-file.
-# NOTE: some settings may affect Colima's ability to start docker. e.g. `hosts`.
-#
-# EXAMPLE - disable buildkit
-# docker:
-#   features:
-#     buildkit: false
-#
-# EXAMPLE - add insecure registries
-# docker:
-#   insecure-registries:
-#     - myregistry.com:5000
-#     - host.docker.internal:5000
-#
-# Colima default behaviour: buildkit enabled
-# Default: {}
-docker: {}
-
-# Volume mount driver for the virtual machine (sshfs, 9p).
-#
-# 9p is more POSIX compliant and generally handles file permissions better.
-# However, it does not properly resolve symlinks (that are created on host).
-#
-# sshfs is faster than 9p but less reliable when there are lots
-# of concurrent reads or writes.
-#
-# Default: sshfs
-mountType: sshfs
+forwardAgent: true
 
 # The CPU type for the virtual machine.
 # Options available for host emulation can be checked with: `qemu-system-$(arch) -cpu help`.
 # Instructions are also supported by appending to the cpu type e.g. "qemu64,+ssse3".
 # Default: host
-cpuType: max
-
-# For a more general purpose virtual machine, Ubuntu container is optionally provided
-# as a layer on the virtual machine.
-# The underlying virtual machine is still accessible via `colima ssh --layer=false` or running `colima` in
-# the Ubuntu session.
-#
-# Default: false
-layer: false
-
-# Configure volume mounts for the virtual machine.
-# Colima mounts user's home directory by default to provide a familiar
-# user experience.
-#
-# EXAMPLE
-# mounts:
-#   - location: ~/secrets
-#     writable: false
-#   - location: ~/projects
-#     writable: true
-#
-# Colima default behaviour: $HOME and /tmp/colima are mounted as writable.
-# Default: []
-mounts: []
-
-# Environment variables for the virtual machine.
-#
-# EXAMPLE
-# env:
-#   KEY: value
-#   ANOTHER_KEY: another value
-#
-# Default: {}
-env: {}
+# cpuType: max

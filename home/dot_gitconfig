@@ -5,7 +5,7 @@
   name = Matt Klich
 [core]
   excludesfile = ~/.gitignore
-  pager = less -+$LESS -R
+	pager = diff-so-fancy | less --tabs=4 -RFX
   preloadindex = true
 [alias]
   cv = commit -v
@@ -52,3 +52,18 @@
 
 [hub]
   protocol = ssh
+
+[color "diff-highlight"]
+	oldNormal = red bold
+	oldHighlight = red bold 52
+	newNormal = green bold
+	newHighlight = green bold 22
+[color "diff"]
+	meta = yellow
+	frag = magenta bold
+	commit = yellow bold
+	old = red bold
+	new = green bold
+	whitespace = red reverse
+[diff-so-fancy]
+	first-run = false
