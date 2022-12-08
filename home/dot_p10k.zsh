@@ -36,6 +36,7 @@
     vcs                     # git status
     # =========================[ Line #2 ]=========================
     newline                 # \n
+    cluster_env_var         # $CLUSTER if set
     prompt_char             # prompt symbol
   )
 
@@ -1576,6 +1577,10 @@
   # Type `p10k help segment` for documentation and a more sophisticated example.
   function prompt_example() {
     p10k segment -f 208 -i '⭐' -t 'hello, %n'
+  }
+
+  function prompt_cluster_env_var() {
+    p10k segment -c "${CLUSTER}" -t " CLUSTER${CLUSTER}"
   }
 
   # User-defined prompt segments may optionally provide an instant_prompt_* function. Its job
