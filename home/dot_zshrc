@@ -105,13 +105,21 @@ zi wait lucid for \
     sbin'g*x -> grex' \
   pemistahl/grex
 
+# Installing `hub` via brew to get an ARM binary, else tree-sitter install
+# may install the wrong arch (if the ts library is installed inside a `git commit`).
+# zi wait lucid for \
+#     from'gh-r' \
+#     nocompile \
+#     as'completion' \
+#     atclone'cp hub**/etc/hub.zsh_completion _hub' \
+#     atpull'%atclone' \
+#     sbin'hub**/bin/hub -> hub' \
+#   @github/hub
+# Still using completions from here though.
 zi wait lucid for \
-    from'gh-r' \
-    nocompile \
     as'completion' \
-    atclone'cp hub**/etc/hub.zsh_completion _hub' \
-    atpull'%atclone' \
-    sbin'hub**/bin/hub -> hub' \
+    nocompile \
+    cp'etc/hub.zsh_completion -> _hub' \
   @github/hub
 
 zi wait lucid for \
@@ -145,6 +153,14 @@ zi wait lucid for \
     from'gh-r' \
     sbin'glow' \
   charmbracelet/glow
+
+zi wait lucid for \
+    from'gh-r' \
+    nocompile \
+    atclone'cp -vf ripgrep*/complete/_rg _rg; cp -vf ripgrep*/doc/*.1 $ZPFX/man/man1/' \
+    atpull'%atclone' \
+    sbin'ripgrep*/rg -> rg' \
+  BurntSushi/ripgrep
 
 # END binary installs
 
