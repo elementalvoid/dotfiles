@@ -105,22 +105,26 @@ zi wait lucid for \
     sbin'g*x -> grex' \
   pemistahl/grex
 
-# Installing `hub` via brew to get an ARM binary, else tree-sitter install
-# may install the wrong arch (if the ts library is installed inside a `git commit`).
-# zi wait lucid for \
-#     from'gh-r' \
-#     nocompile \
-#     as'completion' \
-#     atclone'cp hub**/etc/hub.zsh_completion _hub' \
-#     atpull'%atclone' \
-#     sbin'hub**/bin/hub -> hub' \
-#   @github/hub
-# Still using completions from here though.
-zi wait lucid for \
-    as'completion' \
-    nocompile \
-    cp'etc/hub.zsh_completion -> _hub' \
-  @github/hub
+if [[ $(uname -a) =~ "/^Darwin.*/" ]]; then
+  # Installing `hub` via brew to get an ARM binary, else tree-sitter install
+  # may install the wrong arch (if the ts library is installed inside a `git commit`).
+  # Still using completions from GitHub though.
+  zi wait lucid for \
+      as'completion' \
+      nocompile \
+      cp'etc/hub.zsh_completion -> _hub' \
+    @github/hub
+else
+  # For Linux and Windows install from GitHub release
+  zi wait lucid for \
+      from'gh-r' \
+      nocompile \
+      as'completion' \
+      atclone'cp hub**/etc/hub.zsh_completion _hub' \
+      atpull'%atclone' \
+      sbin'hub**/bin/hub -> hub' \
+    @github/hub
+fi
 
 zi wait lucid for \
     from'gh-r' \
