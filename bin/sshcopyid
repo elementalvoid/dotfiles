@@ -1,2 +1,0 @@
-#!/bin/bash
-command ssh-copy-id -o LogLevel=INFO $@
