@@ -5,7 +5,7 @@
   name = Matt Klich
 [core]
   excludesfile = ~/.gitignore
-	pager = diff-so-fancy | less --tabs=4 -RFX
+  pager = delta
   preloadindex = true
 [alias]
   cv = commit -v
@@ -38,6 +38,7 @@
 [push]
   default = current
 [merge]
+  conflictstyle = diff3
   tool = intellij
 [mergetool "intellij"]
   cmd = idea merge $(cd $(dirname \"$LOCAL\") && pwd)/$(basename \"$LOCAL\") $(cd $(dirname \"$REMOTE\") && pwd)/$(basename \"$REMOTE\") $(cd $(dirname \"$BASE\") && pwd)/$(basename \"$BASE\") $(cd $(dirname \"$MERGED\") && pwd)/$(basename \"$MERGED\")
@@ -53,17 +54,15 @@
 [hub]
   protocol = ssh
 
-[color "diff-highlight"]
-	oldNormal = red bold
-	oldHighlight = red bold 52
-	newNormal = green bold
-	newHighlight = green bold 22
-[color "diff"]
-	meta = yellow
-	frag = magenta bold
-	commit = yellow bold
-	old = red bold
-	new = green bold
-	whitespace = red reverse
-[diff-so-fancy]
-	first-run = false
+[interactive]
+  diffFilter = delta --color-only
+
+[diff]
+  colorMoved = default
+
+[delta]
+  navigate = true    # use n and N to move between diff sections
+  light = true
+  line-numbers = true
+  hyperlinks = true
+  syntax-theme = OneHalfLight

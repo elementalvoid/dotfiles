@@ -87,6 +87,8 @@ zi wait lucid for \
 zi wait lucid for \
     from'gh-r' \
     nocompile \
+    atclone'cp -vf **/share/man/man1/*.1 $ZPFX/man/man1/;' \
+    atpull'%atclone' \
     sbin'**/nvim -> nvim' \
   neovim/neovim
 
@@ -140,23 +142,35 @@ zi wait lucid for \
     sbin'actionlint' \
   rhysd/actionlint
 
+# awesome git diff/blame/etc.
 zi wait lucid for \
     nocompile \
     from'gh-r' \
-    sbin'diff-so-fancy' \
-  so-fancy/diff-so-fancy
+    sbin'delta*/delta' \
+  dandavison/delta
 
-zi wait lucid for \
-    nocompile \
-    from'gh-r' \
-    sbin'tree-sitter-* -> tree-sitter' \
-  tree-sitter/tree-sitter
+if [[ $(uname -a) =~ "/^Darwin.*/" ]]; then
+  # not installing in WSL because it panics
+  zi wait lucid for \
+      nocompile \
+      from'gh-r' \
+      sbin'tree-sitter-* -> tree-sitter' \
+    tree-sitter/tree-sitter
+fi
 
 zi wait lucid for \
     nocompile \
     from'gh-r' \
     sbin'glow' \
   charmbracelet/glow
+
+zi wait lucid for \
+    from'gh-r' \
+    nocompile \
+    atclone'cp -vf ripgrep*/complete/_rg _rg; cp -vf ripgrep*/doc/*.1 $ZPFX/man/man1/' \
+    atpull'%atclone' \
+    sbin'ripgrep*/rg -> rg' \
+  BurntSushi/ripgrep
 
 zi wait lucid for \
     from'gh-r' \
