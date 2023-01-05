@@ -424,6 +424,9 @@ local config = {
   -- augroups/autocommands and custom filetypes also this just pure lua so
   -- anything that doesn't fit in the normal config locations above can go here
   polish = function()
+    -- restore old hlsearch configuration (see: https://github.com/AstroNvim/AstroNvim/discussions/1428)
+    vim.on_key(nil, vim.api.nvim_get_namespaces()["auto_hlsearch"])
+
     -- auto-reload init config
     -- vim.api.nvim_create_augroup("packer_conf", { clear = true })
     -- vim.api.nvim_create_autocmd("BufWritePost", {
