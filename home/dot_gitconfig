@@ -5,7 +5,7 @@
   name = Matt Klich
 [core]
   excludesfile = ~/.gitignore
-  pager = delta
+  pager = delta --paging always
   preloadindex = true
 [alias]
   cv = commit -v

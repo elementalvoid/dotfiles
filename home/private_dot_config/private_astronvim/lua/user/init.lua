@@ -70,15 +70,17 @@ local config = {
         function()
           local schema = require("yaml-companion").get_buf_schema(0)
           if schema then
-            return schema.result[1].name
+            astronvim.notify(string.format("Schema: %s", schema.result[1].name))
+          else
+            astronvim.notify("Schema not detected!")
           end
-          return ""
         end,
         desc = "Show the detected YAML Schema",
       },
       ["<leader>pr"] = {
         function()
-          vim.api.nvim_command("source ~/.config/astronvim/lua/user/init.lua")
+          astronvim.updater.reload(false)
+          astronvim.notify("Starting Packer Sync...")
           vim.api.nvim_command("PackerSync")
         end,
         desc = "Reload and sync Packer",
@@ -102,7 +104,15 @@ local config = {
       ["famiu/bufdelete.nvim"] = { disable = true },
 
       -- theme
-      ["olimorris/onedarkpro.nvim"] = {}, -- has companion config for kitty (could be converted)
+      ["olimorris/onedarkpro.nvim"] = { -- has companion config for kitty (could be converted)
+        config = function()
+          require("onedarkpro").setup({
+            options = {
+              cursorline = true,
+            },
+          })
+        end,
+      },
       --["EdenEast/nightfox.nvim"] = {}, -- has some companion configs (tmux, iterm2, etc.)
 
       ["ethanholz/nvim-lastplace"] = {
@@ -247,12 +257,24 @@ local config = {
         end,
       },
 
+      ["kosayoda/nvim-lightbulb"] = {
+        config = function()
+          require("nvim-lightbulb").setup({
+            autocmd = {
+              enabled = true
+            },
+            sign = {
+              priority = 100
+            },
+          })
+        end,
+      },
+
       -- consider:
       -- https://github.com/ray-x/cmp-treesitter
       -- https://github.com/ray-x/sad.nvim
       -- https://github.com/ray-x/navigator.lua
       -- https://github.com/lukas-reineke/cmp-under-comparator
-      -- kosayoda/nvim-lightbulb
       -- https://github.com/hkupty/iron.nvim -- repl
     },
 
@@ -367,9 +389,6 @@ local config = {
         settings = {
           yaml = {
             schemas = {
-              ["http://json.schemastore.org/github-workflow"] = ".github/workflows/*.{yml,yaml}",
-              ["http://json.schemastore.org/github-action"] = ".github/action.{yml,yaml}",
-              -- ["https://json.schemastore.org/helmfile.json"] = "helmfile.yaml",
               -- ["../../../../../schema.json"] = "clusters/*/*/*/*/config.yaml",
             },
           },

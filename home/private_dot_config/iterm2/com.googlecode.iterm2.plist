@@ -1489,6 +1489,8 @@
 			<string>/Users/matt.klich/</string>
 		</dict>
 	</array>
+	<key>OpenTmuxWindowsIn</key>
+	<integer>0</integer>
 	<key>PassOnControlClick</key>
 	<true/>
 	<key>PasteSpecialChunkDelay</key>

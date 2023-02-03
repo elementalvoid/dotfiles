@@ -55,8 +55,8 @@ zi wait lucid for \
     from'gh-r' \
     nocompile \
     atclone'cp -vf completions/exa.zsh _exa
-            cp man/*.1 $ZPFX/man/man1/;
-            cp man/*.5 $ZPFX/man/man5/;' \
+            cp man/*.1 ${ZINIT[MAN_DIR]}/man1/;
+            cp man/*.5 ${ZINIT[MAN_DIR]}/man5/;' \
     atpull'%atclone' \
     sbin'**/exa -> exa' \
   ogham/exa
@@ -77,7 +77,7 @@ zi wait lucid for \
     from'gh-r' \
     nocompile \
     sbin'fzf' \
-    dl'https://raw.githubusercontent.com/junegunn/fzf/master/man/man1/fzf.1 -> $ZPFX/man/man1/fzf.1' \
+    dl'https://raw.githubusercontent.com/junegunn/fzf/master/man/man1/fzf.1 -> ${ZINIT[MAN_DIR]}/man1/fzf.1' \
   junegunn/fzf \
   https://raw.githubusercontent.com/junegunn/fzf/master/shell/{key-bindings,completion}.zsh
 # Below has conflicts on keybinds and doesn't work reliably.
@@ -87,7 +87,7 @@ zi wait lucid for \
 zi wait lucid for \
     from'gh-r' \
     nocompile \
-    atclone'cp -vf **/share/man/man1/*.1 $ZPFX/man/man1/;' \
+    atclone'cp -vf **/share/man/man1/*.1 ${ZINIT[MAN_DIR]}/man1/;' \
     atpull'%atclone' \
     sbin'**/nvim -> nvim' \
   neovim/neovim
@@ -137,10 +137,18 @@ zi wait lucid for \
 zi wait lucid for \
     from'gh-r' \
     nocompile \
-    atclone'cp -vf man/*.1 $ZPFX/man/man1/' \
+    atclone'cp -vf man/*.1 ${ZINIT[MAN_DIR]}/man1/' \
     atpull'%atclone' \
     sbin'actionlint' \
   rhysd/actionlint
+
+## local github action runner
+## disabled 'cause the docker image needed to run things is huge
+#zi wait lucid for \
+#    from'gh-r' \
+#    nocompile \
+#    sbin'act' \
+#  nektos/act
 
 # awesome git diff/blame/etc.
 zi wait lucid for \
@@ -167,15 +175,7 @@ zi wait lucid for \
 zi wait lucid for \
     from'gh-r' \
     nocompile \
-    atclone'cp -vf ripgrep*/complete/_rg _rg; cp -vf ripgrep*/doc/*.1 $ZPFX/man/man1/' \
-    atpull'%atclone' \
-    sbin'ripgrep*/rg -> rg' \
-  BurntSushi/ripgrep
-
-zi wait lucid for \
-    from'gh-r' \
-    nocompile \
-    atclone'cp -vf ripgrep*/complete/_rg _rg; cp -vf ripgrep*/doc/*.1 $ZPFX/man/man1/' \
+    atclone'cp -vf ripgrep*/complete/_rg _rg; cp -vf ripgrep*/doc/*.1 ${ZINIT[MAN_DIR]}/man1/' \
     atpull'%atclone' \
     sbin'ripgrep*/rg -> rg' \
   BurntSushi/ripgrep
