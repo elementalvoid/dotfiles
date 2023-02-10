@@ -1,5 +1,9 @@
 [[ $- = *i* ]] || return
 
+source <(rtx activate --quiet zsh)
+
+return
+
 # Find where asdf should be installed
 ASDF_DIR="${ASDF_DIR:-$HOME/.asdf}"
 

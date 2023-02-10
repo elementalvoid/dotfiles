@@ -180,6 +180,14 @@ zi wait lucid for \
     sbin'ripgrep*/rg -> rg' \
   BurntSushi/ripgrep
 
+zi wait lucid for \
+    nocompile \
+    from'gh-r' \
+    atclone'mv rtx-v* rtx; ./rtx complete --shell=zsh > ~/.zsh_completions/_rtx' \
+    atpull='%atclone' \
+    sbin'rtx' \
+  jdxcode/rtx
+
 # END binary installs
 
 # bunch'o exa aliases

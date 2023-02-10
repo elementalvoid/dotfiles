@@ -36,6 +36,9 @@ export LESS="-R"
 alias less='bat --theme OneHalfLight --paging always --wrap never'
 alias yaml='less -l yaml'
 
+# bat is cat
+alias cat='bat --theme OneHalfLight --paging=never'
+
 # use `bat` as man viewer
 export MANPAGER="sh -c 'col -bx | bat --paging always -l man -p'"
 # use `bat` as "help" formatter

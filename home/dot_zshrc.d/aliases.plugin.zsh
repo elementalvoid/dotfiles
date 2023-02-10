@@ -2,8 +2,6 @@
 
 alias history='history -iD'
 
-alias cat='bat --theme OneHalfLight'
-
 #procs
 alias p='procs'
 alias pt='procs -t'
