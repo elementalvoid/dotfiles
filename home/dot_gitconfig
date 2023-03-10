@@ -12,6 +12,7 @@
   cva = commit -v -a
   cvaa = commit -v -a --amend
   cp = cherry-pick
+  fetch-prune = fetch --prune
   logs = log --stat
   logrs = log --raw --stat
   logprs = log -p --raw --stat

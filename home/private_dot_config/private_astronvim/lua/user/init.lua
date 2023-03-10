@@ -1,13 +1,13 @@
 -- Base: https://astronvim.github.io/
 -- Places to take inspiration:
--- https://github.com/s1n7ax/dotnvim/tree/main
--- https://github.com/ray-x/nvim
+--   - https://github.com/s1n7ax/dotnvim/tree/main
+--   - https://github.com/ray-x/nvim
 local function smart_quit(write)
   write = write or false
   if write then
     vim.cmd("write")
   end
-  local bufs = vim.split(vim.api.nvim_exec("ls", true), "\n")
+  local bufs = vim.tbl_filter(astronvim.is_valid_buffer, vim.api.nvim_list_bufs())
   if #bufs > 1 then
     vim.api.nvim_command("bdelete")
   else

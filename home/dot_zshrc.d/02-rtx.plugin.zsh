@@ -2,25 +2,13 @@
 
 source <(rtx activate --quiet zsh)
 
-return
-
-# Find where asdf should be installed
-ASDF_DIR="${ASDF_DIR:-$HOME/.asdf}"
-
-# Load command
-if [[ -f "$ASDF_DIR/asdf.sh" ]]; then
-    . "$ASDF_DIR/asdf.sh"
-
-    # Load completions
-    #if [[ -f "$ASDF_COMPLETIONS/asdf.bash" ]]; then
-    #    . "$ASDF_COMPLETIONS/asdf.bash"
-    #fi
-fi
-
 # Required (currently) for M1 + XCode Tools 14. Or something.
 # In any case, this makes it possible to install ruby again.
 # https://github.com/rbenv/ruby-build/discussions/1961
 export RUBY_CONFIGURE_OPTS='--enable-shared'
+
+# And also this: https://github.com/ffi/ffi/issues/869
+export RUBY_CFLAGS=-DUSE_FFI_CLOSURE_ALLOC
 
 #if [[ -f ~/.asdf/plugins/java/set-java-home.sh ]]; then
 #  . ~/.asdf/plugins/java/set-java-home.sh

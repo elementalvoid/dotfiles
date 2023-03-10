@@ -11,7 +11,7 @@ hs.hotkey.bind(hyper, "s", function() hs.application.launchOrFocus("Slack") end)
 hs.hotkey.bind(hyper, "t", function() hs.application.launchOrFocus("iTerm") end)
 hs.hotkey.bind(hyper, "b", function() hs.application.launchOrFocus("Brave Browser Beta") end)
 hs.hotkey.bind(hyper, "f", function() hs.application.launchOrFocus("Finder") end)
-hs.hotkey.bind(hyper, "j", function() hs.application.launchOrFocus("Joplin") end)
+hs.hotkey.bind(hyper, "n", function() hs.application.launchOrFocus("Obsidian") end)
 hs.hotkey.bind(hyper, "z", function() hs.application.launchOrFocus("zoom.us") end)
 hs.hotkey.bind(hyper, "k", function() hs.application.launchOrFocus("Keybase") end)
 
