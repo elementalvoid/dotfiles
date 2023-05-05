@@ -21,19 +21,18 @@ local config = {
     opt = {
       -- autochdir = true,
       background = "light",
-      confirm = true, -- confirm :q with changes
-      nrformats = "octal,hex,alpha", -- let Ctrl-A/X work on all formats
+      confirm = true,                               -- confirm :q with changes
+      nrformats = "octal,hex,alpha",                -- let Ctrl-A/X work on all formats
       relativenumber = false,
       rtp = vim.opt.rtp + "~/.config/astronvim/after", -- Add custom `after` to to runtime path
-      scrolloff = 4, -- Number of lines to keep above and below the cursor
-      secure = true, -- shell and write commands are not allowed in ".nvimrc" and ".exrc" in the current directory and map commands are displayed.
-      shiftround = true, -- < and > will hit indentation levels
+      scrolloff = 4,                                -- Number of lines to keep above and below the cursor
+      secure = true,                                -- shell and write commands are not allowed in ".nvimrc" and ".exrc" in the current directory and map commands are displayed.
+      shiftround = true,                            -- < and > will hit indentation levels
       spellfile = "~/.vim/spell-en.utf-8.add",
     },
     g = {
       mapleader = ";",
       autoformat_enabled = false,
-
       -- how to get zip working in astronvim?
       -- the following are inversed from astro's
       -- zipPlugin = true,
@@ -44,7 +43,6 @@ local config = {
       -- loaded_zipPlugin = false,
     },
   },
-
   mappings = {
     n = {
       ["<Space>"] = { "@=(foldlevel('.')?'za':\"\\<Space>\")<CR>", desc = "Fold toggle" },
@@ -77,6 +75,7 @@ local config = {
         end,
         desc = "Show the detected YAML Schema",
       },
+      ["<leader>yS"] = { "<cmd>Telescope yaml_schema<cr>", desc = "Set YAML Schem" },
       ["<leader>pr"] = {
         function()
           astronvim.updater.reload(false)
@@ -89,11 +88,8 @@ local config = {
     v = {
       ["<Space>"] = { "zf", desc = "Visual fold" },
     },
-    i = {
-      ["<leader>F"] = { "<esc><cmd>StripWhitespace<cr>a", desc = "Strip Whitespace" },
-    },
+    i = {},
   },
-
   colorscheme = "onelight",
   --colorscheme = "dayfox",
 
@@ -102,7 +98,6 @@ local config = {
       -- disable defaults like so:
       ["Darazaki/indent-o-matic"] = { disable = true },
       ["famiu/bufdelete.nvim"] = { disable = true },
-
       -- theme
       ["olimorris/onedarkpro.nvim"] = { -- has companion config for kitty (could be converted)
         config = function()
@@ -120,24 +115,19 @@ local config = {
           require("nvim-lastplace").setup()
         end,
       },
-
       -- change, delete, add surroungings
       ["tpope/vim-surround"] = {
         keys = { "ds", "cs", "cS", "ys", "yS", "yss", "ySs", "ySS", "S", "gS" },
       },
-
       -- enable repeating supported plugin maps with '.'
       ["tpope/vim-repeat"] = {
         keys = { "." },
       },
-
       -- smart indentation with editorconfig support
       ["tpope/vim-sleuth"] = {},
-
       -- auto-close if/for/etc.
       --["tpope/vim-endwise"] = {},
       ["RRethy/nvim-treesitter-endwise"] = {},
-
       -- <C-A> and <C-X> support for dates, roman numerals, ordinals (1st, 2nd, etc.), d<C-A> sets date under cusror to current date (d<C-A> for UTC)
       ["tpope/vim-speeddating"] = {
         -- keys = { "<C-X>", "<C-A>" }, -- C-X loads the plugin, C-A doesn't ?
@@ -145,51 +135,39 @@ local config = {
         -- "Mon, 27 Dec 1999 00:00:03 +0000",
         -- "Sat, 01 Jan 2000 00:00:03 +0000",
       },
-
       -- git magic
       ["tpope/vim-fugitive"] = {
         cmd = { "G", "Git" },
       },
-
       ["sickill/vim-pasta"] = {
         keys = { "P", "p" },
       },
-
       ["scrooloose/nerdcommenter"] = {},
-
       ["ntpeters/vim-better-whitespace"] = {},
-
       ["dhruvasagar/vim-table-mode"] = {
         cmd = { "TableModeEnable", "TableModeToggle", "Tableize", "TableSort" },
       },
-
       ["editorconfig/editorconfig-vim"] = {},
-
       ["nvim-treesitter/nvim-treesitter-context"] = {},
-
       ["ray-x/lsp_signature.nvim"] = {
         config = function()
           require("lsp_signature").setup()
         end,
       },
-
       -- nvim lua helpers
       -- ["tjdevries/nlua.nvim"] = {},
       -- ["euclidianAce/BetterLua.vim"] = {},
       ["folke/neodev.nvim"] = {
         ft = { "lua" },
       },
-
       -- csv filetype
       ["chrisbra/csv.vim"] = {
         ft = { "csv" },
       },
-
       -- markdown popup preview using glow
       ["ellisonleao/glow.nvim"] = {
         cmd = { "Glow" },
       },
-
       -- golang
       ["ray-x/go.nvim"] = {
         ft = { "go" },
@@ -204,7 +182,6 @@ local config = {
           })
         end,
       },
-
       ["tmux-plugins/vim-tmux"] = {
         -- TODO: figure out conditional loading
         -- cond = function()
@@ -215,9 +192,7 @@ local config = {
         --   return vim.fn.bufname(".tmux.conf$") ~= ""
         -- end
       },
-
       ["rhysd/conflict-marker.vim"] = {},
-
       ["someone-stole-my-name/yaml-companion.nvim"] = {
         requires = {
           { "neovim/nvim-lspconfig" },
@@ -256,20 +231,18 @@ local config = {
           require("lspconfig")["yamlls"].setup(cfg)
         end,
       },
-
       ["kosayoda/nvim-lightbulb"] = {
         config = function()
           require("nvim-lightbulb").setup({
             autocmd = {
-              enabled = true
+              enabled = true,
             },
             sign = {
-              priority = 100
+              priority = 100,
             },
           })
         end,
       },
-
       -- consider:
       -- https://github.com/ray-x/cmp-treesitter
       -- https://github.com/ray-x/sad.nvim
@@ -277,12 +250,10 @@ local config = {
       -- https://github.com/lukas-reineke/cmp-under-comparator
       -- https://github.com/hkupty/iron.nvim -- repl
     },
-
     -- astronvim plugin overrides below
     gitsigns = {
       numhl = true,
     },
-
     ["null-ls"] = function(config)
       local b = require("null-ls").builtins
       config.sources = {
@@ -301,7 +272,7 @@ local config = {
 
         -- Misc.
         b.diagnostics.editorconfig_checker,
-        b.formatting.jq, -- JSON
+        b.formatting.jq,        -- JSON
         b.formatting.terraform_fmt, -- Terraform
         -- b.completion.spell, -- spelling completions (conflict with cmp-spell?)
         -- b.diagnostics.proselint, -- https://github.com/amperser/proselint
@@ -311,7 +282,6 @@ local config = {
       }
       return config
     end,
-
     ["mason-lspconfig"] = {
       -- https://github.com/williamboman/mason-lspconfig.nvim/tree/main#available-lsp-servers
       automatic_installation = true,
@@ -336,7 +306,6 @@ local config = {
         "yamlls",
       },
     },
-
     ["mason-nvim-dap"] = {
       ensure_installed = {
         "go-debug-adapter",
@@ -344,7 +313,6 @@ local config = {
         "python",
       },
     },
-
     treesitter = {
       -- Tip: `:TSInstall! all` <-- requires the treesitter cli to be installed
       auto_install = true,
@@ -382,7 +350,6 @@ local config = {
       },
     },
   },
-
   lsp = {
     ["server-settings"] = {
       yamlls = {
@@ -438,7 +405,6 @@ local config = {
       },
     },
   },
-
   -- This function is run last and is a good place to configuring
   -- augroups/autocommands and custom filetypes also this just pure lua so
   -- anything that doesn't fit in the normal config locations above can go here
