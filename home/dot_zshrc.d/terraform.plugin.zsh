@@ -1,5 +1,7 @@
 [[ $- = *i* ]] || return
 
+complete -C terraform terraform
+
 function tfgen() {
   local tfdir=$(basename $(pwd))
   echo "${tfdir}: Installing Terraform..."

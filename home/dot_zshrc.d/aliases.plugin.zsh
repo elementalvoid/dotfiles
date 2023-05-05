@@ -34,14 +34,15 @@ alias cibotta='cd $code/ibotta'
 
 alias gcd='cd-gitroot' # alias to plugin
 alias cvim='cd ~/.vim'
+alias cdesktop='cd ~/Desktop'
 alias cdownloads='cd ~/Downloads'
 alias ctmp='cd ~/tmp'
 
 # the standard 16x9 feh
-alias f="command feh --borderless --zoom auto --geometry 1366x768"
+# alias f="command feh --borderless --zoom auto --geometry 1366x768"
 
 # the standard 16x9 remote desktop with clipboard
-alias rdesktop="command rdesktop -r clipboard:PRIMARYCLIPBOARD -g 1366x768"
+# alias rdesktop="command rdesktop -r clipboard:PRIMARYCLIPBOARD -g 1366x768"
 
 if command -v hub &> /dev/null; then
   alias git=hub
