@@ -89,17 +89,18 @@ local config = {
   lazy = {
     performance = {
       rtp = {
-        -- disabled_plugins = { "tohtml", "gzip", "matchit", "zipPlugin", "netrwPlugin", "tarPlugin" },
-        disabled_plugins = { "tohtml", "matchit" },
+        -- default disabled_plugins = { "gzip", "matchit", "matchparen", "netrwPlugin", "tarPlugin", "tohtml", "tutor", "zipPlugin", },
+        disabled_plugins = { "matchit", "matchparen", "tohtml", "tutor" },
       },
     },
   },
 
   plugins = {
     -- disable defaults like so:
-    { "Darazaki/indent-o-matic", enabled = false },
-    { "famiu/bufdelete.nvim",    enabled = false },
-    { "goolord/alpha-nvim",      enabled = false },
+    { "Darazaki/indent-o-matic",   enabled = false },
+    { "NMAC427/guess-indent.nvim", enabled = false },
+    { "famiu/bufdelete.nvim",      enabled = false },
+    { "goolord/alpha-nvim",        enabled = false },
 
     {
       -- theme
@@ -124,6 +125,11 @@ local config = {
       -- Cutlass overrides the delete operations to actually just delete and not affect the current yank.
       -- TODO: breaks in-file cut/paste
       --{ import = "astrocommunity.editing-support.cutlass-nvim" },
+
+      { import = "astrocommunity.editing-support.nvim-ts-rainbow2" },
+      { import = "astrocommunity.editing-support.todo-comments-nvim" },
+      { import = "astrocommunity.syntax.hlargs-nvim" },
+      { import = "astrocommunity.bars-and-lines.scope-nvim" },
     },
     {
       "ethanholz/nvim-lastplace",
@@ -145,9 +151,10 @@ local config = {
     {
       -- smart indentation with editorconfig support
       "tpope/vim-sleuth",
+      event = { "VeryLazy" },
     },
     {
-      -- auto-close if/for/etc.
+      -- auto-close if/for/etc;
       -- alternative: {"tpope/vim-endwise"},
       "RRethy/nvim-treesitter-endwise",
     },
@@ -173,7 +180,8 @@ local config = {
     },
     {
       "ntpeters/vim-better-whitespace",
-      lazy = false,
+      event = { "User AstroFile" },
+      cmd = { "StripWhitespace" },
     },
     {
       "dhruvasagar/vim-table-mode",
