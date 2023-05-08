@@ -87,14 +87,6 @@ zi wait lucid for \
 zi wait lucid for \
     from'gh-r' \
     nocompile \
-    atclone'cp -vf **/share/man/man1/*.1 ${ZINIT[MAN_DIR]}/man1/;' \
-    atpull'%atclone' \
-    sbin'**/nvim -> nvim' \
-  neovim/neovim
-
-zi wait lucid for \
-    from'gh-r' \
-    nocompile \
     as'completion' \
     atclone'procs --completion zsh' \
     atpull'%atclone' \
