@@ -157,10 +157,22 @@ local config = {
       -- auto-close if/for/etc;
       -- alternative: {"tpope/vim-endwise"},
       "RRethy/nvim-treesitter-endwise",
+      dependencies = {
+        { "nvim-treesitter/nvim-treesitter" },
+      },
+      ft = { "rb", "lua", "vim", "sh" },
+      config = function()
+        require("nvim-treesitter.configs").setup({
+          endwise = {
+            enable = true,
+          },
+        })
+      end,
     },
     {
       -- <C-A> and <C-X> support for dates, roman numerals, ordinals (1st, 2nd, etc.), d<C-A> sets date under cusror to current date (d<C-A> for UTC)
       "tpope/vim-speeddating",
+      event = { "VeryLazy" }, -- very lazy until 'keys' works
       -- keys = { "<C-X>", "<C-A>" }, -- C-X loads the plugin, C-A doesn't ?
       -- test blocks
       -- "Mon, 27 Dec 1999 00:00:03 +0000",
@@ -177,6 +189,24 @@ local config = {
     },
     {
       "scrooloose/nerdcommenter",
+      cmd = {
+        "NERDCommenterInsert",
+        "NERDCommenterComment",
+        "NERDCommenterNested",
+        "NERDCommenterToggle",
+        "NERDCommenterMinimal",
+        "NERDCommenterInvert",
+        "NERDCommenterSexy",
+        "NERDCommenterYank",
+        "NERDCommenterToEOL",
+        "NERDCommenterAppend",
+        "NERDCommenterInsert",
+        "NERDCommenterAltDelims",
+        "NERDCommenterAlignLeft",
+        "NERDCommenterAlignBoth",
+        "NERDCommenterComment",
+        "NERDCommenterUncomment",
+      },
     },
     {
       "ntpeters/vim-better-whitespace",
@@ -192,9 +222,14 @@ local config = {
     },
     {
       "nvim-treesitter/nvim-treesitter-context",
+      dependencies = {
+        { "nvim-treesitter/nvim-treesitter" },
+      },
+      event = { "User AstroFile" },
     },
     {
       "ray-x/lsp_signature.nvim",
+      event = { "User AstroFile" },
       config = function()
         require("lsp_signature").setup()
       end,
@@ -203,11 +238,6 @@ local config = {
     -- {"tjdevries/nlua.nvim"},
     -- {"euclidianAce/BetterLua.vim"},
 
-    -- {
-    --   -- neodev is included by default now
-    --   "folke/neodev.nvim",
-    --   ft = { "lua" },
-    -- },
     {
       -- csv filetype
       "chrisbra/csv.vim",
@@ -235,6 +265,7 @@ local config = {
     },
     {
       "tmux-plugins/vim-tmux",
+      event = { "User AstroFile" },
       -- TODO: figure out conditional loading
       -- cond = function()
       --   -- local f = vim.split(vim.api.nvim_buf_get_name(0), "/")
@@ -246,6 +277,7 @@ local config = {
     },
     {
       "rhysd/conflict-marker.vim",
+      event = { "User AstroFile" },
     },
     {
       -- YAML support for JSON Schemas
@@ -290,6 +322,7 @@ local config = {
     {
       -- Adds lightbulb to gutter when LSP Code Actions are available
       "kosayoda/nvim-lightbulb",
+      event = { "VeryLazy" },
       config = function()
         require("nvim-lightbulb").setup({
           autocmd = {
