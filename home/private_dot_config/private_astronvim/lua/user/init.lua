@@ -16,18 +16,18 @@ local function smart_quit(write)
 end
 
 local config = {
-  -- astronvim defaults -> ~/.config/nvim/lua/core/options.lua
+  -- astronvim defaults -> ~/.config/nvim/lua/astronvim/options.lua
   options = {
     opt = {
       -- autochdir = true,
       background = "light",
-      confirm = true,                               -- confirm :q with changes
-      nrformats = "octal,hex,alpha",                -- let Ctrl-A/X work on all formats
+      confirm = true,                                  -- confirm :q with changes
+      nrformats = "octal,hex,alpha",                   -- let Ctrl-A/X work on all formats
       relativenumber = false,
       rtp = vim.opt.rtp + "~/.config/astronvim/after", -- Add custom `after` to to runtime path
-      scrolloff = 4,                                -- Number of lines to keep above and below the cursor
-      secure = true,                                -- shell and write commands are not allowed in ".nvimrc" and ".exrc" in the current directory and map commands are displayed.
-      shiftround = true,                            -- < and > will hit indentation levels
+      scrolloff = 4,                                   -- Number of lines to keep above and below the cursor
+      secure = true,                                   -- shell and write commands are not allowed in ".nvimrc" and ".exrc" in the current directory and map commands are displayed.
+      shiftround = true,                               -- < and > will hit indentation levels
       spellfile = "~/.vim/spell-en.utf-8.add",
     },
     g = {
@@ -212,6 +212,9 @@ local config = {
       "ntpeters/vim-better-whitespace",
       event = { "User AstroFile" },
       cmd = { "StripWhitespace" },
+      -- cond = function()
+      --   return require("astronvim.utils.status").condition.buffer_matches { buftype = { "terminal" } }
+      -- end
     },
     {
       "dhruvasagar/vim-table-mode",
@@ -370,7 +373,7 @@ local config = {
 
           -- Misc.
           -- b.diagnostics.editorconfig_checker,
-          b.formatting.jq,       -- JSON
+          b.formatting.jq,            -- JSON
           b.formatting.terraform_fmt, -- Terraform
           -- b.completion.spell, -- spelling completions (conflict with cmp-spell?)
           -- b.diagnostics.proselint, -- https://github.com/amperser/proselint
@@ -524,15 +527,6 @@ local config = {
   polish = function()
     -- restore old hlsearch configuration (see: https://github.com/AstroNvim/AstroNvim/discussions/1428)
     vim.on_key(nil, vim.api.nvim_get_namespaces()["auto_hlsearch"])
-
-    -- auto-reload init config
-    -- vim.api.nvim_create_augroup("packer_conf", { clear = true })
-    -- vim.api.nvim_create_autocmd("BufWritePost", {
-    --   desc = "Sync packer after modifying init.lua",
-    --   group = "packer_conf",
-    --   pattern = "init.lua",
-    --   command = "source <afile> | PackerSync",
-    -- })
   end,
 }
 
