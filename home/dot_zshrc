@@ -51,15 +51,17 @@ zi light-mode lucid depth=1 for romkatv/powerlevel10k
 zi pack for ls_colors
 
 # BEGIN binary installs
-zi wait lucid for \
-    from'gh-r' \
-    nocompile \
-    atclone'cp -vf completions/exa.zsh _exa
-            cp man/*.1 ${ZINIT[MAN_DIR]}/man1/;
-            cp man/*.5 ${ZINIT[MAN_DIR]}/man5/;' \
-    atpull'%atclone' \
-    sbin'**/exa -> exa' \
-  ogham/exa
+
+# Disabled until they produce Mac binaries, install via homebrew instead.
+# zi wait lucid for \
+#     from'gh-r' \
+#     nocompile \
+#     atclone'cp -vf completions/eza.zsh _eza
+#             cp man/*.1 ${ZINIT[MAN_DIR]}/man1/;
+#             cp man/*.5 ${ZINIT[MAN_DIR]}/man5/;' \
+#     atpull'%atclone' \
+#     sbin'**/eza -> eza' \
+#   eza-community/eza
 
 zi wait lucid for \
     from'gh-r' \
@@ -88,7 +90,7 @@ zi wait lucid for \
     from'gh-r' \
     nocompile \
     as'completion' \
-    atclone'procs --completion zsh' \
+    atclone'procs --gen-completion zsh' \
     atpull'%atclone' \
     sbin'**/procs -> procs' \
   dalance/procs
@@ -99,7 +101,7 @@ zi wait lucid for \
     sbin'g*x -> grex' \
   pemistahl/grex
 
-if [[ $(uname -a) =~ "/^Darwin.*/" ]]; then
+if uname -a | grep -q Darwin; then
   # Installing `hub` via brew to get an ARM binary, else tree-sitter install
   # may install the wrong arch (if the ts library is installed inside a `git commit`).
   # Still using completions from GitHub though.
@@ -107,7 +109,7 @@ if [[ $(uname -a) =~ "/^Darwin.*/" ]]; then
       as'completion' \
       nocompile \
       cp'etc/hub.zsh_completion -> _hub' \
-    @github/hub
+    mislav/hub
 else
   # For Linux and Windows install from GitHub release
   zi wait lucid for \
@@ -117,7 +119,7 @@ else
       atclone'cp hub**/etc/hub.zsh_completion _hub' \
       atpull'%atclone' \
       sbin'hub**/bin/hub -> hub' \
-    @github/hub
+    mislav/hub
 fi
 
 zi wait lucid for \
@@ -175,15 +177,12 @@ zi wait lucid for \
 zi wait lucid for \
     nocompile \
     from'gh-r' \
-    atclone'mv rtx-v* rtx; ./rtx complete --shell=zsh > ~/.zsh_completions/_rtx' \
+    atclone'mv mise-v* mise; ./mise complete --shell=zsh > ~/.zsh_completions/_mise' \
     atpull='%atclone' \
-    sbin'rtx' \
-  jdxcode/rtx
+    sbin'mise' \
+  jdx/mise
 
 # END binary installs
-
-# bunch'o exa aliases
-zi wait lucid for TwoPizza9621536/zsh-exa
 
 zi wait lucid for agkozak/zsh-z
 
@@ -193,13 +192,6 @@ zi wait lucid for \
     id-as'docker-completion/_docker' \
     is-snippet \
   https://raw.githubusercontent.com/docker/cli/master/contrib/completion/zsh/_docker
-
-zi wait lucid for \
-    as'completion' \
-    nocompile \
-    id-as'lpass-completion/_lpass' \
-    is-snippet \
-  https://github.com/lastpass/lastpass-cli/raw/master/contrib/lpass_zsh_completion
 
 zi wait lucid for \
     as"completion" \
@@ -265,7 +257,7 @@ zstyle ':completion:*:approximate:*' max-errors 2
 zstyle ":fzf-tab:*" fzf-flags --color=bg+:23 --border
 zstyle ':fzf-tab:*' fzf-min-height 15
 # preview config
-zstyle ':fzf-tab:complete:cd:*' fzf-preview 'exa -1 --color=always $realpath'
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always $realpath'
 zstyle ':fzf-tab:complete:(-command-|-parameter-|-brace-parameter-|export|unset|expand):*' \
 	fzf-preview 'echo ${(P)word}' # preview env vars
 # space accetps the current suggestion

@@ -38,6 +38,7 @@
   driver = dpkg-mergechangelogs -m %O %A %B %A
 [push]
   default = current
+	autoSetupRemote = true
 [merge]
   conflictstyle = diff3
   tool = intellij

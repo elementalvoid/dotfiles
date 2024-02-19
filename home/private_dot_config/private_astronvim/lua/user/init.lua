@@ -9,7 +9,7 @@ local function smart_quit(write)
   end
   local bufs = vim.tbl_filter(require("astronvim.utils.buffer").is_valid, vim.api.nvim_list_bufs())
   if #bufs > 1 then
-    vim.api.nvim_command("bdelete")
+    require("astronvim.utils.buffer").close()
   else
     vim.api.nvim_command("quit")
   end
@@ -28,7 +28,6 @@ local config = {
       scrolloff = 4,                                   -- Number of lines to keep above and below the cursor
       secure = true,                                   -- shell and write commands are not allowed in ".nvimrc" and ".exrc" in the current directory and map commands are displayed.
       shiftround = true,                               -- < and > will hit indentation levels
-      spellfile = "~/.vim/spell-en.utf-8.add",
     },
     g = {
       mapleader = ";",
@@ -41,7 +40,13 @@ local config = {
       ["Y"] = { "y$", desc = "Let Y behave analogously to D rather than to dd" },
       ["<esc>"] = { "<cmd>noh<cr>", desc = "no highlight" },
       ["<leader>T"] = { "<cmd>Telescope<cr>", desc = "Open Telescope" },
-      ["<leader>F"] = { "<cmd>StripWhitespace<cr>", desc = "Strip Whitespace" },
+      ["<leader>F"] = {
+        function()
+          MiniTrailspace.trim()
+          MiniTrailspace.trim_last_lines()
+        end,
+        desc = "Strip Whitespace"
+      },
       ["<leader>q"] = {
         function()
           smart_quit()
@@ -54,9 +59,6 @@ local config = {
         end,
         desc = "Write and SmartQuit",
       },
-      -- apparently no longer needed?
-      -- ["j"] = { "gj", desc = "move through wrapped lines" },
-      -- ["k"] = { "gk", desc = "move through wrapped lines" },
       ["<leader>ys"] = {
         function()
           local schema = require("yaml-companion").get_buf_schema(0)
@@ -83,7 +85,8 @@ local config = {
     },
     i = {},
   },
-  colorscheme = "onelight",
+  colorscheme = "catppuccin",
+  -- colorscheme = "onelight",
   --colorscheme = "dayfox",
 
   lazy = {
@@ -99,20 +102,29 @@ local config = {
     -- disable defaults like so:
     { "Darazaki/indent-o-matic",   enabled = false },
     { "NMAC427/guess-indent.nvim", enabled = false },
-    { "famiu/bufdelete.nvim",      enabled = false },
     { "goolord/alpha-nvim",        enabled = false },
+    { "kevinhwang91/nvim-ufo",     enabled = false }, -- conflicts with yaml-companion: https://github.com/someone-stole-my-name/yaml-companion.nvim/issues/37
 
     {
       -- theme
-      "olimorris/onedarkpro.nvim", -- has companion config for kitty (could be converted)
-      config = function()
-        require("onedarkpro").setup({
-          options = {
-            cursorline = true,
-          },
-        })
-      end,
+      "catppuccin/nvim",
+      name = "catppuccin",
+      priority = 1000,
     },
+    -- {
+    --   -- theme
+    --   "olimorris/onedarkpro.nvim", -- has companion config for kitty (could be converted)
+    --   config = function()
+    --     require("onedarkpro").setup({
+    --       options = {
+    --         cursorline = true,
+    --       },
+    --       highlights = {
+    --         MiniTrailspace = { underline = true, bg = "${red}" }
+    --       }
+    --     })
+    --   end,
+    -- },
     -- {
     --   -- theme
     --   -- has some companion configs (tmux, iterm2, etc.)
@@ -126,17 +138,11 @@ local config = {
       -- TODO: breaks in-file cut/paste
       --{ import = "astrocommunity.editing-support.cutlass-nvim" },
 
-      { import = "astrocommunity.editing-support.nvim-ts-rainbow2" },
+      { import = "astrocommunity.editing-support.rainbow-delimiters-nvim" },
       { import = "astrocommunity.editing-support.todo-comments-nvim" },
       { import = "astrocommunity.syntax.hlargs-nvim" },
       { import = "astrocommunity.bars-and-lines.scope-nvim" },
-    },
-    {
-      "ethanholz/nvim-lastplace",
-      lazy = false,
-      config = function()
-        require("nvim-lastplace").setup()
-      end,
+      -- { import = "astrocommunity.scrolling.satellite-nvim" }, -- BREAKS
     },
     {
       -- change, delete, add surroungings
@@ -209,12 +215,15 @@ local config = {
       },
     },
     {
-      "ntpeters/vim-better-whitespace",
-      event = { "User AstroFile" },
-      cmd = { "StripWhitespace" },
-      -- cond = function()
-      --   return require("astronvim.utils.status").condition.buffer_matches { buftype = { "terminal" } }
-      -- end
+      "echasnovski/mini.nvim",
+      event = "User AstroFile",
+      config = function()
+        require('mini.trailspace').setup()
+
+        require('mini.misc').setup()
+        MiniMisc.setup_auto_root()
+        MiniMisc.setup_restore_cursor()
+      end,
     },
     {
       "dhruvasagar/vim-table-mode",
@@ -237,10 +246,6 @@ local config = {
         require("lsp_signature").setup()
       end,
     },
-    -- nvim lua helpers
-    -- {"tjdevries/nlua.nvim"},
-    -- {"euclidianAce/BetterLua.vim"},
-
     {
       -- csv filetype
       "chrisbra/csv.vim",
@@ -283,7 +288,7 @@ local config = {
       event = { "User AstroFile" },
     },
     {
-      -- YAML support for JSON Schemas
+      --   -- YAML support for JSON Schemas
       "someone-stole-my-name/yaml-companion.nvim",
       dependencies = {
         { "neovim/nvim-lspconfig" },
@@ -355,6 +360,7 @@ local config = {
       "jose-elias-alvarez/null-ls.nvim",
       opts = function(_, config)
         -- config variable is the default configuration table for the setup function call
+        -- See also: https://github.com/jose-elias-alvarez/null-ls.nvim/blob/main/doc/BUILTIN_CONFIG.md
 
         local b = require("null-ls").builtins
         config.sources = {
@@ -367,9 +373,9 @@ local config = {
           b.code_actions.shellcheck,
 
           -- Python
-          -- b.diagnostics.pylint, -- doesn't autodetect rcfile (due to `--from-stdin` flag?). Flake8 better?
-          b.formatting.black,
           -- b.code_actions.refactoring, -- multiple languages .. https://github.com/ThePrimeagen/refactoring.nvim
+
+          b.diagnostics.yamllint.with({ extra_args = { "-d", "{extends: default, rules: {line-length: disable }}" } }),
 
           -- Misc.
           -- b.diagnostics.editorconfig_checker,
@@ -402,8 +408,7 @@ local config = {
           "jsonls",
           "kotlin_language_server",
           "marksman",
-          -- "pyright",
-          "pylsp",
+          "ruff_lsp",
           "lua_ls",
           "terraformls",
           "tflint",
@@ -486,6 +491,11 @@ local config = {
           },
         },
       },
+      terraformls = function(opts)
+        -- make terraformls shutup: https://github.com/hashicorp/terraform-ls/issues/1271
+        opts.cmd = { 'terraform-ls', 'serve', '-log-file', '/dev/null' }
+        return opts
+      end,
       pylsp = {
         -- https://github.com/python-lsp/python-lsp-server/blob/develop/CONFIGURATION.md
         -- https://github.com/python-lsp/python-lsp-server#3rd-party-plugins

@@ -2,6 +2,13 @@
 
 alias history='history -iD'
 
+# ls / eza
+alias ls='eza -Fgh --group-directories-first --git --icons --color-scale --hyperlink'
+alias ll='ls -l'
+alias la='ll -a'
+# alias lt='ls -T'
+alias tree='ls -T'
+
 #procs
 alias p='procs'
 alias pt='procs -t'

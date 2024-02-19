@@ -1,6 +1,7 @@
+---
 # Number of CPUs to be allocated to the virtual machine.
 # Default: 2
-cpu: 4
+cpu: 2
 
 # Size of the disk in GiB to be allocated to the virtual machine.
 # NOTE: changing this has no effect after the virtual machine has been created.
@@ -19,6 +20,11 @@ arch: host
 # Default: docker
 runtime: docker
 
+# Set custom hostname for the virtual machine.
+# Default: colima
+#          colima-profile_name for other profiles
+hostname: ""
+
 # Kubernetes configuration for the virtual machine.
 kubernetes:
   # Enable kubernetes.
@@ -30,15 +36,10 @@ kubernetes:
   # Default: latest stable release
   version: v1.24.3+k3s1
 
-  # Disable k3s features [coredns servicelb traefik local-storage metrics-server].
-  # All features are enabled unless disabled.
-  #
-  # EXAMPLE - disable traefik and metrics-server
-  # disable: [traefik, metrics-server]
-  #
-  # Default: [traefik]
-  disable:
-    - traefik
+  # Additional args to pass to k3s https://docs.k3s.io/cli/server
+  # Default: traefik is disabled
+  k3sArgs:
+    - --disable=traefik
 
 # Auto-activate on the Host for client access.
 # Setting to true does the following on startup
@@ -54,15 +55,15 @@ network:
   # Default: false
   address: false
 
-  # Custom DNS nameservers for the virtual machine.
+  # Custom DNS resolvers for the virtual machine.
   #
   # EXAMPLE
-  # dns: [1.1.1.1, 8.8.8.8]
+  # dns: [8.8.8.8, 1.1.1.1]
   #
   # Default: []
   dns: []
 
-  # DNS hostnames to resolve to custom targets using the internal Lima resolver.
+  # DNS hostnames to resolve to custom targets using the internal resolver.
   # This setting has no effect if a custom DNS resolver list is supplied above.
   # It does not configure the /etc/hosts files of any machine or container.
   # The value can be an IP address or another host.
@@ -79,7 +80,7 @@ network:
 
 # Forward the host's SSH agent to the virtual machine.
 # Default: false
-forwardAgent: true
+forwardAgent: false
 
 # Docker daemon configuration that maps directly to daemon.json.
 # https://docs.docker.com/engine/reference/commandline/dockerd/#daemon-configuration-file.
@@ -105,43 +106,44 @@ docker: {}
 #
 # vz is macOS virtualization framework and requires macOS 13
 #
-# Default: vz
+# Default: qemu
 vmType: vz
 
-# Volume mount driver for the virtual machine (sshfs, 9p).
+# Utilise rosetta for amd64 emulation (requires m1 mac and vmType `vz`)
+# Default: false
+rosetta: true
+
+# Volume mount driver for the virtual machine (virtiofs, 9p, sshfs).
 #
-# 9p is more POSIX compliant and generally handles file permissions better.
-# However, it does not properly resolve symlinks (that are created on host).
+# virtiofs is limited to macOS and vmType `vz`. It is the fastest of the options.
 #
-# sshfs is faster than 9p but less reliable when there are lots
-# of concurrent reads or writes.
+# 9p is the recommended and the most stable option for vmType `qemu`.
 #
-# Default: sshfs
+# sshfs is faster than 9p but the least reliable of the options (when there are lots
+# of concurrent reads or writes).
+#
+# Default: virtiofs (for vz), sshfs (for qemu)
 mountType: virtiofs
 
-# The CPU type for the virtual machine.
+# Propagate inotify file events to the VM.
+# NOTE: this is experimental.
+mountInotify: false
+
+# The CPU type for the virtual machine (requires vmType `qemu`).
 # Options available for host emulation can be checked with: `qemu-system-$(arch) -cpu help`.
 # Instructions are also supported by appending to the cpu type e.g. "qemu64,+ssse3".
 # Default: host
 cpuType: host
 
-# For a more general purpose virtual machine, Ubuntu container is optionally provided
-# as a layer on the virtual machine.
-# The underlying virtual machine is still accessible via `colima ssh --layer=false` or running `colima` in
-# the Ubuntu session.
-#
-# Default: false
-layer: false
-
 # Custom provision scripts for the virtual machine.
 # Provisioning scripts are executed on startup and therefore needs to be idempotent.
 #
-# EXAMPLE - script exected as root
+# EXAMPLE - script executed as root
 # provision:
 #   - mode: system
-#     script: apk add htop vim
+#     script: apt-get install htop vim
 #
-# EXAMPLE - script exected as user
+# EXAMPLE - script executed as user
 # provision:
 #   - mode: user
 #     script: |
