@@ -3,7 +3,7 @@
 alias history='history -iD'
 
 # ls / eza
-alias ls='eza -Fgh --group-directories-first --git --icons --color-scale --hyperlink'
+alias ls='eza -F -g -h --group-directories-first --git --icons --color-scale --hyperlink'
 alias ll='ls -l'
 alias la='ll -a'
 # alias lt='ls -T'
@@ -40,7 +40,7 @@ alias cgithub='cd $code/github'
 alias cibotta='cd $code/ibotta'
 
 alias gcd='cd-gitroot' # alias to plugin
-alias cvim='cd ~/.vim'
+alias cvim='cd ~/.config/nvim/'
 alias cdesktop='cd ~/Desktop'
 alias cdownloads='cd ~/Downloads'
 alias ctmp='cd ~/tmp'

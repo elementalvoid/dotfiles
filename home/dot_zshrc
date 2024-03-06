@@ -34,28 +34,22 @@ fi
 
 source "$HOME/.zinit/bin/zinit.zsh"
 autoload -Uz _zinit
-autoload bashcompinit && bashcompinit
 (( ${+_comps} )) && _comps[zinit]=_zinit
 
-# Load a few important annexes, without Turbo
-# (this is currently required for annexes)
-#zinit light-mode for \
-#    zinit-zsh/z-a-patch-dl \
-#    zinit-zsh/z-a-as-monitor
+autoload bashcompinit && bashcompinit
 
 zi light-mode for zdharma-continuum/zinit-annex-bin-gem-node
 zi light-mode for zdharma-continuum/zinit-annex-patch-dl
 
-zi light-mode lucid depth=1 for romkatv/powerlevel10k
+zi light-mode for depth=1 romkatv/powerlevel10k
 
-zi pack for ls_colors
+zi light-mode pack for ls_colors
 
 # BEGIN binary installs
 
 # Disabled until they produce Mac binaries, install via homebrew instead.
-# zi wait lucid for \
+# zi light-mode for \
 #     from'gh-r' \
-#     nocompile \
 #     atclone'cp -vf completions/eza.zsh _eza
 #             cp man/*.1 ${ZINIT[MAN_DIR]}/man1/;
 #             cp man/*.5 ${ZINIT[MAN_DIR]}/man5/;' \
@@ -63,41 +57,32 @@ zi pack for ls_colors
 #     sbin'**/eza -> eza' \
 #   eza-community/eza
 
-zi wait lucid for \
+zi light-mode for \
     from'gh-r' \
-    nocompile \
     sbin'**/bat -> bat' \
   @sharkdp/bat
 
-zi wait lucid for \
+zi light-mode for \
     from'gh-r'  \
-    nocompile \
     sbin'**/fd -> fd' \
   @sharkdp/fd
 
-zi wait lucid for \
+zi light-mode for \
     from'gh-r' \
-    nocompile \
     sbin'fzf' \
     dl'https://raw.githubusercontent.com/junegunn/fzf/master/man/man1/fzf.1 -> ${ZINIT[MAN_DIR]}/man1/fzf.1' \
   junegunn/fzf \
   https://raw.githubusercontent.com/junegunn/fzf/master/shell/{key-bindings,completion}.zsh
-# Below has conflicts on keybinds and doesn't work reliably.
-# Keeping above bindings because they're handy.
-#zi wait lucid for joshskidmore/zsh-fzf-history-search
 
-zi wait lucid for \
+zi light-mode for \
     from'gh-r' \
-    nocompile \
-    as'completion' \
     atclone'procs --gen-completion zsh' \
     atpull'%atclone' \
     sbin'**/procs -> procs' \
   dalance/procs
 
-zi wait lucid for \
+zi light-mode for \
     from'gh-r' \
-    nocompile \
     sbin'g*x -> grex' \
   pemistahl/grex
 
@@ -105,172 +90,134 @@ if uname -a | grep -q Darwin; then
   # Installing `hub` via brew to get an ARM binary, else tree-sitter install
   # may install the wrong arch (if the ts library is installed inside a `git commit`).
   # Still using completions from GitHub though.
-  zi wait lucid for \
-      as'completion' \
-      nocompile \
+  zi light-mode for \
       cp'etc/hub.zsh_completion -> _hub' \
     mislav/hub
 else
   # For Linux and Windows install from GitHub release
-  zi wait lucid for \
+  zi light-mode for \
       from'gh-r' \
-      nocompile \
-      as'completion' \
       atclone'cp hub**/etc/hub.zsh_completion _hub' \
       atpull'%atclone' \
       sbin'hub**/bin/hub -> hub' \
     mislav/hub
 fi
 
-zi wait lucid for \
+zi light-mode for \
     from'gh-r' \
-    nocompile \
     sbin'bin/ec-* -> ec' \
   editorconfig-checker/editorconfig-checker
 
-zi wait lucid for \
+zi light-mode for \
     from'gh-r' \
-    nocompile \
     atclone'cp -vf man/*.1 ${ZINIT[MAN_DIR]}/man1/' \
     atpull'%atclone' \
     sbin'actionlint' \
   rhysd/actionlint
 
-## local github action runner
-## disabled 'cause the docker image needed to run things is huge
-#zi wait lucid for \
-#    from'gh-r' \
-#    nocompile \
-#    sbin'act' \
-#  nektos/act
-
 # awesome git diff/blame/etc.
-zi wait lucid for \
-    nocompile \
+zi light-mode for \
     from'gh-r' \
     sbin'delta*/delta' \
   dandavison/delta
 
 if [[ $(uname -a) =~ "/^Darwin.*/" ]]; then
   # not installing in WSL because it panics
-  zi wait lucid for \
-      nocompile \
+  zi light-mode for \
       from'gh-r' \
       sbin'tree-sitter-* -> tree-sitter' \
     tree-sitter/tree-sitter
 fi
 
-zi wait lucid for \
-    nocompile \
+zi light-mode for \
     from'gh-r' \
     sbin'glow' \
   charmbracelet/glow
 
-zi wait lucid for \
+zi light-mode for \
     from'gh-r' \
-    nocompile \
     atclone'cp -vf ripgrep*/complete/_rg _rg; cp -vf ripgrep*/doc/*.1 ${ZINIT[MAN_DIR]}/man1/' \
     atpull'%atclone' \
     sbin'ripgrep*/rg -> rg' \
   BurntSushi/ripgrep
 
-zi wait lucid for \
-    nocompile \
+zi light-mode for \
     from'gh-r' \
-    atclone'mv mise-v* mise; ./mise complete --shell=zsh > ~/.zsh_completions/_mise' \
+    atclone'mv mise-v* mise; ./mise complete --shell=zsh > _mise; mise activate --quiet zsh > zhook.zsh' \
     atpull='%atclone' \
+    src'zhook.zsh' \
     sbin'mise' \
   jdx/mise
 
+# zi light-mode for \
+#     from'gh-r' \
+#     atclone'./zoxide init zsh > zhook.zsh; cp -vr man/man1/*.1 ${ZINIT[MAN_DIR]}/man1/' \
+#     atpull'%atclone' \
+#     src'zhook.zsh' \
+#     sbin'zoxide' \
+#   ajeetdsouza/zoxide
+
 # END binary installs
 
-zi wait lucid for agkozak/zsh-z
+zi light-mode for agkozak/zsh-z
 
-zi wait lucid for \
+zi light-mode for \
+    id-as'completion/_docker' \
     as'completion' \
-    nocompile \
-    id-as'docker-completion/_docker' \
     is-snippet \
   https://raw.githubusercontent.com/docker/cli/master/contrib/completion/zsh/_docker
 
-zi wait lucid for \
-    as"completion" \
-    nocompile \
-    id-as'asdf-completion/_asdf' \
-    is-snippet \
-  https://raw.githubusercontent.com/asdf-vm/asdf/master/completions/_asdf
+zi light-mode for mollifier/cd-gitroot
 
-zi wait lucid for \
-  mollifier/cd-gitroot
-
-zi wait lucid for \
-  reegnz/jq-zsh-plugin
+zi light-mode for reegnz/jq-zsh-plugin
 
 # krew: https://github.com/zdharma-continuum/zinit/blob/main/tests/gh-r.zunit#L417
 # bitwarden: https://github.com/kalsowerus/zsh-bitwarden
 
-#zi wait lucid for \
-#    as'completion' \
-#    nocompile \
-#    id-as'keybase-completion/_keybase' \
-#    is-snippet \
-#  https://raw.githubusercontent.com/rbirnie/oh-my-zsh-keybase/master/keybase/_keybase
+zi light-mode for \
+    depth=1 \
+    atload'bindkey -M vicmd "k" history-substring-search-up; bindkey -M vicmd "j" history-substring-search-down' \
+  zsh-users/zsh-history-substring-search
 
-zi light-mode wait lucid depth=1 for \
-  atload'bindkey -M vicmd "k" history-substring-search-up; bindkey -M vicmd "j" history-substring-search-down' \
-    zsh-users/zsh-history-substring-search \
-  blockf multisrc'*.plugin.zsh' pick'/dev/null' \
-    ~/.zshrc.d \
-  blockf multisrc'*.plugin.zsh' pick'/dev/null' \
-    ~/.zshrc-private.d
+zi light-mode for \
+    id-as'dotd' \
+    multisrc'*.plugin.zsh' \
+    pick'/dev/null' \
+  ~/.zshrc.d \
 
-# Bunch'o'completions
-# Recommended to be loaded last.
-zi wait lucid atload"zicompinit; zicdreplay" blockf for \
-      zsh-users/zsh-completions
+zi light-mode for \
+    id-as'dotd-private' \
+    multisrc'*.plugin.zsh' \
+    pick'/dev/null' \
+  ~/.zshrc-private.d
 
 # commom completion config
+# TODO: Checkout https://github.com/ohmyzsh/ohmyzsh/blob/master/lib/completion.zsh
 zstyle ':completion:*' use-cache yes
 zstyle ':completion:*:descriptions' format '[%d]'
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 zstyle ':completion:::::' completer _complete _approximate
-zstyle ':completion:*:approximate:*' max-errors 2
+# zstyle ':completion:*:approximate:*' max-errors 2
+# force zsh not to show completion menu, which allows fzf-tab to capture the unambiguous prefix
+zstyle ':completion:*' menu no
 
-#zstyle ':autocomplete:*' min-input 3
-#zstyle ':autocomplete:recent-dirs' backend zsh-z
-#zstyle ':autocomplete:*' insert-unambiguous yes # default: no
-## no:  Tab inserts the top completion.
-## yes: Tab first inserts a substring common to all listed completions, if any.
-#zstyle ':autocomplete:*' widget-style menu-select # default: complete-word
-## complete-word: (Shift-)Tab inserts the top (bottom) completion.
-## menu-complete: Press again to cycle to next (previous) completion.
-## menu-select:   Same as `menu-complete`, but updates selection in menu.
-#zstyle ':autocomplete:history-search:*' list-lines 8  # int
-## Show this many history lines when pressing ↑.
-#zstyle ':autocomplete:history-incremental-search-*:*' list-lines 16  # int
-## Show this many history lines when pressing ⌃R or ⌃S.
-#zstyle ':autocomplete:*' fzf-completion yes
-#zi wait lucid for marlonrichert/zsh-autocomplete
-
-# fzf-tab must be after comp-init but before fast-syntax-highlighting...
-# TODO: Checkout https://github.com/ohmyzsh/ohmyzsh/blob/master/lib/completion.zsh
+# fzf-tab config
 zstyle ":fzf-tab:*" fzf-flags --color=bg+:23 --border
 zstyle ':fzf-tab:*' fzf-min-height 15
 # preview config
-zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always $realpath'
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -F -g -h --group-directories-first --git --icons --color-scale --color=always  --hyperlink -1 $realpath'
 zstyle ':fzf-tab:complete:(-command-|-parameter-|-brace-parameter-|export|unset|expand):*' \
 	fzf-preview 'echo ${(P)word}' # preview env vars
-# space accetps the current suggestion
+# space accetps the current suggestion (like enter)
 zstyle ':fzf-tab:*' fzf-bindings 'space:accept'
-# enter accepts and executes
-#zstyle ':fzf-tab:*' accept-line enter
-# tmux popup - seems slow
-#zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup
-#zstyle ':fzf-tab:complete:cd:*' popup-pad 30 0
-#zstyle ':fzf-tab:*' popup-min-size 50 8
-zi light Aloxaf/fzf-tab
+zi light-mode for Aloxaf/fzf-tab
 
-zi wait lucid for \
+zi light-mode for \
+  zsh-users/zsh-autosuggestions
+bindkey '^ ' autosuggest-accept
+
+zi light-mode for \
+    atload'zicompinit; zicdreplay -q' \
     atclone'source ./fast-syntax-highlighting.plugin.zsh; fast-theme base16' \
     atpull'%atclone' \
   zdharma-continuum/fast-syntax-highlighting

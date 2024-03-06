@@ -1,6 +1,6 @@
 [[ $- = *i* ]] || return
 
-source <(mise activate --quiet zsh)
+# source <(mise activate --quiet zsh)
 
 # Required (currently) for M1 + XCode Tools 14. Or something.
 # In any case, this makes it possible to install ruby again.

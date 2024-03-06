@@ -19,7 +19,7 @@ jq                           1
 sops                         3
 tfsec                        1
 terraform-validator          3
-yq                           4
+yq                           4.41.1
 sopstool                     1
 tflint                       0
 #pluto 5
