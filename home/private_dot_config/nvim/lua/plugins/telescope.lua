@@ -48,4 +48,14 @@ return {
       "nvim-telescope/telescope.nvim",
     },
   },
+  {
+    'stevearc/aerial.nvim',
+    lazy = false, -- explicitly not lazy, needed for heirline's winbar
+    -- keys = { "<leader>ts" }, --
+    dependencies = {
+      "nvim-telescope/telescope.nvim",
+    },
+    opts = {},
+    config = true,
+  }
 }

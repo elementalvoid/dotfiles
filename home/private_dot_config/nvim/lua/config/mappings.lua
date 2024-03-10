@@ -49,6 +49,7 @@ require('which-key').register({
       r = { telescope_builtin.registers, "Registers" },
       v = { telescope_builtin.vim_options, "Vim Options" },
       F = { telescope_builtin.current_buffer_fuzzy_find, "Fuzzy Find in Buffer" },
+      s = { function() require("telescope").load_extension("aerial").aerial() end, "LSP Symbols" },
       t = { telescope_builtin.treesitter, "Function names, variables, from Treesitter!" },
       T = { function() require('telescope').load_extension('terraform_doc').terraform_doc() end, "Terraform Docs" },
       l = { function() require("telescope").load_extension('lazy').lazy() end, "Lazy Packages" },

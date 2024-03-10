@@ -158,7 +158,7 @@ return {
           'lua_ls',
           'marksman',
           'pylsp',
-          -- 'ruff_lsp',
+          'ruff_lsp',
           'terraformls',
           'tflint',
           'vimls',

@@ -54,10 +54,10 @@ return {
   {
     -- hilight function args using treesitter
     'm-demare/hlargs.nvim',
-    event = { "VeryLazy" },
-    -- config = function()
-    --   require('hlargs').setup()
-    -- end,
+    event = { "BufEnter" },
+    config = function()
+      require('hlargs').setup()
+    end,
     dependencies = {
       "nvim-treesitter/nvim-treesitter",
     }
@@ -65,16 +65,35 @@ return {
   {
     'HiPhish/rainbow-delimiters.nvim',
     dependencies = {
-      'nvim-treesitter/nvim-treesitter'
+      'nvim-treesitter/nvim-treesitter',
     },
     event = 'VeryLazy',
-    main = 'rainbow-delimiters.setup',
+    main = "rainbow-delimiters.setup",
   },
   {
+    -- show code/scope context at top of window
     "nvim-treesitter/nvim-treesitter-context",
     dependencies = {
       { "nvim-treesitter/nvim-treesitter" },
     },
     event = { "VeryLazy" },
   },
+  {
+    'JoosepAlviste/nvim-ts-context-commentstring',
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter",
+      'echasnovski/mini.nvim',
+    },
+    event = { "VeryLazy" },
+    config = function()
+      -- skip backwards compatibility routines and speed up loading
+      vim.g.skip_ts_context_commentstring_module = true
+
+      ---@diagnostic disable-next-line: missing-fields
+      require('ts_context_commentstring').setup {
+        -- disabling autocomand so that mini.comment can trigger comment string discovery
+        enable_autocmd = false,
+      }
+    end
+  }
 }
