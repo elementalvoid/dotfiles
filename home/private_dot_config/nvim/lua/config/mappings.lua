@@ -32,6 +32,13 @@ require('which-key').register({
     },
     yS = { "<cmd>Telescope yaml_schema<cr>", "Set YAML Schem" },
 
+    u = {
+      name = "UI",
+
+      w = { '<cmd>set wrap!<cr>', 'Wrap'},
+      s = { '<cmd>set spell!<cr>', 'Spelling'},
+    },
+
     t = {
       name = "Telescope",
       -- see all buildtings
@@ -51,9 +58,9 @@ require('which-key').register({
       F = { telescope_builtin.current_buffer_fuzzy_find, "Fuzzy Find in Buffer" },
       s = { function() require("telescope").load_extension("aerial").aerial() end, "LSP Symbols" },
       t = { telescope_builtin.treesitter, "Function names, variables, from Treesitter!" },
-      T = { function() require('telescope').load_extension('terraform_doc').terraform_doc() end, "Terraform Docs" },
-      l = { function() require("telescope").load_extension('lazy').lazy() end, "Lazy Packages" },
-      L = { function() require("telescope").load_extension('lazy_plugins').lazy_plugins() end, "Lazy Config Finder" },
+      T = { "<cmd>Telescope terraform_doc<cr>", "Terraform Docs" },
+      l = { "<cmd>Telescope lazy<cr>", "Lazy Packages" },
+      L = { "<cmd>Telescope lazy_plugins<cr>", "Lazy Config Finder" },
       n = { function() require("telescope").load_extension('noice').noice() end, "Noice" },
       D = { function() require("telescope").load_extension('todo-comments').todo() end, "Todo" },
 
@@ -70,12 +77,15 @@ require('which-key').register({
     l = {
       name = "LSP",
       a = { function() require("actions-preview").code_actions() end, "Action Preview", mode = { 'v', 'n', 'x' } },
+      i = { "<cmd>LspInfo<cr>", "LSP Client Info" },
     },
   }, -- end '<leader>'
   -- overwrite F4 from lsp
   ['<F4>'] = { function() require("actions-preview").code_actions() end, "Action Preview", mode = { 'v', 'n', 'x' } },
   ['<esc>'] = { '<cmd>noh<cr>', 'no highlight' },
   ['Y'] = { 'y$', 'Let Y behaves like D rather than dd' },
+  ['[b'] = { function () vim.cmd('bprev') end, 'Buffer previous'},
+  [']b'] = { function () vim.cmd('bnext') end, 'Buffer next'},
   -- ['<Space>'] = { "@=(foldlevel('.')?'za':\"\\<Space>\")<CR>", 'Fold toggle' },
   -- ['<Space>'] = { 'zf', 'Visual fold' , { mode = 'v' }},
 })

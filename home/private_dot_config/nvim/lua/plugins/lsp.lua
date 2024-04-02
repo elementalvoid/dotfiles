@@ -88,6 +88,7 @@ return {
 
       cmp.setup({
         sources = {
+          -- { name = 'copilot' },
           { name = 'nvim_lsp' },
           { name = 'treesitter' },
           { name = 'nvim_lua' },
