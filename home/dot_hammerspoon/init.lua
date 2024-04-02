@@ -18,6 +18,9 @@ hs.hotkey.bind(hyper, "k", function() hs.application.launchOrFocus("Keybase") en
 -- Fancy paste -- pretends to be a keyboard
 hs.hotkey.bind({"cmd", "alt", "shift"}, "V", function() hs.eventtap.keyStrokes(hs.pasteboard.getContents()) end)
 
+-- ¯\_(ツ)_/¯
+hs.hotkey.bind(hypers, "s", function() hs.eventtap.keyStrokes("¯\\_(ツ)_/¯") end)
+
 -- SpoonInstall: installed manually (managed by chezmoi)
 hs.loadSpoon("SpoonInstall")
 
