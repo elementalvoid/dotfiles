@@ -2,7 +2,7 @@
 
 function render-shell-template-file () {
     # Interpret template as a bash heredoc, implicitly expanding variables
-    command=$(echo -e "cat <<COMMANDTEMPLATE
+    command=$(echo -e "command -p cat <<COMMANDTEMPLATE
 $(< "${1}")
 COMMANDTEMPLATE
     ")
