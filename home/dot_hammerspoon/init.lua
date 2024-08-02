@@ -8,7 +8,7 @@ hs.hotkey.bind(hypers, "r", hs.reload)
 -- app hotkeys
 hs.hotkey.bind(hyper, "i", function() hs.application.launchOrFocus("IntelliJ IDEA") end)
 hs.hotkey.bind(hyper, "s", function() hs.application.launchOrFocus("Slack") end)
-hs.hotkey.bind(hyper, "t", function() hs.application.launchOrFocus("wezterm") end)
+hs.hotkey.bind(hyper, "t", function() hs.application.launchOrFocus("WezTerm") end)
 hs.hotkey.bind(hyper, "b", function() hs.application.launchOrFocus("Firefox") end)
 hs.hotkey.bind(hyper, "f", function() hs.application.launchOrFocus("Finder") end)
 hs.hotkey.bind(hyper, "n", function() hs.application.launchOrFocus("Obsidian") end)

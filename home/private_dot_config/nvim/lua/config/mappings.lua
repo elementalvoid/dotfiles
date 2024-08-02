@@ -86,6 +86,5 @@ require('which-key').register({
   ['Y'] = { 'y$', 'Let Y behaves like D rather than dd' },
   ['[b'] = { function () vim.cmd('bprev') end, 'Buffer previous'},
   [']b'] = { function () vim.cmd('bnext') end, 'Buffer next'},
-  -- ['<Space>'] = { "@=(foldlevel('.')?'za':\"\\<Space>\")<CR>", 'Fold toggle' },
-  -- ['<Space>'] = { 'zf', 'Visual fold' , { mode = 'v' }},
+  ['f'] = { "@=(foldlevel('.')?'za':\"\\<Space>\")<CR>", 'Fold toggle' },
 })

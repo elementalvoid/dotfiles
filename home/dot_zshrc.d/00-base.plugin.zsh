@@ -46,6 +46,12 @@ help() {
     "$@" --help 2>&1 | bat --plain --language=help
 }
 
+# use `bat` to preview files when using `fzf` Ctrl-T
+export FZF_CTRL_T_OPTS="
+  --walker-skip .git,node_modules,target
+  --preview 'bat -n --color=always {}'
+  --bind 'ctrl-/:change-preview-window(down|hidden|)'"
+
 # Allow approximation when completing
 #zstyle ':completion:::::' completer _complete _approximate
 #zstyle ':completion:*:approximate:*' max-errors 2

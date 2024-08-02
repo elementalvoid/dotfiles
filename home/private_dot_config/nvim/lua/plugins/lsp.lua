@@ -18,7 +18,6 @@ return {
   --   lsp_type_definitions = <function 34>,
   --   lsp_workspace_symbols = <function 35>,
 
-
   {
     'aznhe21/actions-preview.nvim',
     event = "VeryLazy",
@@ -39,12 +38,31 @@ return {
     },
   },
   {
-    -- load neodev first
-    'folke/neodev.nvim',
-    event = { "VeryLazy" },
-    config = function()
-      require("neodev").setup({})
-    end
+    "folke/lazydev.nvim",
+    ft = "lua", -- only load on lua files
+    opts = {
+      library = {
+        -- See the configuration section for more details
+        -- Load luvit types when the `vim.uv` word is found
+        { path = "luvit-meta/library", words = { "vim%.uv" } },
+      },
+    },
+  },
+  {
+    -- optional `vim.uv` typings
+    "Bilal2453/luvit-meta",
+    lazy = true
+  },
+  {
+    -- optional completion source for require statements and module annotations
+    "hrsh7th/nvim-cmp",
+    opts = function(_, opts)
+      opts.sources = opts.sources or {}
+      table.insert(opts.sources, {
+        name = "lazydev",
+        group_index = 0, -- set group index to 0 to skip loading LuaLS completions
+      })
+    end,
   },
   {
     -- JSON/YAML schema
@@ -201,7 +219,7 @@ return {
                 -- },
                 -- -- depends on: https://github.com/python-lsp/python-lsp-black
                 -- black = {
-                  -- enabled = true,
+                -- enabled = true,
                 -- },
                 -- -- https://github.com/python-lsp/pylsp-mypy
                 -- ["pyslsp-mypy"] = {

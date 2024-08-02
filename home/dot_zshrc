@@ -149,12 +149,6 @@ zi light-mode for \
     sbin'mise' \
   jdx/mise
 
-# zi light-mode for \
-#     from'gh-r' \
-#     atclone'./zoxide init zsh > zhook.zsh; cp -vr man/man1/*.1 ${ZINIT[MAN_DIR]}/man1/' \
-#     atpull'%atclone' \
-#     src'zhook.zsh' \
-#     sbin'zoxide' \
 #   ajeetdsouza/zoxide
 
 # END binary installs
@@ -194,6 +188,7 @@ zi light-mode for \
 # commom completion config
 # TODO: Checkout https://github.com/ohmyzsh/ohmyzsh/blob/master/lib/completion.zsh
 zstyle ':completion:*' use-cache yes
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 zstyle ':completion:*:descriptions' format '[%d]'
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 zstyle ':completion:::::' completer _complete _approximate
@@ -202,10 +197,11 @@ zstyle ':completion:::::' completer _complete _approximate
 zstyle ':completion:*' menu no
 
 # fzf-tab config
-zstyle ":fzf-tab:*" fzf-flags --color=bg+:23 --border
+zstyle ":fzf-tab:*" fzf-flags --border
 zstyle ':fzf-tab:*' fzf-min-height 15
 # preview config
-zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -F -g -h --group-directories-first --git --icons --color-scale --color=always  --hyperlink -1 $realpath'
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -F -g -h --group-directories-first --git --icons --color-scale --color=always --hyperlink -1 $realpath'
+# zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza -F -g -h --group-directories-first --git --icons --color-scale --color=always --hyperlink -1 $realpath'
 zstyle ':fzf-tab:complete:(-command-|-parameter-|-brace-parameter-|export|unset|expand):*' \
 	fzf-preview 'echo ${(P)word}' # preview env vars
 # space accetps the current suggestion (like enter)

@@ -1,7 +1,7 @@
 local wezterm = require 'wezterm'
 local config = wezterm.config_builder()
 
-config.color_scheme = 'catppuccin-latte'
+config.color_scheme = 'Catppuccin Latte'
 config.enable_tab_bar = false
 config.window_decorations = "RESIZE"
 config.scrollback_lines = 10000

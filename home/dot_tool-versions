@@ -1,4 +1,5 @@
-#hey 0.1.4
+granted  0
+hey 0.1.4
 helm                         3
 kubectl                      1.27
 golang                       1
@@ -52,3 +53,5 @@ cloudflared                  2023
 kubent                       0
 direnv                       2
 dive                         0
+
+
