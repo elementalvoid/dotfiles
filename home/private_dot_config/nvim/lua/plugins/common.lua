@@ -218,12 +218,12 @@ return {
     },
     event = { 'BufEnter' },
     config = function()
-      require('which-key').register({
-        zR = { function() require("ufo").openAllFolds() end, "Open all folds" },
-        zM = { function() require("ufo").closeAllFolds() end, "Close all folds" },
-        zr = { function() require("ufo").openFoldsExceptKinds() end, "Fold less" },
-        zm = { function() require("ufo").closeFoldsWith() end, "Fold more" },
-        zp = { function() require("ufo").peekFoldedLinesUnderCursor() end, "Peek fold" },
+      require('which-key').add({
+        { "zR", function() require("ufo").openAllFolds() end,               desc = "Open all folds" },
+        { "zM", function() require("ufo").closeAllFolds() end,              desc = "Close all folds" },
+        { "zr", function() require("ufo").openFoldsExceptKinds() end,       desc = "Fold less" },
+        { "zm", function() require("ufo").closeFoldsWith() end,             desc = "Fold more" },
+        { "zp", function() require("ufo").peekFoldedLinesUnderCursor() end, desc = "Peek fold" },
       })
       ---@diagnostic disable-next-line: missing-fields
       require('ufo').setup({

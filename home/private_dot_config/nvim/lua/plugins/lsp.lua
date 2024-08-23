@@ -54,15 +54,16 @@ return {
     lazy = true
   },
   {
-    -- optional completion source for require statements and module annotations
+    -- completion source for require statements and module annotations
     "hrsh7th/nvim-cmp",
-    opts = function(_, opts)
-      opts.sources = opts.sources or {}
-      table.insert(opts.sources, {
-        name = "lazydev",
-        group_index = 0, -- set group index to 0 to skip loading LuaLS completions
-      })
-    end,
+    -- ---@param opts cmp.ConfigSchema
+    -- opts = function(_, opts)
+    --   opts.sources = opts.sources or {}
+    --   table.insert(opts.sources, {
+    --     name = "lazydev",
+    --     group_index = 0, -- set group index to 0 to skip loading LuaLS completions
+    --   })
+    -- end,
   },
   {
     -- JSON/YAML schema
@@ -106,7 +107,7 @@ return {
 
       cmp.setup({
         sources = {
-          -- { name = 'copilot' },
+          { name = 'copilot' },
           { name = 'nvim_lsp' },
           { name = 'treesitter' },
           { name = 'nvim_lua' },
@@ -146,6 +147,7 @@ return {
               Array = "󰅪",
               Boolean = "⊨",
               Class = "󰌗",
+              Copilot = "",
               Constructor = "",
               Key = "󰌆",
               Namespace = "󰅪",
@@ -160,7 +162,28 @@ return {
               TypeParameter = "󰊄",
               Unit = "",
             },
-          })
+          }),
+          sorting = {
+            -- The prioritize comparitor causes copilot entries to appear higher in the cmp menu. It is recommended
+            -- keeping priority weight at 2, or placing the exact comparitor above copilot so that better lsp
+            -- matches are not stuck below poor copilot matches.
+            priority_weight = 2,
+            comparators = {
+              require("copilot_cmp.comparators").prioritize,
+
+              -- Below is the default comparitor list and order for nvim-cmp
+              cmp.config.compare.offset,
+              -- cmp.config.compare.scopes, --this is commented in nvim-cmp too
+              cmp.config.compare.exact,
+              cmp.config.compare.score,
+              cmp.config.compare.recently_used,
+              cmp.config.compare.locality,
+              cmp.config.compare.kind,
+              cmp.config.compare.sort_text,
+              cmp.config.compare.length,
+              cmp.config.compare.order,
+            },
+          },
         },
       })
 
