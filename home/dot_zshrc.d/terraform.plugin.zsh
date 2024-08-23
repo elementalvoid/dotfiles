@@ -21,4 +21,14 @@ function tfgen-all() {
   done
 }
 
+function update-terraform-lockfiles() {
+  fd providers.tf ${@} -x bash -c '
+    echo == {//} ==
+    cd {//}
+    rm -rf .terraform .terraform.lock.hcl
+    terraform get
+    terraform providers lock --platform linux_amd64 --platform darwin_amd64 --platform darwin_arm64
+  '
+}
+
 # vim: set ft=sh ts=2 sw=2 tw=0 :

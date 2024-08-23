@@ -142,11 +142,11 @@ zi light-mode for \
   BurntSushi/ripgrep
 
 zi light-mode for \
+    as'command' \
     from'gh-r' \
     atclone'mv mise-v* mise; ./mise complete --shell=zsh > _mise; mise activate --quiet zsh > zhook.zsh' \
     atpull='%atclone' \
     src'zhook.zsh' \
-    sbin'mise' \
   jdx/mise
 
 #   ajeetdsouza/zoxide
