@@ -7,6 +7,20 @@ return {
   -- https://github.com/gbprod/cutlass.nvim
   -- https://github.com/petertriho/nvim-scrollbar
   -- https://github.com/nvim-neo-tree/neo-tree.nvim
+  --
+  -- chezmoi.nvim
+  -- chezmoi.vim
+  -- cmp-git
+  -- grug-far.nvim
+  -- nvim-ts-autotag
+  -- persistence.nvim
+  -- refactoring.nvim
+  -- telescope-terraform.nvim
+  -- ts-comments.nvim
+  -- trouble.nvim
+  -- venv-selector.nvim
+  -- vim-helm
+
 
   -- {
   --   'folke/neoconf.nvim',
@@ -14,9 +28,6 @@ return {
   -- },
   {
     'echasnovski/mini.nvim',
-    dependencies = {
-      'JoosepAlviste/nvim-ts-context-commentstring',
-    },
     version = false,
     config = function()
       require('mini.trailspace').setup()
@@ -42,9 +53,6 @@ return {
   },
   {
     'folke/todo-comments.nvim',
-    dependencies = {
-      'nvim-lua/plenary.nvim',
-    },
     opts = {},
     event = 'VeryLazy',
     cmd = { 'TodoTrouble', 'TodoTelescope', 'TodoLocList', 'TodoQuickFix' },
@@ -93,9 +101,6 @@ return {
     version = "*", -- Use for stability; omit to use `main` branch for the latest features
     keys = { '<C-g>s', '<C-g>S', 'ys', 'yss', 'yS', 'ySS', 'S', 'gS', 'ds', 'cs', 'cS', },
     opts = {},
-    dependencies = {
-      'nvim-treesitter/nvim-treesitter-textobjects',
-    },
   },
   {
     -- magic nvim-surround keymaps
@@ -103,10 +108,6 @@ return {
     keys = { '<leader>S' },
     opts = {
       root_key = "S",
-    },
-    dependencies = {
-      'kylechui/nvim-surround',
-      'folke/which-key.nvim',
     },
   },
   {
@@ -122,9 +123,6 @@ return {
   {
     -- auto-close if/for/etc;
     "RRethy/nvim-treesitter-endwise",
-    dependencies = {
-      'nvim-treesitter/nvim-treesitter',
-    },
     ft = { "rb", "lua", "vim", "sh" },
     config = function()
       ---@diagnostic disable-next-line: missing-fields
@@ -136,19 +134,19 @@ return {
     end,
   },
   {
-    'rebelot/heirline.nvim',
-    dependencies = {
-      'stevearc/aerial.nvim', -- for winbar and telescope symbols
-      {
-        'zeioth/heirline-components.nvim',
-        opts = {
-          icons = {
-            BufferClose = "x",
-            TabClose = "x",
-          },
-        }
+    'zeioth/heirline-components.nvim',
+    opts = {
+      icons = {
+        BufferClose = "x",
+        TabClose = "x",
       },
     },
+  },
+  {
+    'rebelot/heirline.nvim',
+    -- dependencies = {
+    --   'stevearc/aerial.nvim',   -- for winbar and telescope symbols
+    -- },
     opts = function()
       local lib = require "heirline-components.all"
       return {
@@ -214,7 +212,6 @@ return {
     'kevinhwang91/nvim-ufo',
     dependencies = {
       'kevinhwang91/promise-async',
-      'nvim-treesitter/nvim-treesitter',
     },
     event = { 'BufEnter' },
     config = function()
@@ -233,5 +230,8 @@ return {
         end
       })
     end,
+  },
+  {
+     "markdown.nvim",
   },
 }

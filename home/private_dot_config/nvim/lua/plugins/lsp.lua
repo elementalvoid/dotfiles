@@ -276,7 +276,7 @@ return {
                 },
               },
             }
-          end
+          end,
           -- pyright = {
           --   settings = {
           --     pyright = {
