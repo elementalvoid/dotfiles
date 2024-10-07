@@ -168,6 +168,14 @@ zi light-mode for reegnz/jq-zsh-plugin
 # krew: https://github.com/zdharma-continuum/zinit/blob/main/tests/gh-r.zunit#L417
 # bitwarden: https://github.com/kalsowerus/zsh-bitwarden
 
+# ibotta shell tools
+zi light-mode for \
+    ver'new-structure' \
+    pick'zsh-plugins/terraform-local/*.plugin.zsh' \
+    from'git@github.com' \
+    proto'ssh' \
+  ibotta/shell-tools
+
 zi light-mode for \
     depth=1 \
     atload'bindkey -M vicmd "k" history-substring-search-up; bindkey -M vicmd "j" history-substring-search-down' \
@@ -177,7 +185,7 @@ zi light-mode for \
     id-as'dotd' \
     multisrc'*.plugin.zsh' \
     pick'/dev/null' \
-  ~/.zshrc.d \
+  ~/.zshrc.d
 
 zi light-mode for \
     id-as'dotd-private' \
