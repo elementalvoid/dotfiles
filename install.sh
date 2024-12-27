@@ -27,28 +27,8 @@ if [[ $OSTYPE =~ darwin.* ]]; then
   export HOMEBREW_CASK_OPTS="--appdir=~/Applications"
   ( cd ~/.local/share/chezmoi; brew bundle install )
 else
-  sudo apt install --yes neovim git findutils gawk rsync thefuck tree watch wget zsh build-essential zlib1g-dev libssl-dev libbz2-dev libffi-dev libreadline-dev libncurses-dev
+  sudo apt install --yes git findutils gawk rsync thefuck watch wget zsh build-essential zlib1g-dev libssl-dev libbz2-dev libffi-dev libreadline-dev libncurses-dev
 fi
-
-##
-# asdf
-##
-if [[ -d ~/.asdf ]]; then
-  source ~/.asdf/asdf.sh
-  asdf update
-else
-  git clone https://github.com/asdf-vm/asdf.git ~/.asdf
-  source ~/.asdf/asdf.sh
-fi
-
-set +e
-asdf plugin add util git@github.com:elementalvoid/asdf-util.git
-
-for plugin in $(awk '{print $1}' ~/.tool-versions); do
-  asdf plugin add "${plugin}"
-done
-
-asdf util global upgrade
 
 ##
 # Pivot
