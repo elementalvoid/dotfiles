@@ -41,6 +41,15 @@ autoload bashcompinit && bashcompinit
 zi light-mode for zdharma-continuum/zinit-annex-bin-gem-node
 zi light-mode for zdharma-continuum/zinit-annex-patch-dl
 
+# mise is early (for jq needed by powerlevel10k)
+zi light-mode for \
+    as'command' \
+    from'gh-r' \
+    atclone'mv mise-v* mise; ./mise complete --shell=zsh > _mise; mise activate --quiet zsh > zhook.zsh; mise install --yes' \
+    atpull='%atclone' \
+    src'zhook.zsh' \
+  jdx/mise
+
 zi light-mode for depth=1 romkatv/powerlevel10k
 
 zi light-mode pack for ls_colors
@@ -146,14 +155,6 @@ zi light-mode for \
     atpull'%atclone' \
     sbin'ripgrep*/rg -> rg' \
   BurntSushi/ripgrep
-
-zi light-mode for \
-    as'command' \
-    from'gh-r' \
-    atclone'mv mise-v* mise; ./mise complete --shell=zsh > _mise; mise activate --quiet zsh > zhook.zsh' \
-    atpull='%atclone' \
-    src'zhook.zsh' \
-  jdx/mise
 
 #   ajeetdsouza/zoxide
 
