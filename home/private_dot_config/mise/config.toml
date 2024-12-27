@@ -13,7 +13,6 @@ disable_hints = ["python_precompiled"]
 [tools]
 argo = "3"
 argocd = "2"
-aws-sso-cli = "1"
 awscli = "2"
 bitwarden = "2023"
 chezmoi = "2"
