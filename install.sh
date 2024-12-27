@@ -5,7 +5,7 @@ set -e
 ssh -o StrictHostKeyChecking=no git@github.com || true
 
 # Require private key!
-if [[ ! -f ~/.ssh/id_rsa ]]; then
+if [[ ! (-f ~/.ssh/id_rsa || -f ~/.ssh/id_ed25519) ]]; then
   echo "SSH private key not found. Add before running installer."
   echo "A private key is required to clone GitHub repositories."
   exit 1
