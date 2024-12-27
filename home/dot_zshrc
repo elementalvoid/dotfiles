@@ -48,6 +48,12 @@ zi light-mode pack for ls_colors
 # BEGIN binary installs
 
 # Disabled until they produce Mac binaries, install via homebrew instead.
+zi light-mode for \
+    atclone'cp -vf completions/eza.zsh _eza
+            cp man/*.1 ${ZINIT[MAN_DIR]}/man1/;
+            cp man/*.5 ${ZINIT[MAN_DIR]}/man5/;' \
+    atpull'%atclone' \
+  eza-community/eza
 # zi light-mode for \
 #     from'gh-r' \
 #     atclone'cp -vf completions/eza.zsh _eza
@@ -222,7 +228,7 @@ bindkey '^ ' autosuggest-accept
 
 zi light-mode for \
     atload'zicompinit; zicdreplay -q' \
-    atclone'source ./fast-syntax-highlighting.plugin.zsh; fast-theme base16' \
+    atclone'source ./fast-syntax-highlighting.plugin.zsh; fast-theme default' \
     atpull'%atclone' \
   zdharma-continuum/fast-syntax-highlighting
 

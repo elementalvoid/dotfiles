@@ -33,15 +33,19 @@ export EDITOR='nvim'
 export VISUAL='nvim'
 
 export LESS="-R"
-alias less='bat --theme OneHalfLight --paging always --wrap never'
+# alias less='bat --theme OneHalfLight --paging always --wrap never'
+alias less='bat --paging always --wrap never'
 alias yaml='less -l yaml'
 
 # bat is cat
-alias cat='bat --theme OneHalfLight --paging=never --wrap=never'
+# alias cat='bat --theme OneHalfLight --paging=never --wrap=never'
+alias cat='bat --paging=never --wrap=never'
 
 # use `bat` as man viewer
 export MANPAGER="sh -c 'col -bx | bat --paging always -l man -p'"
+
 # use `bat` as "help" formatter
+alias -g -- --help='--help 2>&1 | bat --language=help --style=plain'
 help() {
     "$@" --help 2>&1 | bat --plain --language=help
 }
