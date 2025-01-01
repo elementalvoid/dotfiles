@@ -25,10 +25,13 @@ if [[ $OSTYPE =~ darwin.* ]]; then
   eval $(/opt/homebrew/bin/brew shellenv) || eval $(/usr/local/bin/brew shellenv)
   brew analytics off
   export HOMEBREW_CASK_OPTS="--appdir=~/Applications"
-  ( cd ~/.local/share/chezmoi; brew bundle install )
+  (
+    cd ~/.local/share/chezmoi
+    brew bundle install
+  )
 else
   sudo apt update
-  sudo apt install --yes git findutils gawk rsync thefuck watch wget zsh build-essential zlib1g-dev libssl-dev libbz2-dev libffi-dev libreadline-dev libncurses-dev zip unzip file
+  sudo apt install --yes git findutils gawk rsync thefuck watch wget zsh build-essential zlib1g-dev libssl-dev libbz2-dev libffi-dev libreadline-dev libncurses-dev zip unzip file libyaml-dev
 fi
 
 ##

@@ -13,10 +13,6 @@ return {
     main = "rainbow-delimiters.setup",
   },
   {
-    "ray-x/cmp-treesitter",
-    event = { "VeryLazy" },
-  },
-  {
     -- auto-close if/for/etc;
     "RRethy/nvim-treesitter-endwise",
     ft = { "rb", "lua", "vim", "sh" },
