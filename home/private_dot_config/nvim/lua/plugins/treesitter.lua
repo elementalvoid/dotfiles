@@ -9,8 +9,8 @@ return {
   },
   {
     "HiPhish/rainbow-delimiters.nvim",
-    event = "VeryLazy",
-    main = "rainbow-delimiters.setup",
+    event = { "LazyFile", "VeryLazy" },
+    lazy = vim.fn.argc(-1) == 0, -- load early when opening a file from the cmdline
   },
   {
     -- auto-close if/for/etc;

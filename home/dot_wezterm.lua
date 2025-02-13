@@ -135,7 +135,8 @@ config.audible_bell = "Disabled"
 
 -- don't include tmux pane borders in mouse selection (add │ to default list)
 -- don't include normal pipe (|)
-config.selection_word_boundary = " \t\n{}[]()\"'`|│"
+-- don't include colon (:)
+config.selection_word_boundary = " \t\n{}[]()\"'`|│:"
 
 -- Customize hyperlinks:
 --   https://wezfurlong.org/wezterm/hyperlinks.html#implicit-hyperlinks

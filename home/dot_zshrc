@@ -1,11 +1,9 @@
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
+# Enable Powerlevel10k instant prompt
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-# Ensure path arrays do not contain duplicates.
+# Ensure path arrays do not contain duplicates
 typeset -gU cdpath fpath mailpath path
 
 path=(
@@ -23,216 +21,65 @@ fpath=(
   $fpath
 )
 
-### Added by Zinit's installer
-if [[ ! -f $HOME/.zinit/bin/zinit.zsh ]]; then
-    print -P "%F{33}▓▒░ %F{220}Installing %F{33}DHARMA%F{220} Initiative Plugin Manager (%F{33}zdharma/zinit%F{220})…%f"
-    command mkdir -p "$HOME/.zinit" && command chmod g-rwX "$HOME/.zinit"
-    command git clone https://github.com/zdharma-continuum/zinit "$HOME/.zinit/bin" && \
-        print -P "%F{33}▓▒░ %F{34}Installation successful.%f%b" || \
-        print -P "%F{160}▓▒░ The clone has failed.%f%b"
+# Initialize zcomet
+if [[ ! -f ${ZDOTDIR:-${HOME}}/.zcomet/bin/zcomet.zsh ]]; then
+  command git clone https://github.com/agkozak/zcomet.git ${ZDOTDIR:-${HOME}}/.zcomet/bin
 fi
+source ${ZDOTDIR:-${HOME}}/.zcomet/bin/zcomet.zsh
 
-source "$HOME/.zinit/bin/zinit.zsh"
-autoload -Uz _zinit
-(( ${+_comps} )) && _comps[zinit]=_zinit
-
+# Setup for Bash completion support
 autoload bashcompinit && bashcompinit
 
-zi light-mode for zdharma-continuum/zinit-annex-bin-gem-node
-zi light-mode for zdharma-continuum/zinit-annex-patch-dl
+# Setup completions directory
+[[ ! -d ~/.zsh_completions ]] && mkdir -p ~/.zsh_completions
+zcomet fpath ~/.zsh_completions
 
-# mise is early (for jq needed by powerlevel10k)
-zi light-mode for \
-    as'command' \
-    from'gh-r' \
-    atclone'mv mise-v* mise; ./mise complete --shell=zsh > _mise; mise activate --quiet zsh > zhook.zsh; mise install --yes' \
-    atpull='%atclone' \
-    src'zhook.zsh' \
-  jdx/mise
+# Prompt theme
+zcomet load romkatv/powerlevel10k
 
-zi light-mode for depth=1 romkatv/powerlevel10k
+zcomet load agkozak/zsh-z
+zcomet load mollifier/cd-gitroot
+zcomet load reegnz/jq-zsh-plugin
 
-zi light-mode pack for ls_colors
+# Load Ibotta shell tools
+zcomet load ibotta/shell-tools@ver/new-structure
 
-# BEGIN binary installs
+# History substring search
+zcomet load zsh-users/zsh-history-substring-search
+bindkey -M vicmd "k" history-substring-search-up
+bindkey -M vicmd "j" history-substring-search-down
 
-# Disabled until they produce Mac binaries, install via homebrew instead.
-zi light-mode for \
-    atclone'cp -vf completions/eza.zsh _eza
-            cp man/*.1 ${ZINIT[MAN_DIR]}/man1/;
-            cp man/*.5 ${ZINIT[MAN_DIR]}/man5/;' \
-    atpull'%atclone' \
-  eza-community/eza
-# zi light-mode for \
-#     from'gh-r' \
-#     atclone'cp -vf completions/eza.zsh _eza
-#             cp man/*.1 ${ZINIT[MAN_DIR]}/man1/;
-#             cp man/*.5 ${ZINIT[MAN_DIR]}/man5/;' \
-#     atpull'%atclone' \
-#     sbin'**/eza -> eza' \
-#   eza-community/eza
-
-zi light-mode for \
-    from'gh-r' \
-    sbin'**/bat -> bat' \
-  @sharkdp/bat
-
-zi light-mode for \
-    from'gh-r'  \
-    sbin'**/fd -> fd' \
-  @sharkdp/fd
-
-zi light-mode for \
-    from'gh-r' \
-    sbin'fzf' \
-    dl'https://raw.githubusercontent.com/junegunn/fzf/master/man/man1/fzf.1 -> ${ZINIT[MAN_DIR]}/man1/fzf.1' \
-  junegunn/fzf \
-  https://raw.githubusercontent.com/junegunn/fzf/master/shell/{key-bindings,completion}.zsh
-
-zi light-mode for \
-    from'gh-r' \
-    atclone'procs --gen-completion zsh' \
-    atpull'%atclone' \
-    sbin'**/procs -> procs' \
-  dalance/procs
-
-zi light-mode for \
-    from'gh-r' \
-    sbin'g*x -> grex' \
-  pemistahl/grex
-
-if uname -a | grep -q Darwin; then
-  # Installing `hub` via brew to get an ARM binary, else tree-sitter install
-  # may install the wrong arch (if the ts library is installed inside a `git commit`).
-  # Still using completions from GitHub though.
-  zi light-mode for \
-      cp'etc/hub.zsh_completion -> _hub' \
-    mislav/hub
-else
-  # For Linux and Windows install from GitHub release
-  zi light-mode for \
-      from'gh-r' \
-      atclone'cp hub**/etc/hub.zsh_completion _hub' \
-      atpull'%atclone' \
-      sbin'hub**/bin/hub -> hub' \
-    mislav/hub
-fi
-
-zi light-mode for \
-    from'gh-r' \
-    sbin'bin/ec-* -> ec' \
-  editorconfig-checker/editorconfig-checker
-
-zi light-mode for \
-    from'gh-r' \
-    atclone'cp -vf man/*.1 ${ZINIT[MAN_DIR]}/man1/' \
-    atpull'%atclone' \
-    sbin'actionlint' \
-  rhysd/actionlint
-
-# awesome git diff/blame/etc.
-zi light-mode for \
-    from'gh-r' \
-    sbin'delta*/delta' \
-  dandavison/delta
-
-if [[ $(uname -a) =~ "/^Darwin.*/" ]]; then
-  # not installing in WSL because it panics
-  zi light-mode for \
-      from'gh-r' \
-      sbin'tree-sitter-* -> tree-sitter' \
-    tree-sitter/tree-sitter
-fi
-
-zi light-mode for \
-    from'gh-r' \
-    sbin'glow' \
-  charmbracelet/glow
-
-zi light-mode for \
-    from'gh-r' \
-    atclone'cp -vf ripgrep*/complete/_rg _rg; cp -vf ripgrep*/doc/*.1 ${ZINIT[MAN_DIR]}/man1/' \
-    atpull'%atclone' \
-    sbin'ripgrep*/rg -> rg' \
-  BurntSushi/ripgrep
-
-#   ajeetdsouza/zoxide
-
-# END binary installs
-
-zi light-mode for agkozak/zsh-z
-
-zi light-mode for \
-    id-as'completion/_docker' \
-    as'completion' \
-    is-snippet \
-  https://raw.githubusercontent.com/docker/cli/master/contrib/completion/zsh/_docker
-
-zi light-mode for mollifier/cd-gitroot
-
-zi light-mode for reegnz/jq-zsh-plugin
-
-# krew: https://github.com/zdharma-continuum/zinit/blob/main/tests/gh-r.zunit#L417
-# bitwarden: https://github.com/kalsowerus/zsh-bitwarden
-
-# ibotta shell tools
-zi light-mode for \
-    ver'new-structure' \
-    pick'zsh-plugins/terraform-local/*.plugin.zsh' \
-    from'git@github.com' \
-    proto'ssh' \
-  ibotta/shell-tools
-
-zi light-mode for \
-    depth=1 \
-    atload'bindkey -M vicmd "k" history-substring-search-up; bindkey -M vicmd "j" history-substring-search-down' \
-  zsh-users/zsh-history-substring-search
-
-zi light-mode for \
-    id-as'dotd' \
-    multisrc'*.plugin.zsh' \
-    pick'/dev/null' \
-  ~/.zshrc.d
-
-zi light-mode for \
-    id-as'dotd-private' \
-    multisrc'*.plugin.zsh' \
-    pick'/dev/null' \
-  ~/.zshrc-private.d
-
-# commom completion config
-# TODO: Checkout https://github.com/ohmyzsh/ohmyzsh/blob/master/lib/completion.zsh
+# Completion configuration
 zstyle ':completion:*' use-cache yes
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 zstyle ':completion:*:descriptions' format '[%d]'
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
-zstyle ':completion:::::' completer _complete _approximate
-# zstyle ':completion:*:approximate:*' max-errors 2
-# force zsh not to show completion menu, which allows fzf-tab to capture the unambiguous prefix
+zstyle ':completion:*:::::' completer _complete _approximate
 zstyle ':completion:*' menu no
 
-# fzf-tab config
+# Load fzf bindings and completion
+zcomet load junegunn/fzf /shell/{key-bindings,completion}.zsh
+
+# Load fzf-tab and configure
+zcomet load Aloxaf/fzf-tab
 zstyle ":fzf-tab:*" fzf-flags --border
 zstyle ':fzf-tab:*' fzf-min-height 15
-# preview config
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -F -g -h --group-directories-first --git --icons --color-scale --color=always --hyperlink -1 $realpath'
-# zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza -F -g -h --group-directories-first --git --icons --color-scale --color=always --hyperlink -1 $realpath'
-zstyle ':fzf-tab:complete:(-command-|-parameter-|-brace-parameter-|export|unset|expand):*' \
-	fzf-preview 'echo ${(P)word}' # preview env vars
-# space accetps the current suggestion (like enter)
 zstyle ':fzf-tab:*' fzf-bindings 'space:accept'
-zi light-mode for Aloxaf/fzf-tab
 
-zi light-mode for \
-  zsh-users/zsh-autosuggestions
+# Load local configurations
+for f in ~/.zshrc.d/*.plugin.zsh; do zcomet snippet "${f}"; done
+for f in ~/.zshrc-private.d/*.plugin.zsh; do zcomet snippet "${f}"; done
+
+# Load autosuggestions and syntax highlighting
+zcomet load zsh-users/zsh-autosuggestions
 bindkey '^ ' autosuggest-accept
+zcomet load zdharma-continuum/fast-syntax-highlighting
+fast-theme default 2>&1 >/dev/null
 
-zi light-mode for \
-    atload'zicompinit; zicdreplay -q' \
-    atclone'source ./fast-syntax-highlighting.plugin.zsh; fast-theme default' \
-    atpull'%atclone' \
-  zdharma-continuum/fast-syntax-highlighting
+# Load and cache completions
+zcomet compinit
 
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+# Load p10k configuration
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 (( ! ${+functions[p10k]} )) || p10k finalize
