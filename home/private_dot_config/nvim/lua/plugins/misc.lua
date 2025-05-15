@@ -19,10 +19,10 @@ return {
     "roobert/surround-ui.nvim",
     lazy = false,
     keys = {
-      { "<leader>S", desc = "Surround UI" },
+      { "<leader>ss", desc = "Surround UI" },
     },
     opts = {
-      root_key = "S",
+      root_key = "ss",
     },
   },
 }

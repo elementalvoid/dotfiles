@@ -4,6 +4,38 @@ local config = wezterm.config_builder()
 
 local theme = "Catppuccin Mocha"
 
+config.color_scheme = theme
+config.status_update_interval = 750
+config.window_padding = {
+	left = "1cell",
+	right = "1cell",
+	top = "0.5cell",
+	bottom = "0",
+}
+
+config.scrollback_lines = 10000
+config.audible_bell = "Disabled"
+
+-- don't include tmux pane borders in mouse selection (add │ to default list)
+-- don't include normal pipe (|)
+-- don't include colon (:)
+-- don't include comma (,)
+config.selection_word_boundary = " \t\n{}[]()\"'`|│:,"
+
+-- Customize hyperlinks:
+--   https://wezfurlong.org/wezterm/hyperlinks.html#implicit-hyperlinks
+-- Use the defaults as a base
+config.hyperlink_rules = wezterm.default_hyperlink_rules()
+
+-- make username/project paths clickable. this implies paths like the following are for github.
+-- ( 'nvim-treesitter/nvim-treesitter' | wbthomason/packer.nvim | wez/wezterm | 'wez/wezterm.git' )
+-- Disabled for now because _path_ names match the regex
+-- table.insert(config.hyperlink_rules, {
+--   regex = [[["]?([\w\d]{1}[-\w\d]+)(/){1}([-\w\d\.]+)["]?]],
+--   format = 'https://www.github.com/$1/$3',
+-- })
+
+
 -- Actions docs: https://wezfurlong.org/wezterm/config/lua/keyassignment/index.html
 local pane_resize = 5
 config.leader = { key = "a", mods = "CTRL" }
@@ -16,7 +48,7 @@ config.keys = {
 	-- tmux like bindings
 	{ key = "a", mods = "LEADER|CTRL", action = act.ActivateLastTab },
 	{ key = "Escape", mods = "LEADER", action = act.ActivateCopyMode },
-	{ key = "c", mods = "LEADER", action = act.SpawnTab("CurrentPaneDomain") },
+	{ key = "c", mods = "LEADER", action = act.SpawnCommandInNewTab({ domain = "CurrentPaneDomain", cwd = wezterm.home_dir }) },
 	{ key = "z", mods = "LEADER", action = act.TogglePaneZoomState },
 	{ key = "p", mods = "LEADER", action = act.ActivateCommandPalette },
 	{ key = "/", mods = "LEADER", action = act.Search("CurrentSelectionOrEmptyString") },
@@ -120,35 +152,5 @@ tabline.setup({
 	},
 })
 tabline.apply_to_config(config)
-
-config.color_scheme = theme
-config.status_update_interval = 750
-config.window_padding = {
-	left = "1cell",
-	right = "1cell",
-	top = "0.5cell",
-	bottom = "0",
-}
-
-config.scrollback_lines = 10000
-config.audible_bell = "Disabled"
-
--- don't include tmux pane borders in mouse selection (add │ to default list)
--- don't include normal pipe (|)
--- don't include colon (:)
-config.selection_word_boundary = " \t\n{}[]()\"'`|│:"
-
--- Customize hyperlinks:
---   https://wezfurlong.org/wezterm/hyperlinks.html#implicit-hyperlinks
--- Use the defaults as a base
-config.hyperlink_rules = wezterm.default_hyperlink_rules()
-
--- make username/project paths clickable. this implies paths like the following are for github.
--- ( 'nvim-treesitter/nvim-treesitter' | wbthomason/packer.nvim | wez/wezterm | 'wez/wezterm.git' )
--- Disabled for now because _path_ names match the regex
--- table.insert(config.hyperlink_rules, {
---   regex = [[["]?([\w\d]{1}[-\w\d]+)(/){1}([-\w\d\.]+)["]?]],
---   format = 'https://www.github.com/$1/$3',
--- })
 
 return config

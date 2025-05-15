@@ -6,6 +6,7 @@ source <(mise activate --quiet zsh)
 which cargo 2>&1 >/dev/null || mise use -g cargo
 which cargo-binstall 2>&1 >/dev/null || mise use -g cargo-binstall
 which ubi 2>&1 >/dev/null || mise use -g ubi
+which uv 2>&1 >/dev/null || mise use -g uv
 
 # Required (currently) for M1 + XCode Tools 14. Or something.
 # In any case, this makes it possible to install ruby again.

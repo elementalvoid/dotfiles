@@ -11,11 +11,15 @@ experimental = true                    # enable experimental features such as sh
 disable_hints = ["python_precompiled"]
 python_compile = false
 
+[alias]
+# awscli from Aqua is weird, use asdf plugin
+awscli = "asdf:https://github.com/MetricMike/asdf-awscli.git"
+
 [tools]
 argo = "3"
 argocd = "2"
 awscli = "2"
-bitwarden = "2025"
+bitwarden = "cli-v2025"
 chezmoi = "2"
 cloudflared = "2025"
 conftest = "0"
@@ -30,7 +34,7 @@ helm = "3"
 helm-docs = "1"
 hey = "0"
 iam-policy-json-to-terraform = "1"
-java = "corretto-19"
+java = "corretto-23"
 jq = "1"
 k9s = "0"
 kind = "0"
@@ -75,3 +79,7 @@ tree-sitter = "latest"
 "ubi:DataDog/whoAMI-scanner" = "latest"
 "go:github.com/mislav/hub" = "v2" # using go because it gets me an aarm64 binary, all other methods get x86_64
 cargo-binstall = "latest"
+cargo = "latest"
+"ubi:aws/amazon-ec2-instance-selector" = "latest"
+uv = "latest"
+"pipx:vectorcode" = "latest"
