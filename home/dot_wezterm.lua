@@ -2,9 +2,25 @@ local wezterm = require("wezterm")
 local act = wezterm.action
 local config = wezterm.config_builder()
 
-local theme = "Catppuccin Mocha"
+local function get_appearance()
+	-- wezterm.gui is not available to the mux server, so take care to
+	-- do something reasonable when this config is evaluated by the mux
+	if wezterm.gui then
+		return wezterm.gui.get_appearance()
+	end
+	return "Dark"
+end
 
-config.color_scheme = theme
+local function color_scheme()
+	local appearance = get_appearance()
+	if appearance:find("Dark") then
+		return "Catppuccin Mocha"
+	else
+		return "Catppuccin Latte"
+	end
+end
+
+config.color_scheme = color_scheme()
 config.status_update_interval = 750
 config.window_padding = {
 	left = "1cell",
@@ -16,25 +32,9 @@ config.window_padding = {
 config.scrollback_lines = 10000
 config.audible_bell = "Disabled"
 
--- don't include tmux pane borders in mouse selection (add │ to default list)
--- don't include normal pipe (|)
--- don't include colon (:)
--- don't include comma (,)
+-- don't include tmux pane borders in mouse selection (│)
+-- don't include normal pipe (|), colon (:), comma (,)
 config.selection_word_boundary = " \t\n{}[]()\"'`|│:,"
-
--- Customize hyperlinks:
---   https://wezfurlong.org/wezterm/hyperlinks.html#implicit-hyperlinks
--- Use the defaults as a base
-config.hyperlink_rules = wezterm.default_hyperlink_rules()
-
--- make username/project paths clickable. this implies paths like the following are for github.
--- ( 'nvim-treesitter/nvim-treesitter' | wbthomason/packer.nvim | wez/wezterm | 'wez/wezterm.git' )
--- Disabled for now because _path_ names match the regex
--- table.insert(config.hyperlink_rules, {
---   regex = [[["]?([\w\d]{1}[-\w\d]+)(/){1}([-\w\d\.]+)["]?]],
---   format = 'https://www.github.com/$1/$3',
--- })
-
 
 -- Actions docs: https://wezfurlong.org/wezterm/config/lua/keyassignment/index.html
 local pane_resize = 5
@@ -48,7 +48,11 @@ config.keys = {
 	-- tmux like bindings
 	{ key = "a", mods = "LEADER|CTRL", action = act.ActivateLastTab },
 	{ key = "Escape", mods = "LEADER", action = act.ActivateCopyMode },
-	{ key = "c", mods = "LEADER", action = act.SpawnCommandInNewTab({ domain = "CurrentPaneDomain", cwd = wezterm.home_dir }) },
+	{
+		key = "c",
+		mods = "LEADER",
+		action = act.SpawnCommandInNewTab({ domain = "CurrentPaneDomain", cwd = wezterm.home_dir }),
+	},
 	{ key = "z", mods = "LEADER", action = act.TogglePaneZoomState },
 	{ key = "p", mods = "LEADER", action = act.ActivateCommandPalette },
 	{ key = "/", mods = "LEADER", action = act.Search("CurrentSelectionOrEmptyString") },
@@ -125,7 +129,7 @@ config.key_tables = {
 local tabline = wezterm.plugin.require("https://github.com/michaelbrusegard/tabline.wez")
 tabline.setup({
 	options = {
-		theme = theme,
+		theme = color_scheme(),
 	},
 	sections = {
 		tabline_a = { "mode" },
