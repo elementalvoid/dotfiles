@@ -22,7 +22,7 @@ return {
         },
       },
       keymap = {
-        preset = "super-tab",
+        -- preset = "super-tab",
       },
       sources = {
         -- adding any nvim-cmp sources here will enable them

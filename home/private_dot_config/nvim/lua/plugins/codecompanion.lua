@@ -43,8 +43,7 @@ require("which-key").add({
 return {
   {
     "ravitemer/mcphub.nvim",
-    cmd = { "MCPHub" },
-    event = "BufReadPost",
+    lazy = false,
     build = "bundled_build.lua",
     opts = {
       use_bundled_binary = true,
@@ -56,8 +55,6 @@ return {
   },
   {
     "Davidyz/VectorCode",
-    -- version = "*", -- optional, depending on whether you're on nightly or release
-    -- build = "pipx upgrade vectorcode", -- using mise pipx/uv instead
     dependencies = {
       "nvim-lua/plenary.nvim",
     },
@@ -77,8 +74,7 @@ return {
       "nvim-treesitter/nvim-treesitter",
       "ravitemer/mcphub.nvim",
     },
-    cmd = { "CodeCompanion", "CodeCompanionChat", "CodeCompanionActions" },
-    event = "BufReadPost",
+    lazy = false,
 
     opts = {
       extensions = {
@@ -102,33 +98,92 @@ return {
           description = "Optimize for performance",
           opts = {
             short_name = "optimize",
-            modes = { "v" },
+            modes = { "v", "n" },
           },
           prompts = {
             {
               role = "user",
-              content = "Please optimize the following code for performance.",
+              content = [[
+Please optimize the following code with these goals:
+- Improve performance and reduce resource usage.
+- Identify and eliminate bottlenecks or inefficient patterns.
+- Use idiomatic optimizations and best practices for the language.
+- Watch for common security issues (such as those in the OWASP Top Ten) and suggest improvements where relevant.
+- Do not change the code's external behavior.
+After optimizing, provide a brief summary of the main changes and performance improvements you made.
+]],
             },
           },
         },
+
         ["Debug"] = {
           strategy = "chat",
           description = "Identify potential bugs",
           opts = {
             short_name = "debug",
-            modes = { "v" },
+            modes = { "v", "n" },
           },
           prompts = {
             {
               role = "user",
-              content = "Please identify potential bugs in the following code.",
+              content = [[
+Please review the following code and:
+- Identify potential bugs, edge cases, and logic errors.
+- Suggest fixes and improvements to error handling.
+- Highlight any areas that may cause unexpected behavior.
+- Watch for common security issues (such as those in the OWASP Top Ten) and suggest improvements where relevant.
+- Do not change the code's external behavior unless necessary for correctness.
+After your review, provide a summary of your findings and recommendations.
+]],
+            },
+          },
+        },
+
+        ["Refactor"] = {
+          strategy = "chat",
+          description = "Refactor code for clarity, maintainability, and best practices",
+          opts = {
+            short_name = "refactor",
+            modes = { "v", "n" },
+          },
+          prompts = {
+            {
+              role = "user",
+              content = [[
+Please refactor the following code with the following goals:
+- Improve readability, maintainability, and modularity.
+- Use idiomatic constructs and best practices for the language.
+- Remove duplication and unnecessary complexity.
+- Use clear, concise naming for variables, functions, and classes.
+- Add comments where they clarify non-obvious logic.
+- Watch for common security issues (such as those in the OWASP Top Ten) and suggest improvements where relevant.
+- Do not change the code's external behavior.
+After refactoring, provide a brief summary of the main changes you made.
+]],
+            },
+          },
+        },
+        ["Summarize"] = {
+          strategy = "chat",
+          description = "Summarize code purpose and structure",
+          opts = {
+            short_name = "summarize",
+            modes = { "v", "n" },
+          },
+          prompts = {
+            {
+              role = "user",
+              content = [[
+Please provide a concise summary of the following code:
+- Explain its overall purpose and main functionality.
+- Highlight key components, logic, and any important dependencies.
+- Mention any potential security concerns (such as those in the OWASP Top Ten) if relevant.
+Write your summary in clear, developer-friendly language.
+]],
             },
           },
         },
       },
     },
-    -- config = function(_, opts)
-    --   require("codecompanion").setup(opts)
-    -- end,
   },
 }
