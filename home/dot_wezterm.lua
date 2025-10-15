@@ -14,9 +14,11 @@ end
 local function color_scheme()
 	local appearance = get_appearance()
 	if appearance:find("Dark") then
-		return "Catppuccin Mocha"
+		-- return "Catppuccin Mocha"
+		return "Tokyo Night Moon"
 	else
-		return "Catppuccin Latte"
+		-- return "Catppuccin Latte"
+		return "Tokyo Night Day"
 	end
 end
 
@@ -34,7 +36,20 @@ config.audible_bell = "Disabled"
 
 -- don't include tmux pane borders in mouse selection (│)
 -- don't include normal pipe (|), colon (:), comma (,)
-config.selection_word_boundary = " \t\n{}[]()\"'`|│:,"
+config.selection_word_boundary = " \t\n{}[]()\"'`|│:,="
+
+config.mouse_bindings = {
+  {
+    event = { Up = { streak = 1, button = 'Left' } },
+    mods = 'NONE',
+    action = act.DisableDefaultAssignment,
+  },
+  {
+    event = { Up = { streak = 1, button = 'Left' } },
+    mods = 'CMD',
+    action = act.OpenLinkAtMouseCursor,
+  },
+}
 
 -- Actions docs: https://wezfurlong.org/wezterm/config/lua/keyassignment/index.html
 local pane_resize = 5

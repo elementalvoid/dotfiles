@@ -1,0 +1,359 @@
+#compdef tree-sitter
+
+autoload -U is-at-least
+
+_tree-sitter() {
+    typeset -A opt_args
+    typeset -a _arguments_options
+    local ret=1
+
+    if is-at-least 5.2; then
+        _arguments_options=(-s -S -C)
+    else
+        _arguments_options=(-s -C)
+    fi
+
+    local context curcontext="$curcontext" state line
+    _arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+'-V[Print version]' \
+'--version[Print version]' \
+":: :_tree-sitter_commands" \
+"*::: :->tree-sitter" \
+&& ret=0
+    case $state in
+    (tree-sitter)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:tree-sitter-command-$line[1]:"
+        case $line[1] in
+            (init-config)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(init)
+_arguments "${_arguments_options[@]}" : \
+'-u[Update outdated files]' \
+'--update[Update outdated files]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(generate)
+_arguments "${_arguments_options[@]}" : \
+'--abi=[Select the language ABI version to generate (default 15). Use --abi=latest to generate the newest supported version (15).]:VERSION:_default' \
+'--libdir=[The path to the directory containing the parser library]:PATH:_default' \
+'-o+[The path to output the generated source files]:DIRECTORY:_default' \
+'--output=[The path to output the generated source files]:DIRECTORY:_default' \
+'--report-states-for-rule=[Produce a report of the states for the given rule, use \`-\` to report every rule]:REPORT_STATES_FOR_RULE:_default' \
+'--js-runtime=[The name or path of the JavaScript runtime to use for generating parsers]:EXECUTABLE:_default' \
+'-l[Show debug log during generation]' \
+'--log[Show debug log during generation]' \
+'--no-bindings[Deprecated (no-op)]' \
+'-b[Compile all defined languages in the current dir]' \
+'--build[Compile all defined languages in the current dir]' \
+'-0[Compile a parser in debug mode]' \
+'--debug-build[Compile a parser in debug mode]' \
+'--json[Report conflicts in a JSON format]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'::grammar_path -- The path to the grammar file:_default' \
+&& ret=0
+;;
+(build)
+_arguments "${_arguments_options[@]}" : \
+'-o+[The path to output the compiled file]:OUTPUT:_default' \
+'--output=[The path to output the compiled file]:OUTPUT:_default' \
+'-w[Build a WASM module instead of a dynamic library]' \
+'--wasm[Build a WASM module instead of a dynamic library]' \
+'-d[Run emscripten via docker even if it is installed locally (only if building a WASM module with --wasm)]' \
+'--docker[Run emscripten via docker even if it is installed locally (only if building a WASM module with --wasm)]' \
+'--reuse-allocator[Make the parser reuse the same allocator as the library]' \
+'-0[Compile a parser in debug mode]' \
+'--debug[Compile a parser in debug mode]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'::path -- The path to the grammar directory:_default' \
+&& ret=0
+;;
+(parse)
+_arguments "${_arguments_options[@]}" : \
+'--paths=[The path to a file with paths to source file(s)]:PATHS_FILE:_files' \
+'--scope=[Select a language by the scope instead of a file extension]:SCOPE:_default' \
+'-d+[Show parsing debug log]' \
+'--debug=[Show parsing debug log]' \
+'--timeout=[Interrupt the parsing process by timeout (µs)]:TIMEOUT:_default' \
+'*--edits=[Apply edits in the format\: \\"row,col|position delcount insert_text\\", can be supplied multiple times]:EDITS:_default' \
+'--encoding=[The encoding of the input files]:ENCODING:(utf8 utf16-le utf16-be)' \
+'--config-path=[The path to an alternative config.json file]:CONFIG_PATH:_files' \
+'(--paths)-n+[Parse the contents of a specific test]:TEST_NUMBER:_default' \
+'(--paths)--test-number=[Parse the contents of a specific test]:TEST_NUMBER:_default' \
+'-0[Compile a parser in debug mode]' \
+'--debug-build[Compile a parser in debug mode]' \
+'-D[Produce the log.html file with debug graphs]' \
+'--debug-graph[Produce the log.html file with debug graphs]' \
+'--wasm[Compile parsers to wasm instead of native dynamic libraries]' \
+'--dot[Output the parse data with graphviz dot]' \
+'-x[Output the parse data in XML format]' \
+'--xml[Output the parse data in XML format]' \
+'-c[Output the parse data in a pretty-printed CST format]' \
+'--cst[Output the parse data in a pretty-printed CST format]' \
+'-s[Show parsing statistic]' \
+'--stat[Show parsing statistic]' \
+'-t[Measure execution time]' \
+'--time[Measure execution time]' \
+'-q[Suppress main output]' \
+'--quiet[Suppress main output]' \
+'--open-log[Open \`log.html\` in the default browser, if \`--debug-graph\` is supplied]' \
+'-j[Output parsing results in a JSON format]' \
+'--json[Output parsing results in a JSON format]' \
+'-r[Force rebuild the parser]' \
+'--rebuild[Force rebuild the parser]' \
+'--no-ranges[Omit ranges in the output]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'*::paths -- The source file(s) to use:_files' \
+&& ret=0
+;;
+(test)
+_arguments "${_arguments_options[@]}" : \
+'-i+[Only run corpus test cases whose name matches the given regex]:INCLUDE:_default' \
+'--include=[Only run corpus test cases whose name matches the given regex]:INCLUDE:_default' \
+'-e+[Only run corpus test cases whose name does not match the given regex]:EXCLUDE:_default' \
+'--exclude=[Only run corpus test cases whose name does not match the given regex]:EXCLUDE:_default' \
+'--file-name=[Only run corpus test cases from from a given filename]:FILE_NAME:_default' \
+'--config-path=[The path to an alternative config.json file]:CONFIG_PATH:_files' \
+'--stat=[Show parsing statistics]:STAT:(all outliers-and-total total-only)' \
+'-u[Update all syntax trees in corpus files with current parser output]' \
+'--update[Update all syntax trees in corpus files with current parser output]' \
+'-d[Show parsing debug log]' \
+'--debug[Show parsing debug log]' \
+'-0[Compile a parser in debug mode]' \
+'--debug-build[Compile a parser in debug mode]' \
+'-D[Produce the log.html file with debug graphs]' \
+'--debug-graph[Produce the log.html file with debug graphs]' \
+'--wasm[Compile parsers to wasm instead of native dynamic libraries]' \
+'--open-log[Open \`log.html\` in the default browser, if \`--debug-graph\` is supplied]' \
+'--show-fields[Force showing fields in test diffs]' \
+'-r[Force rebuild the parser]' \
+'--rebuild[Force rebuild the parser]' \
+'--overview-only[Show only the pass-fail overview tree]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(version)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+':version -- The version to bump to:_default' \
+&& ret=0
+;;
+(fuzz)
+_arguments "${_arguments_options[@]}" : \
+'*-s+[List of test names to skip]:SKIP:_default' \
+'*--skip=[List of test names to skip]:SKIP:_default' \
+'--subdir=[Subdirectory to the language]:SUBDIR:_default' \
+'--edits=[Maximum number of edits to perform per fuzz test]:EDITS:_default' \
+'--iterations=[Number of fuzzing iterations to run per test]:ITERATIONS:_default' \
+'-i+[Only fuzz corpus test cases whose name matches the given regex]:INCLUDE:_default' \
+'--include=[Only fuzz corpus test cases whose name matches the given regex]:INCLUDE:_default' \
+'-e+[Only fuzz corpus test cases whose name does not match the given regex]:EXCLUDE:_default' \
+'--exclude=[Only fuzz corpus test cases whose name does not match the given regex]:EXCLUDE:_default' \
+'--log-graphs[Enable logging of graphs and input]' \
+'-l[Enable parser logging]' \
+'--log[Enable parser logging]' \
+'-r[Force rebuild the parser]' \
+'--rebuild[Force rebuild the parser]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(query)
+_arguments "${_arguments_options[@]}" : \
+'--paths=[The path to a file with paths to source file(s)]:PATHS_FILE:_files' \
+'--byte-range=[The range of byte offsets in which the query will be executed]:BYTE_RANGE:_default' \
+'--row-range=[The range of rows in which the query will be executed]:ROW_RANGE:_default' \
+'--scope=[Select a language by the scope instead of a file extension]:SCOPE:_default' \
+'--config-path=[The path to an alternative config.json file]:CONFIG_PATH:_files' \
+'(--paths)-n+[Query the contents of a specific test]:TEST_NUMBER:_default' \
+'(--paths)--test-number=[Query the contents of a specific test]:TEST_NUMBER:_default' \
+'-t[Measure execution time]' \
+'--time[Measure execution time]' \
+'-q[Suppress main output]' \
+'--quiet[Suppress main output]' \
+'-c[Order by captures instead of matches]' \
+'--captures[Order by captures instead of matches]' \
+'--test[Whether to run query tests or not]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':query_path -- Path to a file with queries:_files' \
+'*::paths -- The source file(s) to use:_files' \
+&& ret=0
+;;
+(highlight)
+_arguments "${_arguments_options[@]}" : \
+'--captures-path=[The path to a file with captures]:CAPTURES_PATH:_files' \
+'*--query-paths=[The paths to files with queries]:QUERY_PATHS:_files' \
+'--scope=[Select a language by the scope instead of a file extension]:SCOPE:_default' \
+'--paths=[The path to a file with paths to source file(s)]:PATHS_FILE:_files' \
+'--config-path=[The path to an alternative config.json file]:CONFIG_PATH:_files' \
+'(--paths)-n+[Highlight the contents of a specific test]:TEST_NUMBER:_default' \
+'(--paths)--test-number=[Highlight the contents of a specific test]:TEST_NUMBER:_default' \
+'-H[Generate highlighting as an HTML document]' \
+'--html[Generate highlighting as an HTML document]' \
+'--css-classes[When generating HTML, use css classes rather than inline styles]' \
+'--check[Check that highlighting captures conform strictly to standards]' \
+'-t[Measure execution time]' \
+'--time[Measure execution time]' \
+'-q[Suppress main output]' \
+'--quiet[Suppress main output]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'*::paths -- The source file(s) to use:_files' \
+&& ret=0
+;;
+(tags)
+_arguments "${_arguments_options[@]}" : \
+'--scope=[Select a language by the scope instead of a file extension]:SCOPE:_default' \
+'--paths=[The path to a file with paths to source file(s)]:PATHS_FILE:_files' \
+'--config-path=[The path to an alternative config.json file]:CONFIG_PATH:_files' \
+'(--paths)-n+[Generate tags from the contents of a specific test]:TEST_NUMBER:_default' \
+'(--paths)--test-number=[Generate tags from the contents of a specific test]:TEST_NUMBER:_default' \
+'-t[Measure execution time]' \
+'--time[Measure execution time]' \
+'-q[Suppress main output]' \
+'--quiet[Suppress main output]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'*::paths -- The source file(s) to use:_files' \
+&& ret=0
+;;
+(playground)
+_arguments "${_arguments_options[@]}" : \
+'--grammar-path=[Path to the directory containing the grammar and wasm files]:GRAMMAR_PATH:_default' \
+'-q[Don'\''t open in default browser]' \
+'--quiet[Don'\''t open in default browser]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(dump-languages)
+_arguments "${_arguments_options[@]}" : \
+'--config-path=[The path to an alternative config.json file]:CONFIG_PATH:_files' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(complete)
+_arguments "${_arguments_options[@]}" : \
+'-s+[The shell to generate completions for]:SHELL:(bash elvish fish power-shell zsh nushell)' \
+'--shell=[The shell to generate completions for]:SHELL:(bash elvish fish power-shell zsh nushell)' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+}
+
+(( $+functions[_tree-sitter_commands] )) ||
+_tree-sitter_commands() {
+    local commands; commands=(
+'init-config:Generate a default config file' \
+'init:Initialize a grammar repository' \
+'generate:Generate a parser' \
+'build:Compile a parser' \
+'parse:Parse files' \
+'test:Run a parser'\''s tests' \
+'version:Increment the version of a grammar' \
+'fuzz:Fuzz a parser' \
+'query:Search files using a syntax tree query' \
+'highlight:Highlight a file' \
+'tags:Generate a list of tags' \
+'playground:Start local playground for a parser in the browser' \
+'dump-languages:Print info about all known language parsers' \
+'complete:Generate shell completions' \
+    )
+    _describe -t commands 'tree-sitter commands' commands "$@"
+}
+(( $+functions[_tree-sitter__build_commands] )) ||
+_tree-sitter__build_commands() {
+    local commands; commands=()
+    _describe -t commands 'tree-sitter build commands' commands "$@"
+}
+(( $+functions[_tree-sitter__complete_commands] )) ||
+_tree-sitter__complete_commands() {
+    local commands; commands=()
+    _describe -t commands 'tree-sitter complete commands' commands "$@"
+}
+(( $+functions[_tree-sitter__dump-languages_commands] )) ||
+_tree-sitter__dump-languages_commands() {
+    local commands; commands=()
+    _describe -t commands 'tree-sitter dump-languages commands' commands "$@"
+}
+(( $+functions[_tree-sitter__fuzz_commands] )) ||
+_tree-sitter__fuzz_commands() {
+    local commands; commands=()
+    _describe -t commands 'tree-sitter fuzz commands' commands "$@"
+}
+(( $+functions[_tree-sitter__generate_commands] )) ||
+_tree-sitter__generate_commands() {
+    local commands; commands=()
+    _describe -t commands 'tree-sitter generate commands' commands "$@"
+}
+(( $+functions[_tree-sitter__highlight_commands] )) ||
+_tree-sitter__highlight_commands() {
+    local commands; commands=()
+    _describe -t commands 'tree-sitter highlight commands' commands "$@"
+}
+(( $+functions[_tree-sitter__init_commands] )) ||
+_tree-sitter__init_commands() {
+    local commands; commands=()
+    _describe -t commands 'tree-sitter init commands' commands "$@"
+}
+(( $+functions[_tree-sitter__init-config_commands] )) ||
+_tree-sitter__init-config_commands() {
+    local commands; commands=()
+    _describe -t commands 'tree-sitter init-config commands' commands "$@"
+}
+(( $+functions[_tree-sitter__parse_commands] )) ||
+_tree-sitter__parse_commands() {
+    local commands; commands=()
+    _describe -t commands 'tree-sitter parse commands' commands "$@"
+}
+(( $+functions[_tree-sitter__playground_commands] )) ||
+_tree-sitter__playground_commands() {
+    local commands; commands=()
+    _describe -t commands 'tree-sitter playground commands' commands "$@"
+}
+(( $+functions[_tree-sitter__query_commands] )) ||
+_tree-sitter__query_commands() {
+    local commands; commands=()
+    _describe -t commands 'tree-sitter query commands' commands "$@"
+}
+(( $+functions[_tree-sitter__tags_commands] )) ||
+_tree-sitter__tags_commands() {
+    local commands; commands=()
+    _describe -t commands 'tree-sitter tags commands' commands "$@"
+}
+(( $+functions[_tree-sitter__test_commands] )) ||
+_tree-sitter__test_commands() {
+    local commands; commands=()
+    _describe -t commands 'tree-sitter test commands' commands "$@"
+}
+(( $+functions[_tree-sitter__version_commands] )) ||
+_tree-sitter__version_commands() {
+    local commands; commands=()
+    _describe -t commands 'tree-sitter version commands' commands "$@"
+}
+
+if [ "$funcstack[1]" = "_tree-sitter" ]; then
+    _tree-sitter "$@"
+else
+    compdef _tree-sitter tree-sitter
+fi

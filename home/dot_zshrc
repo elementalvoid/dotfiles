@@ -42,7 +42,7 @@ zcomet load mollifier/cd-gitroot
 zcomet load reegnz/jq-zsh-plugin
 
 # Load Ibotta shell tools
-zcomet load ibotta/shell-tools@ver/new-structure
+#zcomet load ibotta/shell-tools@ver/new-structure
 
 # History substring search
 zcomet load zsh-users/zsh-history-substring-search
@@ -58,7 +58,7 @@ zstyle ':completion:*:::::' completer _complete _approximate
 zstyle ':completion:*' menu no
 
 # Load fzf bindings and completion
-zcomet load junegunn/fzf /shell/{key-bindings,completion}.zsh
+zcomet load junegunn/fzf@v0.65.2 /shell/{key-bindings,completion}.zsh
 
 # Load fzf-tab and configure
 zcomet load Aloxaf/fzf-tab
@@ -74,8 +74,10 @@ for f in ~/.zshrc-private.d/*.plugin.zsh; do zcomet snippet "${f}"; done
 # Load autosuggestions and syntax highlighting
 zcomet load zsh-users/zsh-autosuggestions
 bindkey '^ ' autosuggest-accept
+
+# catppuccin theme for syntax highlighting (uncomment to enable)
 zcomet load elementalvoid/zsh-fast-syntax-highlighting
-fast-theme catppuccin 2>&1 >/dev/null
+# fast-theme catppuccin 2>&1 >/dev/null
 
 # Load and cache completions
 zcomet compinit

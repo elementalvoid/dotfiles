@@ -3,10 +3,13 @@
 alias history='history -iD'
 
 # ls / eza
+export EZA_CONFIG_DIR=~/.config/eza
 alias ls='eza -F -g -h --group-directories-first --git --icons --color-scale --hyperlink'
 alias ll='ls -l'
 alias la='ll -a'
-# alias lt='ls -T'
+# eza ls sort by time
+alias lt='ls -l --sort newest'
+alias ltr='lt --reverse'
 alias tree='ls -T'
 
 #procs

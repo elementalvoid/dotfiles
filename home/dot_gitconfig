@@ -72,8 +72,10 @@
   line-numbers = true
   hyperlinks = false
   light = false
-  syntax-theme = Coldark-Dark
+  syntax-theme = zenburn
   true-color = always
 
 [includeIf "gitdir:~/code/ibotta/"]
         path = ~/code/ibotta/.gitconfig
+[init]
+	defaultBranch = main

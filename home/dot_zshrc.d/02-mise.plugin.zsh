@@ -16,8 +16,10 @@ export RUBY_CONFIGURE_OPTS='--enable-shared'
 # And also this: https://github.com/ffi/ffi/issues/869
 export RUBY_CFLAGS=-DUSE_FFI_CLOSURE_ALLOC
 
-_generate_completion() {
+generate_completion() {
   local cmd=$1
+  # Check for `ubi:repo/` prefix and strip it if present
+  cmd=${cmd##*/}
 
   if command -v $cmd >/dev/null 2>&1; then
     echo -n "  $cmd: "
@@ -29,6 +31,10 @@ _generate_completion() {
     elif $cmd completions zsh 2>&1 | grep -q "#compdef"; then
       echo "complete"
       $cmd completions zsh >$completion_file
+      return 0
+    elif $cmd completions 2>&1 | grep -q "#compdef"; then
+      echo "complete"
+      $cmd completions >$completion_file
       return 0
     elif $cmd --completion zsh 2>&1 | grep -q "#compdef"; then
       echo "complete"
@@ -42,6 +48,10 @@ _generate_completion() {
       echo "complete"
       $cmd --generate complete-zsh >$completion_file
       return 0
+    elif $cmd generate-shell-completion zsh 2>&1 | grep -q "#compdef"; then
+      echo "complete"
+      $cmd generate-shell-completion zsh >$completion_file
+      return 0
     else
       echo "none found"
     fi
@@ -51,9 +61,9 @@ _generate_completion() {
 generate_completions() {
   echo "attempting to generate completions"
   local generate_completion_exclude_regex="(kubent|iam-policy-json-to-terraform|sopstool|stern|tonnage|viddy)"
-  _generate_completion mise
+  generate_completion mise
   for cmd in $(mise ls -c | cut -d' ' -f1 | grep -vE "${generate_completion_exclude_regex}"); do
-    _generate_completion $cmd
+    generate_completion $cmd
   done
 
   zcomet compinit

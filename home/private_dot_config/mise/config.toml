@@ -9,7 +9,8 @@
 
 experimental = true                    # enable experimental features such as shims and core plugins
 disable_hints = ["python_precompiled"]
-python_compile = false
+python_compile = true
+idiomatic_version_file_enable_tools = ["terraform", "opentofu", "go", "node", "java"]
 
 [alias]
 # awscli from Aqua is weird, use asdf plugin
@@ -27,6 +28,7 @@ difftastic = "latest"
 direnv = "2"
 dive = "0"
 golang = "1"
+golangci-lint = "2"
 gradle = "8"
 granted = "0"
 grpcurl = "1"
@@ -49,7 +51,7 @@ ruby = "3"
 shellcheck = "0"
 sops = "3"
 sopstool = "1"
-steampipe = "1"
+steampipe = "2"
 stern = "1"
 terraform = "1"
 terraform-docs = "0"
@@ -80,6 +82,10 @@ tree-sitter = "latest"
 "go:github.com/mislav/hub" = "v2" # using go because it gets me an aarm64 binary, all other methods get x86_64
 cargo-binstall = "latest"
 cargo = "latest"
-"ubi:aws/amazon-ec2-instance-selector" = "latest"
+# "ubi:aws/amazon-ec2-instance-selector" = "latest"
 uv = "latest"
 "pipx:vectorcode" = "latest"
+"ubi:sst/opencode" = "latest"
+cosign = "latest"
+syft = "latest"
+"ubi:moonrepo/moon" = "latest"

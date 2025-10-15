@@ -1,6 +1,6 @@
 return {
   {
-    "echasnovski/mini.trailspace",
+    "nvim-mini/mini.trailspace",
     config = function()
       local wk = require("which-key")
 

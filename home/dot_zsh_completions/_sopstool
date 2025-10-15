@@ -1,0 +1,20 @@
+#compdef sopstool
+
+_arguments \
+  '1: :->level1' \
+  '2: :_files'
+case $state in
+  level1)
+    case $words[1] in
+      sopstool)
+        _arguments '1: :(add cat clean completion decrypt docs edit entrypoint help list remove rotate version)'
+      ;;
+      *)
+        _arguments '*: :_files'
+      ;;
+    esac
+  ;;
+  *)
+    _arguments '*: :_files'
+  ;;
+esac
