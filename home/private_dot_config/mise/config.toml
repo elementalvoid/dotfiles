@@ -9,12 +9,20 @@
 
 experimental = true                    # enable experimental features such as shims and core plugins
 disable_hints = ["python_precompiled"]
-python_compile = true
+python_compile = false
 idiomatic_version_file_enable_tools = ["terraform", "opentofu", "go", "node", "java"]
 
 [alias]
 # awscli from Aqua is weird, use asdf plugin
 awscli = "asdf:https://github.com/MetricMike/asdf-awscli.git"
+garak = "pipx:garak"
+hub = "go:github.com/mislav/hub"
+moon = "ubi:moonrepo/moon"
+opencode = "ubi:sst/opencode"
+pipx = "pipx:vectorcode"
+procs = "ubi:dalance/procs"
+rumdl = "ubi:rvben/rumdl"
+whoAMI-scanner = "ubi:DataDog/whoAMI-scanner"
 
 [tools]
 argo = "3"
@@ -62,7 +70,7 @@ tonnage = "0"
 usage = "2"
 viddy = "1"
 yq = "4"
-rust = "1"
+rust = "latest"
 ubi = "latest"
 powerpipe = "latest"
 eza = "latest"
@@ -77,15 +85,18 @@ gh = "latest"
 editorconfig-checker = "latest"
 actionlint = "latest"
 tree-sitter = "latest"
-"ubi:dalance/procs" = "latest"
-"ubi:DataDog/whoAMI-scanner" = "latest"
-"go:github.com/mislav/hub" = "v2" # using go because it gets me an aarm64 binary, all other methods get x86_64
 cargo-binstall = "latest"
 cargo = "latest"
 # "ubi:aws/amazon-ec2-instance-selector" = "latest"
 uv = "latest"
-"pipx:vectorcode" = "latest"
-"ubi:sst/opencode" = "latest"
-cosign = "latest"
+cosign = "3"
 syft = "latest"
-"ubi:moonrepo/moon" = "latest"
+rumdl = "latest"
+procs = "latest"
+whoAMI-scanner = "latest"
+hub = "v2" # using go because it gets me an aarm64 binary, all other methods get x86_64
+pipx = "latest"
+opencode = "latest"
+moon = "latest"
+garak = "latest"
+crane = "latest"
