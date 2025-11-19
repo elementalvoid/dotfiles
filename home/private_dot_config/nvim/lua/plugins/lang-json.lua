@@ -1,14 +1,10 @@
 return {
   {
-    "neovim/nvim-lspconfig",
+    "stevearc/conform.nvim",
+    optional = true,
     opts = {
-      servers = {
-        -- Format is <server-name> = { settings ... }. Manuualy nesting the settings
-        -- block is not required.
-
-        jsonls = {
-          -- filetypes = { "json", "jsonc", "json5"},
-        },
+      formatters_by_ft = {
+        ["json5"] = { "prettier" },
       },
     },
   },
