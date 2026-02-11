@@ -12,7 +12,7 @@ disable_hints = ["python_precompiled"]
 python_compile = false
 idiomatic_version_file_enable_tools = ["terraform", "opentofu", "go", "node", "java"]
 
-# Aliases make install/update easier. Instead of `mise up `github:rvben/rumdl`, you can do `mise up rumdl`.
+# Aliases make install/update easier. Instead of `mise up github:rvben/rumdl`, you can do `mise up rumdl`.
 [tool_alias]
 # awscli from Aqua is weird, use asdf plugin
 awscli = "asdf:https://github.com/MetricMike/asdf-awscli.git"
