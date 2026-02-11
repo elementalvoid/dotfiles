@@ -1,6 +1,3 @@
-[color]
-	ui = true
-
 [user]
   email = matt@elementalvoid.com
   name = Matt Klich
@@ -52,9 +49,9 @@
 [hub]
   protocol = ssh
 
-[merge]
-  conflictstyle = diff3
-  #tool = neovim
+#[merge]
+#  conflictStyle = diff3
+#  #tool = neovim
 
 #[mergetool "neovim"]
 #  #cmd = nvim -c "autocmd! CursorHold * DiffviewOpen"
@@ -75,7 +72,8 @@
   syntax-theme = zenburn
   true-color = always
 
-[includeIf "gitdir:~/code/ibotta/"]
-        path = ~/code/ibotta/.gitconfig
 [init]
 	defaultBranch = main
+
+[includeIf "gitdir:~/code/ibotta/"]
+        path = ~/code/ibotta/.gitconfig

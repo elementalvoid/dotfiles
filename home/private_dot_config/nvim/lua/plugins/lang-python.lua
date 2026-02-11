@@ -1,3 +1,7 @@
+vim.g.lazyvim_python_lsp = "ty"
+-- vim.lsp.disable('pyright')
+vim.lsp.enable('ty')
+
 return {
   {
     "benomahony/uv.nvim",

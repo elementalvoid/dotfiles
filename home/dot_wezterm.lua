@@ -2,6 +2,8 @@ local wezterm = require("wezterm")
 local act = wezterm.action
 local config = wezterm.config_builder()
 
+config.front_end = "WebGpu"  -- uses Metal on macOS
+
 local function get_appearance()
 	-- wezterm.gui is not available to the mux server, so take care to
 	-- do something reasonable when this config is evaluated by the mux
