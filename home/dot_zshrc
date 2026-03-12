@@ -58,7 +58,7 @@ zstyle ':completion:*:::::' completer _complete _approximate
 zstyle ':completion:*' menu no
 
 # Load fzf bindings and completion
-zcomet load junegunn/fzf@v0.65.2 /shell/{key-bindings,completion}.zsh
+zcomet load junegunn/fzf /shell/{key-bindings,completion}.zsh
 
 # Load fzf-tab and configure
 zcomet load Aloxaf/fzf-tab

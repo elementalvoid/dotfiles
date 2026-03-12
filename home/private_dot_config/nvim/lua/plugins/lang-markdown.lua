@@ -41,14 +41,14 @@ return {
       },
     },
   },
-  -- {
-  --   "stevearc/conform.nvim",
-  --   optional = true,
-  --   opts = {
-  --     formatters_by_ft = {
-  --       ["markdown"] = { "prettier", "rumdl"},
-  --       ["markdown.mdx"] = { "prettier", "rumdl"},
-  --     },
-  --   },
-  -- },
+  {
+    "stevearc/conform.nvim",
+    optional = true,
+    opts = {
+      formatters_by_ft = {
+        ["markdown"] = { "rumdl" },
+        ["markdown.mdx"] = { "rumdl" },
+      },
+    },
+  },
 }

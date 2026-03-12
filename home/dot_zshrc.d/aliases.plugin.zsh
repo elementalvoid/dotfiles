@@ -4,7 +4,7 @@ alias history='history -iD'
 
 # ls / eza
 export EZA_CONFIG_DIR=~/.config/eza
-alias ls='eza -F -g -h --group-directories-first --git --icons --color-scale --hyperlink'
+alias ls='eza -F -g -h --group-directories-first --git --icons --hyperlink'
 alias ll='ls -l'
 alias la='ll -a'
 # eza ls sort by time

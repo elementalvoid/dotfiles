@@ -17,10 +17,12 @@ local function color_scheme()
 	local appearance = get_appearance()
 	if appearance:find("Dark") then
 		-- return "Catppuccin Mocha"
-		return "Tokyo Night Moon"
+		-- return "Tokyo Night Moon"
+		return "Nord (Gogh)"
 	else
 		-- return "Catppuccin Latte"
-		return "Tokyo Night Day"
+		-- return "Tokyo Night Day"
+		return "Nord Light (Gogh)"
 	end
 end
 

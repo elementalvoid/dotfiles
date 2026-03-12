@@ -69,7 +69,7 @@
   line-numbers = true
   hyperlinks = false
   light = false
-  syntax-theme = zenburn
+  syntax-theme = Nord
   true-color = always
 
 [init]
