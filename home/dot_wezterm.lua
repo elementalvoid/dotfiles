@@ -59,6 +59,9 @@ config.mouse_bindings = {
 local pane_resize = 5
 config.leader = { key = "a", mods = "CTRL" }
 config.keys = {
+	-- Send CSI u encoded Shift+Enter for Claude Code multiline input
+	{ key = "Enter", mods = "SHIFT", action = act.SendString("\x1b[13;2u") },
+
 	-- font resizing
 	{ key = "+", mods = "CMD", action = act.IncreaseFontSize },
 	{ key = "-", mods = "CMD", action = act.DecreaseFontSize },
