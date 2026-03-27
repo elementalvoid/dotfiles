@@ -15,7 +15,7 @@ idiomatic_version_file_enable_tools = ["terraform", "opentofu", "go", "node", "j
 [settings.npm]
 bun = true
 
-# Aliases make install/update easier. Instead of `mise up github:rvben/rumdl`, you can do `mise up rumdl`.
+# Aliases make install/update easier. Instead of `mise up github:mislav/hub`, you can do `mise up hub`.
 [tool_alias]
 # awscli from Aqua is weird, use asdf plugin
 awscli = "asdf:https://github.com/MetricMike/asdf-awscli.git"
@@ -25,7 +25,6 @@ moon = "github:moonrepo/moon"
 # opencode = "aqua:anomalyco/opencode"
 pipx = "pipx:vectorcode"
 procs = "github:dalance/procs"
-rumdl = "github:rvben/rumdl"
 whoAMI-scanner = "github:DataDog/whoAMI-scanner"
 pup = "github:DataDog/pup"
 vibe = "github:lynaghk/vibe"
@@ -98,7 +97,6 @@ cargo = "latest"
 uv = "latest"
 cosign = "3"
 syft = "latest"
-rumdl = "latest"
 procs = "latest"
 whoAMI-scanner = "latest"
 hub = "v2" # using go because it gets me an aarm64 binary, all other methods get x86_64
@@ -117,3 +115,6 @@ tweakcc = "latest"
 "github:steipete/gogcli" = "latest"
 ast-grep = "latest"
 "pipx:ldayton/Dippy" = "latest"
+terraform-ls = "latest"
+rumdl = "latest"
+ty = "latest"
