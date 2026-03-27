@@ -148,7 +148,7 @@ return {
       "catppuccin/nvim",
     },
     opts = {
-      colorscheme = "catppuccin",
+      colorscheme = "catppuccin-nvim",
     },
   },
   {
