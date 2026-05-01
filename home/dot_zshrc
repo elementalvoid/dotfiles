@@ -16,6 +16,7 @@ path=(
   $path
 )
 
+[[ -d ~/.zsh_completions ]] || mkdir ~/.zsh_completions
 fpath=(
   ~/.zsh_completions
   $fpath
