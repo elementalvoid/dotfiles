@@ -4,10 +4,10 @@
 source <(mise activate --quiet zsh)
 
 # Handle some base mise stuff required for the rest of the setup
-command -v cargo           >/dev/null 2>&1 || mise use -g cargo
-command -v cargo-binstall  >/dev/null 2>&1 || mise use -g cargo-binstall
-command -v ubi             >/dev/null 2>&1 || mise use -g ubi
-command -v uv              >/dev/null 2>&1 || mise use -g uv
+command -v cargo >/dev/null 2>&1 || mise use -g cargo
+command -v cargo-binstall >/dev/null 2>&1 || mise use -g cargo-binstall
+command -v ubi >/dev/null 2>&1 || mise use -g ubi
+command -v uv >/dev/null 2>&1 || mise use -g uv
 
 # cargo from github needs some help
 export CARGO_NET_GIT_FETCH_WITH_CLI=true
@@ -29,16 +29,17 @@ export RUBY_CFLAGS=-DUSE_FFI_CLOSURE_ALLOC
 # Caches the winning probe recipe under ~/.zsh_completions/.probe-cache/<cmd>.recipe
 # so subsequent runs make at most one subprocess call per tool.
 generate_completion() {
-  local cmd=${1##*/}                       # strip any `ubi:repo/` prefix
+  local cmd=${1##*/} # strip any `ubi:repo/` prefix
   local quiet=${_gc_quiet:-0}
-  _gc_log() { (( quiet )) || print -- "  $cmd: $1"; }
+  _gc_log() { ((quiet)) || print -- "  $cmd: $1"; }
 
   if ! command -v "$cmd" >/dev/null 2>&1; then
     _gc_log "not on PATH"
     return
   fi
 
-  local bin; bin=$(command -v "$cmd")
+  local bin
+  bin=$(command -v "$cmd")
   local out=~/.zsh_completions/_${cmd}
   local cache_dir=~/.zsh_completions/.probe-cache
   local recipe=$cache_dir/${cmd}.recipe
@@ -46,19 +47,20 @@ generate_completion() {
   mkdir -p $cache_dir ~/.zsh_completions
 
   # Fast path: completion file is newer than the binary.
-  if (( ! force )) && [[ -s $out && $out -nt $bin ]]; then
+  if ((!force)) && [[ -s $out && $out -nt $bin ]]; then
     _gc_log "up-to-date"
     return
   fi
 
   # Cached-recipe path: use the previously-discovered invocation.
-  if (( ! force )) && [[ -s $recipe ]]; then
-    local args; args=$(<"$recipe")
+  if ((!force)) && [[ -s $recipe ]]; then
+    local args
+    args=$(<"$recipe")
     if [[ $args == "none" ]]; then
       return
     fi
-    if eval "$cmd $args" 2>/dev/null > "${out}.tmp" \
-       && head -n1 "${out}.tmp" 2>/dev/null | grep -q '#compdef'; then
+    if eval "$cmd $args" 2>/dev/null >"${out}.tmp" &&
+      head -n1 "${out}.tmp" 2>/dev/null | grep -q '#compdef'; then
       mv "${out}.tmp" "$out"
       _gc_log "cached ($args)"
       return 0
@@ -80,14 +82,14 @@ generate_completion() {
   local p
   for p in "${probes[@]}"; do
     if eval "$cmd $p" 2>/dev/null | head -n1 | grep -q '#compdef'; then
-      eval "$cmd $p" 2>/dev/null > "$out"
-      print -- "$p" > "$recipe"
+      eval "$cmd $p" 2>/dev/null >"$out"
+      print -- "$p" >"$recipe"
       _gc_log "complete ($p)"
       return 0
     fi
   done
 
-  print -- "none" > "$recipe"
+  print -- "none" >"$recipe"
   _gc_log "none found"
 }
 
@@ -103,20 +105,18 @@ generate_completions() {
   local -a _flag_force _flag_help
   zparseopts -D -E -- f=_flag_force -force=_flag_force h=_flag_help -help=_flag_help
 
-  if (( ${#_flag_help} )); then
+  if ((${#_flag_help})); then
     print -- "Usage: generate_completions [-f|--force] [-h|--help]"
     print -- "  -f, --force  Re-probe all tools, ignoring caches."
     print -- "  -h, --help   Show this help."
     return 0
   fi
 
-  if (( ${#_flag_force} )); then
+  if ((${#_flag_force})); then
     _gc_force=1
   fi
 
-
-
-  if (( _gc_force )); then
+  if ((_gc_force)); then
     print -- "regenerating completions (force, jobs=$jobs)"
     rm -rf ~/.zsh_completions/.probe-cache
   else
@@ -141,7 +141,7 @@ generate_completions() {
   #   options=( ${(j: :kv)options[@]} monitor off zle off ) at call time,
   #   and workers can't restore ZLE-dependent options in non-interactive subshells)
   # stdout/stderr are inherited so _gc_log output still reaches the terminal.
-  (( ${#tools} )) && (
+  ((${#tools})) && (
     setopt no_monitor
     unsetopt vi 2>/dev/null
     zargs -P $jobs -n 1 -- "${tools[@]}" -- generate_completion
@@ -149,9 +149,9 @@ generate_completions() {
 
   # Rebuild the completion dump only if anything actually changed
   # (or if --force was used, in which case everything was regenerated).
-  if (( _gc_force )) \
-     || [[ ! -f ~/.zcompdump ]] \
-     || [[ -n $(find ~/.zsh_completions -type f -newer ~/.zcompdump -print -quit 2>/dev/null) ]]; then
+  if ((_gc_force)) ||
+    [[ ! -f ~/.zcompdump ]] ||
+    [[ -n $(find ~/.zsh_completions -type f -newer ~/.zcompdump -print -quit 2>/dev/null) ]]; then
     zcomet compinit
   fi
 
