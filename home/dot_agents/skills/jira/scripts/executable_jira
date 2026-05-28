@@ -1,0 +1,1547 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.10"
+# dependencies = ["requests>=2.31"]
+# ///
+"""jira -- a purpose-built CLI for Jira Cloud, replacing acli.
+
+Design contract:
+
+  * Single command, subcommand-dispatched. One file. PEP-723
+    self-bootstrapping under `uv` -- no install step required.
+
+  * Single-stream output. Each invocation prints exactly one thing
+    to stdout. stderr carries errors only -- never status messages
+    or duplicate renderings.
+      stdout is a terminal -> Markdown.
+      stdout is a pipe     -> JSON.
+      --json               -> Force JSON.
+      --markdown           -> Force Markdown.
+      --quiet              -> Suppress stdout entirely (exit code only).
+
+  * Markdown is the primary rich-text interface. Every command that
+    accepts a description or comment body takes `--md FILE` (or `-`
+    for stdin) and converts to ADF internally. Use `--adf FILE` only
+    when you need ADF-only constructs that the container syntax in
+    adf_from_markdown.py can't express (status badges in running
+    text, @mentions with accountIds, inlineCard, etc.).
+
+  * Gotchas are fixed at the CLI boundary, not propagated:
+      - link add takes <blocker> --blocks <blocked>. No --in/--out.
+      - --type, --status, --link-type are case-folded; we resolve
+        the canonical form via REST before sending.
+      - `comment add` and `comment edit` use identical flag shapes.
+      - `create --from KEY` reads the source via REST and creates a
+        fresh issue with the parent preserved -- never copies
+        comments or links. Replaces acli's broken `clone`.
+      - --parent is a first-class flag on create. Never confused
+        with a link.
+
+  * Retries: urllib3 Retry on 429 and 5xx with exponential backoff.
+    No client-side throttler.
+
+Env vars (preferred first, fallback second):
+    JIRA_API_USER       or ATLASSIAN_API_USER     -- email
+    JIRA_API_TOKEN      or ATLASSIAN_API_TOKEN    -- API token
+    JIRA_BASE_URL       or ATLASSIAN_BASE_URL     -- e.g. https://company.atlassian.net
+
+Generate a token at:
+    https://id.atlassian.com/manage-profile/security/api-tokens
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+from typing import Any, Iterable, Iterator
+
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
+# Import sibling ADF helpers from the same scripts/ directory.
+_HERE = os.path.dirname(os.path.abspath(__file__))
+if _HERE not in sys.path:
+    sys.path.insert(0, _HERE)
+from adf_from_markdown import markdown_to_adf  # noqa: E402
+from adf_to_markdown import adf_to_markdown    # noqa: E402
+
+
+# ---------------------------------------------------------------------------
+# Config
+# ---------------------------------------------------------------------------
+
+
+class Config:
+    """Resolved auth + base URL. Reads JIRA_* first, ATLASSIAN_* as
+    fallback. Raises on missing required values."""
+
+    def __init__(self, user: str, token: str, base_url: str):
+        self.user = user
+        self.token = token
+        self.base_url = base_url.rstrip("/")
+
+    @classmethod
+    def from_env(cls) -> "Config":
+        user = os.environ.get("JIRA_API_USER") or os.environ.get("ATLASSIAN_API_USER")
+        token = os.environ.get("JIRA_API_TOKEN") or os.environ.get(
+            "ATLASSIAN_API_TOKEN"
+        )
+        base = (
+            os.environ.get("JIRA_BASE_URL")
+            or os.environ.get("ATLASSIAN_BASE_URL")
+        )
+        missing = []
+        if not user:
+            missing.append("JIRA_API_USER (or ATLASSIAN_API_USER)")
+        if not token:
+            missing.append("JIRA_API_TOKEN (or ATLASSIAN_API_TOKEN)")
+        if missing:
+            raise SystemExit(
+                "error: missing environment variables:\n  - "
+                + "\n  - ".join(missing)
+                + "\nGenerate a token at "
+                "https://id.atlassian.com/manage-profile/security/api-tokens"
+            )
+        return cls(user, token, base)
+
+    @property
+    def site_host(self) -> str:
+        """Bare host (e.g. 'company.atlassian.net') for building browse URLs."""
+        from urllib.parse import urlparse
+
+        return urlparse(self.base_url).netloc or self.base_url
+
+
+# ---------------------------------------------------------------------------
+# HTTP client
+# ---------------------------------------------------------------------------
+
+
+class JiraError(Exception):
+    """A Jira API error. `status` is the HTTP code; `payload` is the
+    parsed error body if available."""
+
+    def __init__(self, status: int, payload: Any, method: str, url: str):
+        self.status = status
+        self.payload = payload
+        self.method = method
+        self.url = url
+        super().__init__(self._format())
+
+    def _format(self) -> str:
+        # Jira returns errors as either {"errorMessages": [...]} or
+        # {"errors": {field: msg}}.
+        msgs: list[str] = []
+        if isinstance(self.payload, dict):
+            for m in self.payload.get("errorMessages") or []:
+                msgs.append(m)
+            for field, msg in (self.payload.get("errors") or {}).items():
+                msgs.append(f"{field}: {msg}")
+        if not msgs:
+            msgs.append(
+                str(self.payload)[:300] if self.payload else f"HTTP {self.status}"
+            )
+        return f"{self.method} {self.url} -> {self.status}: " + "; ".join(msgs)
+
+
+class Client:
+    """Thin Jira Cloud REST client. v3 by default."""
+
+    API_V3 = "/rest/api/3"
+
+    def __init__(self, config: Config):
+        self.config = config
+        self.session = requests.Session()
+        self.session.auth = (config.user, config.token)
+        self.session.headers.update(
+            {"Accept": "application/json", "Content-Type": "application/json"}
+        )
+        retry = Retry(
+            total=4,
+            backoff_factor=0.5,  # 0s, 0.5s, 1s, 2s, 4s
+            status_forcelist=(429, 500, 502, 503, 504),
+            allowed_methods=frozenset(
+                ["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"]
+            ),
+            respect_retry_after_header=True,
+            raise_on_status=False,
+        )
+        adapter = HTTPAdapter(max_retries=retry)
+        self.session.mount("https://", adapter)
+        self.session.mount("http://", adapter)
+
+    def _request(
+        self,
+        method: str,
+        path: str,
+        *,
+        params: dict | None = None,
+        json_body: Any = None,
+    ) -> Any:
+        url = f"{self.config.base_url}{self.API_V3}{path}"
+        resp = self.session.request(
+            method, url, params=params, json=json_body, timeout=30
+        )
+        if resp.status_code == 204 or not resp.content:
+            if 200 <= resp.status_code < 300:
+                return None
+            raise JiraError(resp.status_code, None, method, url)
+        try:
+            payload = resp.json()
+        except ValueError:
+            payload = resp.text
+        if not (200 <= resp.status_code < 300):
+            raise JiraError(resp.status_code, payload, method, url)
+        return payload
+
+    def get(self, path: str, params: dict | None = None) -> Any:
+        return self._request("GET", path, params=params)
+
+    def post(self, path: str, json_body: Any = None, params: dict | None = None) -> Any:
+        return self._request("POST", path, params=params, json_body=json_body)
+
+    def put(self, path: str, json_body: Any = None, params: dict | None = None) -> Any:
+        return self._request("PUT", path, params=params, json_body=json_body)
+
+    def delete(self, path: str, params: dict | None = None) -> Any:
+        return self._request("DELETE", path, params=params)
+
+    # ---- High-level helpers ----
+
+    def get_myself(self) -> dict:
+        return self.get("/myself")
+
+    def get_server_info(self) -> dict:
+        return self.get("/serverInfo")
+
+    def get_issue(self, key: str, fields: list[str] | None = None) -> dict:
+        params = {}
+        if fields:
+            params["fields"] = ",".join(fields)
+        return self.get(f"/issue/{key}", params=params or None)
+
+    def search(
+        self,
+        jql: str,
+        fields: list[str] | None = None,
+        max_results: int = 50,
+        next_page_token: str | None = None,
+    ) -> dict:
+        params: dict[str, Any] = {"jql": jql, "maxResults": max_results}
+        if fields:
+            params["fields"] = ",".join(fields)
+        if next_page_token:
+            params["nextPageToken"] = next_page_token
+        return self.get("/search/jql", params=params)
+
+    def iter_search(
+        self, jql: str, fields: list[str] | None = None, page_size: int = 50
+    ) -> Iterator[dict]:
+        token = None
+        while True:
+            r = self.search(jql, fields=fields, max_results=page_size,
+                            next_page_token=token)
+            for issue in r.get("issues", []):
+                yield issue
+            if r.get("isLast", True):
+                return
+            token = r.get("nextPageToken")
+            if not token:
+                return
+
+    def create_issue(self, fields: dict) -> dict:
+        return self.post("/issue", json_body={"fields": fields})
+
+    def create_issues_bulk(self, issue_updates: list[dict]) -> dict:
+        """issue_updates is a list of {fields: {...}} dicts."""
+        return self.post("/issue/bulk", json_body={"issueUpdates": issue_updates})
+
+    def update_issue(
+        self,
+        key: str,
+        fields: dict | None = None,
+        update: dict | None = None,
+    ) -> None:
+        """Update an issue. `fields` does whole-field replacement;
+        `update` does atomic per-field operations (add/remove/set) and
+        avoids clobbering concurrent changes. Both may be passed in the
+        same call -- Jira applies them together."""
+        body: dict[str, Any] = {}
+        if fields:
+            body["fields"] = fields
+        if update:
+            body["update"] = update
+        if not body:
+            return
+        self.put(f"/issue/{key}", json_body=body)
+
+    def get_transitions(self, key: str) -> list[dict]:
+        r = self.get(f"/issue/{key}/transitions")
+        return r.get("transitions", [])
+
+    def transition_issue(self, key: str, transition_id: str) -> None:
+        self.post(
+            f"/issue/{key}/transitions",
+            json_body={"transition": {"id": transition_id}},
+        )
+
+    def add_comment(self, key: str, body_adf: dict) -> dict:
+        return self.post(f"/issue/{key}/comment", json_body={"body": body_adf})
+
+    def update_comment(self, key: str, comment_id: str, body_adf: dict) -> dict:
+        return self.put(
+            f"/issue/{key}/comment/{comment_id}", json_body={"body": body_adf}
+        )
+
+    def get_comments(self, key: str) -> list[dict]:
+        r = self.get(f"/issue/{key}/comment")
+        return r.get("comments", [])
+
+    def assign_issue(self, key: str, account_id: str | None) -> None:
+        # accountId=None unassigns; "-1" sets to default assignee.
+        self.put(f"/issue/{key}/assignee", json_body={"accountId": account_id})
+
+    def project(self, project_key: str) -> dict:
+        return self.get(f"/project/{project_key}")
+
+    def issue_types_for_project(self, project_key: str) -> list[dict]:
+        p = self.project(project_key)
+        return p.get("issueTypes", [])
+
+    def link_types(self) -> list[dict]:
+        r = self.get("/issueLinkType")
+        return r.get("issueLinkTypes", [])
+
+    def link_create(self, inward_key: str, outward_key: str, type_name: str) -> None:
+        """Create a link of type `type_name`. Semantics:
+            outward_key  --(type)-->  inward_key
+        For Blocks: outward = blocker, inward = blocked.
+        """
+        self.post(
+            "/issueLink",
+            json_body={
+                "type": {"name": type_name},
+                "inwardIssue": {"key": inward_key},
+                "outwardIssue": {"key": outward_key},
+            },
+        )
+
+    def issue_links(self, key: str) -> list[dict]:
+        issue = self.get_issue(key, fields=["issuelinks"])
+        return (issue.get("fields") or {}).get("issuelinks") or []
+
+    def link_delete(self, link_id: str) -> None:
+        self.delete(f"/issueLink/{link_id}")
+
+    def user_search(self, query: str) -> list[dict]:
+        return self.get("/user/search", params={"query": query})
+
+
+# ---------------------------------------------------------------------------
+# Resolvers (fix gotchas at the boundary)
+# ---------------------------------------------------------------------------
+
+
+def resolve_issue_type(client: Client, project_key: str, name: str) -> str:
+    """Return the canonical issue-type name (case-corrected) for a
+    project, or raise with the available list."""
+    types = client.issue_types_for_project(project_key)
+    names = [t.get("name", "") for t in types]
+    for n in names:
+        if n.lower() == name.lower():
+            return n
+    raise SystemExit(
+        f"error: issue type '{name}' not found in project {project_key}. "
+        f"Available: {', '.join(names) or '(none)'}"
+    )
+
+
+def resolve_transition(client: Client, key: str, status_name: str) -> dict:
+    """Return the {id, name} of the transition whose target status (or
+    transition name) matches `status_name`. Case-insensitive."""
+    transitions = client.get_transitions(key)
+    target = status_name.lower()
+    # Match by transition name first, then by target status name.
+    for t in transitions:
+        if t.get("name", "").lower() == target:
+            return t
+    for t in transitions:
+        to = t.get("to") or {}
+        if to.get("name", "").lower() == target:
+            return t
+    available = [
+        f"{t.get('name')} -> {(t.get('to') or {}).get('name', '?')}"
+        for t in transitions
+    ]
+    raise SystemExit(
+        f"error: no transition to '{status_name}' available from {key}'s "
+        f"current state. Available: {'; '.join(available) or '(none)'}"
+    )
+
+
+def resolve_link_type(client: Client, name: str) -> str:
+    """Return the canonical link-type `name` field. Matches on `name`,
+    `inward`, or `outward` descriptions, case-insensitively."""
+    types = client.link_types()
+    target = name.lower()
+    for t in types:
+        if t.get("name", "").lower() == target:
+            return t["name"]
+    # Also accept the outward/inward description (e.g. "blocks", "is blocked by").
+    for t in types:
+        if (t.get("outward") or "").lower() == target:
+            return t["name"]
+        if (t.get("inward") or "").lower() == target:
+            return t["name"]
+    names = [t.get("name", "") for t in types]
+    raise SystemExit(
+        f"error: link type '{name}' not configured on this site. "
+        f"Available: {', '.join(names) or '(none)'}"
+    )
+
+
+def resolve_user(client: Client, spec: str) -> str | None:
+    """Resolve a user spec to an accountId.
+
+      '@me'           -> the authenticated user
+      'default'       -> '-1' (Jira's sentinel for project default)
+      'none' / 'unassign' -> None (clears the assignee)
+      email or name   -> first matching user via /user/search
+
+    Returns the accountId string, or None for explicit unassign.
+    """
+    s = spec.strip()
+    if s.lower() in {"none", "unassign", "unassigned"}:
+        return None
+    if s == "@me":
+        return client.get_myself()["accountId"]
+    if s.lower() == "default":
+        return "-1"
+    results = client.user_search(s)
+    # Filter to active humans (not apps).
+    candidates = [
+        u for u in results
+        if u.get("active", True) and u.get("accountType") == "atlassian"
+    ]
+    if not candidates:
+        candidates = results
+    if not candidates:
+        raise SystemExit(f"error: no user matched '{spec}'.")
+    if len(candidates) > 1 and "@" not in s:
+        names = ", ".join(
+            f"{u.get('displayName')} ({u.get('emailAddress') or u.get('accountId')})"
+            for u in candidates[:5]
+        )
+        raise SystemExit(
+            f"error: '{spec}' matched multiple users: {names}. "
+            f"Try an email address."
+        )
+    return candidates[0]["accountId"]
+
+
+# ---------------------------------------------------------------------------
+# Rich-text helpers
+# ---------------------------------------------------------------------------
+
+
+def load_rich_text(md_path: str | None, adf_path: str | None) -> dict | None:
+    """Load rich text from either a Markdown file or a pre-built ADF
+    JSON file. `-` means stdin. Returns an ADF doc dict, or None if
+    neither was provided.
+
+    Raises SystemExit if both are provided.
+    """
+    if md_path and adf_path:
+        raise SystemExit("error: pass either --md or --adf, not both.")
+    if md_path:
+        if md_path == "-":
+            md = sys.stdin.read()
+        else:
+            with open(md_path, encoding="utf-8") as f:
+                md = f.read()
+        return markdown_to_adf(md)
+    if adf_path:
+        if adf_path == "-":
+            raw = sys.stdin.read()
+        else:
+            with open(adf_path, encoding="utf-8") as f:
+                raw = f.read()
+        doc = json.loads(raw)
+        if not isinstance(doc, dict) or doc.get("type") != "doc":
+            raise SystemExit(
+                "error: --adf file must contain an ADF document "
+                "({\"type\": \"doc\", \"version\": 1, \"content\": [...]})"
+            )
+        return doc
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Output (JSON to stdout, human summary to stderr)
+# ---------------------------------------------------------------------------
+
+
+# OSC 8 terminal hyperlink. Format:
+#   ESC ] 8 ;; URL ST TEXT ESC ] 8 ;; ST
+# where ST is either BEL or ESC \. Kitty, iTerm2 (>=3.1), WezTerm,
+# Ghostty, modern xterm, and VS Code's terminal all support it.
+# Terminals that don't understand it print just the text -- the URL
+# is hidden between the (otherwise invisible) opener/closer escapes.
+_OSC8_OPEN = "\x1b]8;;{url}\x1b\\"
+_OSC8_CLOSE = "\x1b]8;;\x1b\\"
+
+
+class Out:
+    """Single-stream output dispatcher.
+
+    Every invocation prints exactly one thing to stdout. stderr is
+    reserved for errors -- never duplicates, status, or progress.
+
+    Mode resolution:
+      - 'markdown' explicit            -> Markdown to stdout.
+      - 'json' explicit                -> JSON to stdout.
+      - 'auto' (default) + stdout TTY  -> behave like 'markdown'.
+      - 'auto' (default) + stdout pipe -> behave like 'json'.
+      - quiet=True                     -> nothing to stdout (exit code only).
+
+    OSC 8 terminal hyperlinks are used when stdout is a TTY and we're
+    rendering Markdown; the inline-link Markdown form is used otherwise
+    (so piped output stays readable in chat clients and files).
+    """
+
+    def __init__(self, mode: str = "auto", quiet: bool = False):
+        if mode == "auto":
+            mode = "markdown" if sys.stdout.isatty() else "json"
+        self.mode = mode
+        self.quiet = quiet
+        # OSC 8 is appropriate only when our Markdown output is going
+        # to a TTY (and the user hasn't opted out via NO_COLOR).
+        no_color = bool(os.environ.get("NO_COLOR"))
+        self.use_osc8 = (
+            self.mode == "markdown" and sys.stdout.isatty() and not no_color
+        )
+
+    def link(self, text: str, url: str) -> str:
+        """Render `text` as a hyperlink to `url`. OSC 8 on a TTY in
+        Markdown mode; Markdown [text](url) otherwise."""
+        if not url:
+            return text
+        if self.use_osc8:
+            return _OSC8_OPEN.format(url=url) + text + _OSC8_CLOSE
+        return f"[{text}]({url})"
+
+    def emit(self, payload: Any, human: str | None = None) -> None:
+        """Emit the result. One stream, one rendering.
+
+        - --quiet: nothing.
+        - markdown mode: `human` if provided, else pretty-JSON as a fallback
+          so the user still sees something useful.
+        - json mode: `payload` as JSON.
+        """
+        if self.quiet:
+            return
+        if self.mode == "markdown":
+            if human is not None:
+                print(human)
+            else:
+                print(json.dumps(payload, indent=2))
+            return
+        # json mode
+        print(json.dumps(payload, indent=2 if sys.stdout.isatty() else None))
+
+
+# ---------------------------------------------------------------------------
+# Human renderers
+# ---------------------------------------------------------------------------
+
+
+def _name(field: Any, default: str = "") -> str:
+    if not isinstance(field, dict):
+        return default
+    for k in ("displayName", "name", "emailAddress", "value"):
+        v = field.get(k)
+        if v:
+            return v
+    return default
+
+
+def browse_url(config: Config, key: str) -> str:
+    return f"{config.base_url}/browse/{key}"
+
+
+def render_issue_human(
+    config: Config, out: "Out", payload: dict, include_comments: bool = False
+) -> str:
+    """Render an issue payload as a Markdown summary suitable for humans."""
+    key = payload.get("key", "?")
+    fields = payload.get("fields", {}) or {}
+    summary = fields.get("summary", "") or ""
+    issuetype = _name(fields.get("issuetype"), "Issue")
+    status = _name(fields.get("status"), "Unknown")
+    assignee = _name(fields.get("assignee"), "(unassigned)")
+    reporter = _name(fields.get("reporter"))
+    priority = _name(fields.get("priority"))
+    labels = fields.get("labels") or []
+    parent = fields.get("parent")
+    parent_key = parent.get("key") if isinstance(parent, dict) else None
+    created = (fields.get("created") or "")[:10]
+    updated = (fields.get("updated") or "")[:10]
+    url = browse_url(config, key)
+
+    # Header: key linked to its browse URL.
+    if out.use_osc8:
+        lines: list[str] = [f"**{out.link(key, url)}** — {url}", ""]
+    else:
+        lines = [f"**{key}** — {out.link(url, url)}", ""]
+
+    parent_cell = out.link(parent_key, browse_url(config, parent_key)) \
+        if parent_key else "—"
+    rows = [
+        ("Summary", summary),
+        ("Type", issuetype),
+        ("Status", status),
+        ("Parent", parent_cell),
+        ("Assignee", assignee),
+    ]
+    if priority:
+        rows.append(("Priority", priority))
+    if reporter:
+        rows.append(("Reporter", reporter))
+    if created:
+        rows.append(("Created", created))
+    if updated and updated != created:
+        rows.append(("Updated", updated))
+    if labels:
+        rows.append(("Labels", ", ".join(labels)))
+    lines.append("| | |")
+    lines.append("|---|---|")
+    for k, v in rows:
+        safe = str(v).replace("|", "\\|")
+        lines.append(f"| {k} | {safe} |")
+    lines.append("")
+
+    # Description.
+    desc = fields.get("description")
+    if isinstance(desc, dict) and desc.get("type") == "doc":
+        desc_md = adf_to_markdown(desc).strip()
+        if desc_md:
+            if not desc_md.lstrip().startswith("#"):
+                lines.append("## Description")
+                lines.append("")
+            lines.append(desc_md)
+            lines.append("")
+
+    # Links.
+    links = fields.get("issuelinks") or []
+    if links:
+        lines.append("## Linked work items")
+        lines.append("")
+        for link in links:
+            ltype = link.get("type") or {}
+            if "outwardIssue" in link:
+                other = link["outwardIssue"]
+                label = ltype.get("outward") or ltype.get("name", "relates to")
+            elif "inwardIssue" in link:
+                other = link["inwardIssue"]
+                label = ltype.get("inward") or ltype.get("name", "is related to by")
+            else:
+                continue
+            okey = other.get("key", "?")
+            osum = (other.get("fields") or {}).get("summary", "")
+            cap = label[:1].upper() + label[1:]
+            lines.append(
+                f"- {cap} {out.link(okey, browse_url(config, okey))}"
+                + (f": {osum}" if osum else "")
+            )
+        lines.append("")
+
+    if include_comments:
+        comments = (fields.get("comment") or {}).get("comments") or []
+        if comments:
+            lines.append(f"## Comments ({len(comments)})")
+            lines.append("")
+            for c in comments:
+                author = _name(c.get("author"), "unknown")
+                when = (c.get("updated") or c.get("created") or "")[:10]
+                body = c.get("body")
+                if isinstance(body, dict) and body.get("type") == "doc":
+                    body_md = adf_to_markdown(body)
+                else:
+                    body_md = str(body or "")
+                lines.append(f"**{author}** — {when}")
+                lines.append("")
+                lines.append(body_md.rstrip())
+                lines.append("")
+                lines.append("---")
+                lines.append("")
+            while lines and lines[-1] in ("", "---"):
+                lines.pop()
+            lines.append("")
+
+    while lines and lines[-1] == "":
+        lines.pop()
+    return "\n".join(lines)
+
+
+def render_search_human(config: Config, out: "Out", issues: list[dict]) -> str:
+    """Render a search result as a compact Markdown table."""
+    if not issues:
+        return "(no results)"
+    lines = ["| Key | Status | Type | Assignee | Summary |",
+             "|---|---|---|---|---|"]
+    for it in issues:
+        f = it.get("fields") or {}
+        key = it.get("key", "?")
+        status = _name(f.get("status"), "")
+        itype = _name(f.get("issuetype"), "")
+        assignee = _name(f.get("assignee"), "—")
+        summary = (f.get("summary") or "").replace("|", "\\|")
+        lines.append(
+            f"| {out.link(key, browse_url(config, key))} | {status} | {itype} "
+            f"| {assignee} | {summary} |"
+        )
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Subcommand handlers
+# ---------------------------------------------------------------------------
+
+
+DEFAULT_VIEW_FIELDS = [
+    "summary", "issuetype", "status", "assignee", "reporter", "priority",
+    "labels", "parent", "description", "issuelinks", "created", "updated",
+]
+
+
+def cmd_view(args, client: Client, out: Out) -> int:
+    fields = DEFAULT_VIEW_FIELDS[:]
+    if args.comments:
+        fields.append("comment")
+    if args.fields:
+        fields = [f.strip() for f in args.fields.split(",") if f.strip()]
+
+    results = []
+    human_chunks = []
+    for key in args.keys:
+        payload = client.get_issue(key, fields=fields)
+        results.append(payload)
+        human_chunks.append(
+            render_issue_human(
+                client.config, out, payload, include_comments=args.comments
+            )
+        )
+
+    if len(results) == 1:
+        out.emit(results[0], human="\n".join(human_chunks))
+    else:
+        out.emit(results, human="\n\n---\n\n".join(human_chunks))
+    return 0
+
+
+def cmd_search(args, client: Client, out: Out) -> int:
+    fields = (
+        [f.strip() for f in args.fields.split(",") if f.strip()]
+        if args.fields
+        else ["summary", "status", "issuetype", "assignee", "priority", "labels"]
+    )
+    if args.all:
+        issues = list(client.iter_search(args.jql, fields=fields))
+        payload = {"jql": args.jql, "total": len(issues), "issues": issues}
+    else:
+        r = client.search(args.jql, fields=fields, max_results=args.limit)
+        issues = r.get("issues", [])
+        payload = {
+            "jql": args.jql,
+            "issues": issues,
+            "count": len(issues),
+            "isLast": r.get("isLast", True),
+            "nextPageToken": r.get("nextPageToken"),
+        }
+    out.emit(payload, human=render_search_human(client.config, out, issues))
+    return 0
+
+
+def _split_csv(s: str) -> list[str]:
+    return [tok.strip() for tok in s.split(",") if tok.strip()]
+
+
+def cmd_edit(args, client: Client, out: Out) -> int:
+    fields: dict[str, Any] = {}
+    update: dict[str, Any] = {}
+
+    if args.summary is not None:
+        fields["summary"] = args.summary
+
+    # Labels: --add-labels appends, --remove-labels removes, --set-labels replaces.
+    # --set-labels is mutually exclusive with the incremental flags.
+    if args.set_labels is not None and (
+        args.add_labels is not None or args.remove_labels is not None
+    ):
+        raise SystemExit(
+            "error: --set-labels is mutually exclusive with --add-labels "
+            "and --remove-labels."
+        )
+    if args.set_labels is not None:
+        fields["labels"] = _split_csv(args.set_labels)
+    else:
+        label_ops: list[dict] = []
+        for label in _split_csv(args.add_labels or ""):
+            label_ops.append({"add": label})
+        for label in _split_csv(args.remove_labels or ""):
+            label_ops.append({"remove": label})
+        if label_ops:
+            update["labels"] = label_ops
+
+    if args.type is not None:
+        # Need the project key to resolve case. Fetch the issue first.
+        issue = client.get_issue(args.key, fields=["project"])
+        proj = (issue.get("fields") or {}).get("project") or {}
+        proj_key = proj.get("key")
+        if not proj_key:
+            raise SystemExit(
+                f"error: could not resolve project for {args.key} (cannot set type)."
+            )
+        fields["issuetype"] = {"name": resolve_issue_type(client, proj_key, args.type)}
+    if args.assignee is not None:
+        acct = resolve_user(client, args.assignee)
+        fields["assignee"] = {"accountId": acct}
+    desc_adf = load_rich_text(args.md, args.adf)
+    if desc_adf is not None:
+        fields["description"] = desc_adf
+
+    if not fields and not update:
+        raise SystemExit(
+            "error: no changes specified. Pass at least one of --summary, "
+            "--md/--adf, --add-labels, --remove-labels, --set-labels, "
+            "--type, --assignee."
+        )
+
+    client.update_issue(args.key, fields=fields or None, update=update or None)
+
+    # Build a useful 'updated' list for both the JSON payload and the
+    # human summary -- labels collapse to a single key with a short detail.
+    changed: list[str] = sorted(fields.keys())
+    if "labels" in update:
+        adds = [op["add"] for op in update["labels"] if "add" in op]
+        removes = [op["remove"] for op in update["labels"] if "remove" in op]
+        parts = []
+        if adds:
+            parts.append("+" + ",".join(adds))
+        if removes:
+            parts.append("-" + ",".join(removes))
+        changed.append("labels(" + " ".join(parts) + ")")
+        changed.sort()
+    payload = {"key": args.key, "updated": changed}
+    url = browse_url(client.config, args.key)
+    out.emit(
+        payload,
+        human=f"Updated {out.link(args.key, url)}: "
+        f"{', '.join(changed)}\n  {url}",
+    )
+    return 0
+
+
+def cmd_create(args, client: Client, out: Out) -> int:
+    if args.from_key:
+        return _create_from(args, client, out)
+
+    if not args.project or not args.type or not args.summary:
+        raise SystemExit(
+            "error: create requires --project, --type, and --summary "
+            "(or --from KEY)."
+        )
+
+    type_name = resolve_issue_type(client, args.project, args.type)
+    fields: dict[str, Any] = {
+        "project": {"key": args.project},
+        "summary": args.summary,
+        "issuetype": {"name": type_name},
+    }
+    if args.parent:
+        fields["parent"] = {"key": args.parent}
+    if args.labels:
+        fields["labels"] = [
+            label.strip() for label in args.labels.split(",") if label.strip()
+        ]
+    desc_adf = load_rich_text(args.md, args.adf)
+    if desc_adf is not None:
+        fields["description"] = desc_adf
+
+    created = client.create_issue(fields)
+    new_key = created.get("key")
+
+    # Assignment is a second step because Jira's create-with-assignee is
+    # unreliable across project configurations.
+    assigned_msg = ""
+    if args.assignee:
+        acct = resolve_user(client, args.assignee)
+        client.assign_issue(new_key, acct)
+        assigned_msg = f" (assigned to {args.assignee})"
+
+    url = browse_url(client.config, new_key)
+    out.emit(
+        created,
+        human=f"Created {out.link(new_key, url)}{assigned_msg}\n  {url}",
+    )
+    return 0
+
+
+def _create_from(args, client: Client, out: Out) -> int:
+    """Replacement for acli's broken `clone`. Reads source via REST,
+    preserves parent, never copies comments or links."""
+    src_key = args.from_key
+    src = client.get_issue(
+        src_key,
+        fields=[
+            "summary", "issuetype", "labels", "parent", "description", "project",
+        ],
+    )
+    sf = src.get("fields") or {}
+    fields: dict[str, Any] = {
+        "project": {"key": (sf.get("project") or {}).get("key")},
+        "summary": args.summary or f"Copy of {sf.get('summary', '')}".rstrip(),
+        "issuetype": {"name": _name(sf.get("issuetype"), "Task")},
+    }
+    if args.type:
+        proj_key = fields["project"]["key"]
+        fields["issuetype"] = {"name": resolve_issue_type(client, proj_key, args.type)}
+    if args.project:
+        fields["project"] = {"key": args.project}
+
+    # Parent handling: preserve unless --no-parent or --parent <KEY> override.
+    if args.no_parent:
+        pass
+    elif args.parent:
+        fields["parent"] = {"key": args.parent}
+    elif isinstance(sf.get("parent"), dict) and sf["parent"].get("key"):
+        fields["parent"] = {"key": sf["parent"]["key"]}
+
+    if args.labels is not None:
+        fields["labels"] = [
+            label.strip() for label in args.labels.split(",") if label.strip()
+        ]
+    elif sf.get("labels"):
+        fields["labels"] = sf["labels"]
+
+    # Description: caller override > source description.
+    desc_adf = load_rich_text(args.md, args.adf)
+    if desc_adf is not None:
+        fields["description"] = desc_adf
+    elif isinstance(sf.get("description"), dict):
+        fields["description"] = sf["description"]
+
+    created = client.create_issue(fields)
+    new_key = created.get("key")
+    if args.assignee:
+        acct = resolve_user(client, args.assignee)
+        client.assign_issue(new_key, acct)
+
+    url = browse_url(client.config, new_key)
+    src_url = browse_url(client.config, src_key)
+    out.emit(
+        created,
+        human=f"Created {out.link(new_key, url)} from "
+        f"{out.link(src_key, src_url)}\n  {url}",
+    )
+    return 0
+
+
+def cmd_create_bulk(args, client: Client, out: Out) -> int:
+    with open(args.input, encoding="utf-8") as f:
+        data = json.load(f)
+    if not isinstance(data, list):
+        raise SystemExit(
+            "error: bulk input must be a JSON array of issue specs. "
+            "Each item is an object with at minimum {project, type, summary} "
+            "and optional {parent, labels, assignee, description_md, "
+            "description_adf}."
+        )
+
+    issue_updates = []
+    deferred_assignments: list[tuple[int, str]] = []  # (index, accountId)
+    for idx, spec in enumerate(data):
+        if not isinstance(spec, dict):
+            raise SystemExit(f"error: item {idx} is not an object.")
+        try:
+            proj = spec["project"]
+            typ = spec["type"]
+            summary = spec["summary"]
+        except KeyError as e:
+            raise SystemExit(f"error: item {idx} missing required key {e}.")
+        fields: dict[str, Any] = {
+            "project": {"key": proj},
+            "summary": summary,
+            "issuetype": {"name": resolve_issue_type(client, proj, typ)},
+        }
+        if spec.get("parent"):
+            fields["parent"] = {"key": spec["parent"]}
+        if spec.get("labels"):
+            fields["labels"] = spec["labels"]
+        desc_md = spec.get("description_md")
+        desc_adf = spec.get("description_adf")
+        if desc_md and desc_adf:
+            raise SystemExit(
+                f"error: item {idx} sets both description_md and "
+                f"description_adf; pick one."
+            )
+        if desc_md is not None:
+            fields["description"] = markdown_to_adf(desc_md)
+        elif desc_adf is not None:
+            fields["description"] = desc_adf
+        if spec.get("assignee"):
+            # Defer because Jira's create-with-assignee is unreliable.
+            acct = resolve_user(client, spec["assignee"])
+            if acct is not None:
+                deferred_assignments.append((idx, acct))
+        issue_updates.append({"fields": fields})
+
+    result = client.create_issues_bulk(issue_updates)
+    created = result.get("issues") or []
+    errors = result.get("errors") or []
+
+    # Apply deferred assignments to the newly-created issues.
+    for idx, acct in deferred_assignments:
+        if idx < len(created):
+            client.assign_issue(created[idx]["key"], acct)
+
+    human_lines = [f"Created {len(created)} issue(s)."]
+    for it in created:
+        u = browse_url(client.config, it["key"])
+        human_lines.append(f"  - {out.link(it['key'], u)}: {u}")
+    if errors:
+        human_lines.append(f"{len(errors)} error(s):")
+        for err in errors:
+            human_lines.append(f"  - {err}")
+    out.emit(result, human="\n".join(human_lines))
+    return 0 if not errors else 1
+
+
+def cmd_link_add(args, client: Client, out: Out) -> int:
+    type_name = resolve_link_type(client, args.type)
+    # Semantics: outward = blocker, inward = blocked.
+    # I.e. <blocker> --(Blocks)--> <blocked>.
+    client.link_create(
+        inward_key=args.blocks, outward_key=args.blocker, type_name=type_name
+    )
+    payload = {
+        "type": type_name,
+        "blocker": args.blocker,
+        "blocks": args.blocks,
+    }
+    blocker_url = browse_url(client.config, args.blocker)
+    blocks_url = browse_url(client.config, args.blocks)
+    out.emit(
+        payload,
+        human=(
+            f"Linked: {out.link(args.blocker, blocker_url)} {type_name} "
+            f"{out.link(args.blocks, blocks_url)}\n"
+            f"  blocker: {blocker_url}\n"
+            f"  blocked: {blocks_url}"
+        ),
+    )
+    return 0
+
+
+def cmd_link_list(args, client: Client, out: Out) -> int:
+    links = client.issue_links(args.key)
+    flat = []
+    human_lines = [f"Links on {args.key}:"]
+    for link in links:
+        lid = link.get("id")
+        ltype = link.get("type") or {}
+        if "outwardIssue" in link:
+            other = link["outwardIssue"]
+            direction = "outward"
+            label = ltype.get("outward") or ltype.get("name", "")
+        elif "inwardIssue" in link:
+            other = link["inwardIssue"]
+            direction = "inward"
+            label = ltype.get("inward") or ltype.get("name", "")
+        else:
+            continue
+        okey = other.get("key", "?")
+        osum = (other.get("fields") or {}).get("summary", "")
+        flat.append(
+            {
+                "id": lid,
+                "type": ltype.get("name"),
+                "direction": direction,
+                "label": label,
+                "other_key": okey,
+                "other_summary": osum,
+            }
+        )
+        cap = label[:1].upper() + label[1:] if label else "Linked"
+        okey_rendered = out.link(okey, browse_url(client.config, okey))
+        human_lines.append(f"  [{lid}] {cap} {okey_rendered}: {osum}")
+    if not flat:
+        human_lines.append("  (none)")
+    out.emit({"key": args.key, "links": flat}, human="\n".join(human_lines))
+    return 0
+
+
+def cmd_link_delete(args, client: Client, out: Out) -> int:
+    client.link_delete(args.id)
+    out.emit({"deleted": args.id}, human=f"Deleted link {args.id}.")
+    return 0
+
+
+def cmd_link_types(args, client: Client, out: Out) -> int:
+    types = client.link_types()
+    human_lines = ["Link types:"]
+    for t in types:
+        human_lines.append(
+            f"  - {t.get('name')}: outward='{t.get('outward')}', "
+            f"inward='{t.get('inward')}'"
+        )
+    out.emit(types, human="\n".join(human_lines))
+    return 0
+
+
+def cmd_transition(args, client: Client, out: Out) -> int:
+    if not args.status:
+        # List available transitions.
+        transitions = client.get_transitions(args.key)
+        human_lines = [f"Available transitions from {args.key}:"]
+        for t in transitions:
+            to = t.get("to") or {}
+            human_lines.append(
+                f"  - {t.get('name')} -> {to.get('name', '?')}"
+            )
+        if not transitions:
+            human_lines.append("  (none)")
+        out.emit(
+            {"key": args.key, "transitions": transitions},
+            human="\n".join(human_lines),
+        )
+        return 0
+    t = resolve_transition(client, args.key, args.status)
+    client.transition_issue(args.key, t["id"])
+    to_name = (t.get("to") or {}).get("name", t.get("name"))
+    url = browse_url(client.config, args.key)
+    out.emit(
+        {"key": args.key, "transitioned_to": to_name, "transition": t},
+        human=f"{out.link(args.key, url)} -> {to_name}\n  {url}",
+    )
+    return 0
+
+
+def cmd_comment_add(args, client: Client, out: Out) -> int:
+    body_adf = load_rich_text(args.md, args.adf)
+    if body_adf is None:
+        raise SystemExit(
+            "error: comment requires --md FILE (or --adf FILE). Use '-' for stdin."
+        )
+    if args.edit_last:
+        # Find this user's most recent comment.
+        me_id = client.get_myself()["accountId"]
+        comments = client.get_comments(args.key)
+        mine = [
+            c for c in comments
+            if (c.get("author") or {}).get("accountId") == me_id
+        ]
+        if not mine:
+            raise SystemExit(
+                f"error: --edit-last passed, but no prior comment by "
+                f"current user exists on {args.key}."
+            )
+        target = mine[-1]
+        result = client.update_comment(args.key, target["id"], body_adf)
+        out.emit(
+            result,
+            human=f"Edited last comment ({target['id']}) on {args.key}.",
+        )
+        return 0
+    result = client.add_comment(args.key, body_adf)
+    cid = result.get("id")
+    url = browse_url(client.config, args.key)
+    out.emit(
+        result,
+        human=f"Added comment {cid} on {out.link(args.key, url)}.\n  {url}",
+    )
+    return 0
+
+
+def cmd_comment_edit(args, client: Client, out: Out) -> int:
+    body_adf = load_rich_text(args.md, args.adf)
+    if body_adf is None:
+        raise SystemExit("error: --md FILE or --adf FILE required.")
+    result = client.update_comment(args.key, args.id, body_adf)
+    out.emit(result, human=f"Edited comment {args.id} on {args.key}.")
+    return 0
+
+
+def cmd_assign(args, client: Client, out: Out) -> int:
+    acct = resolve_user(client, args.user)
+    client.assign_issue(args.key, acct)
+    out.emit(
+        {"key": args.key, "assignee_account_id": acct, "assignee_spec": args.user},
+        human=f"Assigned {args.key} to {args.user}.",
+    )
+    return 0
+
+
+def cmd_users(args, client: Client, out: Out) -> int:
+    """Find users by name or email. Returns accountId for each match,
+    which is what you need for @mentions in ADF and for assignment."""
+    results = client.user_search(args.query)
+    if args.active_only:
+        results = [u for u in results if u.get("active", True)]
+    if not args.include_apps:
+        results = [u for u in results if u.get("accountType") == "atlassian"]
+    if args.limit:
+        results = results[: args.limit]
+
+    if not results:
+        out.emit([], human=f"(no users matched '{args.query}')")
+        return 0
+
+    human_lines = [f"Users matching '{args.query}':"]
+    for u in results:
+        name = u.get("displayName", "?")
+        email = u.get("emailAddress", "")
+        acct = u.get("accountId", "")
+        active = "" if u.get("active", True) else " (inactive)"
+        atype = u.get("accountType", "")
+        atype_tag = f" [{atype}]" if atype and atype != "atlassian" else ""
+        email_part = f" <{email}>" if email else ""
+        human_lines.append(
+            f"  {acct}  {name}{email_part}{active}{atype_tag}"
+        )
+    out.emit(results, human="\n".join(human_lines))
+    return 0
+
+
+def cmd_issue_types(args, client: Client, out: Out) -> int:
+    types = client.issue_types_for_project(args.project)
+    human_lines = [f"Issue types in {args.project}:"]
+    for t in types:
+        human_lines.append(
+            f"  - {t.get('name')}"
+            + (f" — {t.get('description')}" if t.get("description") else "")
+        )
+    out.emit(types, human="\n".join(human_lines))
+    return 0
+
+
+def cmd_me(args, client: Client, out: Out) -> int:
+    me = client.get_myself()
+    out.emit(
+        me,
+        human=(
+            f"{me.get('displayName')} <{me.get('emailAddress', '')}> "
+            f"({me.get('accountId')})"
+        ),
+    )
+    return 0
+
+
+def cmd_ping(args, client: Client, out: Out) -> int:
+    info = client.get_server_info()
+    me = client.get_myself()
+    payload = {"server": info, "user": me}
+    human = (
+        f"OK: {info.get('baseUrl')} (v{info.get('version')})\n"
+        f"Authenticated as {me.get('displayName')} <{me.get('emailAddress', '')}>"
+    )
+    out.emit(payload, human=human)
+    return 0
+
+
+# ---------------------------------------------------------------------------
+# Argparse
+# ---------------------------------------------------------------------------
+
+
+def _add_rich_text_args(p: argparse.ArgumentParser) -> None:
+    p.add_argument("--md", help="Markdown file for rich text ('-' for stdin).")
+    p.add_argument(
+        "--adf",
+        help="Pre-built ADF JSON file (for status badges, mentions, "
+        "and other constructs the container syntax can't express). "
+        "Mutually exclusive with --md.",
+    )
+
+
+def _extract_globals(argv: list[str]) -> tuple[dict[str, Any], list[str]]:
+    """Pull --json / --markdown / --quiet out of argv regardless of
+    position so they work both before and after the subcommand name.
+    argparse's `parents` machinery clobbers globals when combined with
+    subparsers; rather than fight it, we just pre-scan argv.
+    Order-preserving for the remaining args so subparser parsing is
+    unaffected.
+
+    --json and --markdown are mutually exclusive; passing both is an
+    error.
+    """
+    flags: dict[str, Any] = {"json": False, "markdown": False, "quiet": False}
+    rest: list[str] = []
+    for tok in argv:
+        if tok == "--json":
+            flags["json"] = True
+        elif tok == "--markdown":
+            flags["markdown"] = True
+        elif tok == "--quiet":
+            flags["quiet"] = True
+        else:
+            rest.append(tok)
+    if flags["json"] and flags["markdown"]:
+        raise SystemExit(
+            "error: --json and --markdown are mutually exclusive."
+        )
+    return flags, rest
+
+
+def build_parser() -> argparse.ArgumentParser:
+    ap = argparse.ArgumentParser(
+        prog="jira",
+        description="Jira Cloud CLI. Single-stream output: Markdown on a TTY, JSON when piped.",
+        epilog=(
+            "Global flags (may appear anywhere on the command line):\n"
+            "  --json      Force JSON to stdout.\n"
+            "  --markdown  Force Markdown to stdout.\n"
+            "  --quiet     Suppress stdout entirely (exit code only).\n"
+            "With no flag, the mode is chosen based on whether stdout is a\n"
+            "terminal (Markdown) or a pipe/file (JSON). stderr is for errors\n"
+            "only; never duplicated rendering or status messages."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    sub = ap.add_subparsers(dest="cmd", required=True)
+
+    def _sp(name: str, **kwargs) -> argparse.ArgumentParser:
+        return sub.add_parser(name, **kwargs)
+
+    # view
+    p = _sp("view", help="Fetch one or more issues.")
+    # (subcommands inherit globals via argv pre-scan, not argparse parents)
+    p.add_argument("keys", nargs="+", help="Issue key(s), e.g. ENP-134")
+    p.add_argument("--comments", action="store_true", help="Include comments.")
+    p.add_argument(
+        "--fields",
+        help="Comma-separated field list (overrides defaults). "
+        "Pass '*all' for everything.",
+    )
+    p.set_defaults(handler=cmd_view)
+
+    # search
+    p = _sp("search", help="Search issues via JQL.")
+    p.add_argument("--jql", required=True, help="JQL query string.")
+    p.add_argument("--fields", help="Comma-separated fields to return.")
+    p.add_argument(
+        "--limit", type=int, default=50,
+        help="Max results per page (ignored with --all). Default 50.",
+    )
+    p.add_argument(
+        "--all", action="store_true",
+        help="Paginate through every matching issue.",
+    )
+    p.set_defaults(handler=cmd_search)
+
+    # edit
+    p = _sp("edit", help="Update an existing issue's fields.")
+    p.add_argument("key", help="Issue key, e.g. ENP-134")
+    p.add_argument("--summary", help="New summary.")
+    p.add_argument(
+        "--add-labels", dest="add_labels",
+        help="Comma-separated labels to add (deduped against existing). "
+        "Combine with --remove-labels in one call. Use --set-labels to replace.",
+    )
+    p.add_argument(
+        "--remove-labels", dest="remove_labels",
+        help="Comma-separated labels to remove. Combinable with --add-labels.",
+    )
+    p.add_argument(
+        "--set-labels", dest="set_labels",
+        help="Comma-separated labels that REPLACE the entire label set. "
+        "Mutually exclusive with --add-labels and --remove-labels.",
+    )
+    p.add_argument("--type", help="New issue type name (case-insensitive).")
+    p.add_argument(
+        "--assignee",
+        help="User spec: @me, default, none, email, or display name.",
+    )
+    _add_rich_text_args(p)
+    p.set_defaults(handler=cmd_edit)
+
+    # create
+    p = _sp("create", help="Create a new issue.")
+    p.add_argument("--project", help="Project key, e.g. ENP")
+    p.add_argument("--type", help="Issue type name (case-insensitive).")
+    p.add_argument("--summary", help="Issue summary.")
+    p.add_argument(
+        "--parent",
+        help="Parent (epic) key. First-class field; do not also create a link.",
+    )
+    p.add_argument("--labels", help="Comma-separated labels.")
+    p.add_argument(
+        "--assignee",
+        help="User spec: @me, default, none, email, or display name.",
+    )
+    p.add_argument(
+        "--from", dest="from_key",
+        help="Copy summary/type/labels/parent/description from this issue "
+        "(REST-backed replacement for `acli clone`; never copies comments "
+        "or links).",
+    )
+    p.add_argument(
+        "--no-parent", action="store_true",
+        help="When using --from, do NOT preserve the source's parent.",
+    )
+    _add_rich_text_args(p)
+    p.set_defaults(handler=cmd_create)
+
+    # create-bulk
+    p = _sp(
+        "create-bulk",
+        help="Create many issues in one round-trip from a JSON file.",
+    )
+    p.add_argument(
+        "input",
+        help="JSON file: array of {project, type, summary, [parent], "
+        "[labels], [assignee], [description_md | description_adf]}.",
+    )
+    p.set_defaults(handler=cmd_create_bulk)
+
+    # link
+    pl = _sp("link", help="Manage issue links.")
+    plsub = pl.add_subparsers(dest="link_cmd", required=True)
+
+    pla = plsub.add_parser(
+        "add", help="Add a link. <blocker> --blocks <blocked>."
+    )
+    pla.add_argument("blocker", help="The blocking (outward) issue key.")
+    pla.add_argument(
+        "--blocks", required=True,
+        help="The blocked (inward) issue key.",
+    )
+    pla.add_argument(
+        "--type", default="Blocks",
+        help="Link type name (case-insensitive). Default: Blocks. "
+        "Also accepts outward/inward descriptions like 'blocks' or "
+        "'is blocked by'.",
+    )
+    pla.set_defaults(handler=cmd_link_add)
+
+    pll = plsub.add_parser("list", help="List links on an issue.")
+    pll.add_argument("key", help="Issue key.")
+    pll.set_defaults(handler=cmd_link_list)
+
+    pld = plsub.add_parser("delete", help="Delete a link by its LinkId.")
+    pld.add_argument("id", help="Link id (from `link list`).")
+    pld.set_defaults(handler=cmd_link_delete)
+
+    plt = plsub.add_parser(
+        "types", help="List link types configured on the site."
+    )
+    plt.set_defaults(handler=cmd_link_types)
+
+    # transition
+    p = _sp(
+        "transition",
+        help="Transition an issue's status (no status = list available).",
+    )
+    p.add_argument("key", help="Issue key.")
+    p.add_argument(
+        "status", nargs="?",
+        help="Target status name (case-insensitive). Omit to list options.",
+    )
+    p.set_defaults(handler=cmd_transition)
+
+    # comment
+    pc = _sp("comment", help="Add or edit a comment.")
+    pcsub = pc.add_subparsers(dest="comment_cmd", required=True)
+
+    pca = pcsub.add_parser("add", help="Add a comment.")
+    pca.add_argument("key", help="Issue key.")
+    _add_rich_text_args(pca)
+    pca.add_argument(
+        "--edit-last", action="store_true",
+        help="Edit the current user's most recent comment on this issue "
+        "instead of posting a new one.",
+    )
+    pca.set_defaults(handler=cmd_comment_add)
+
+    pce = pcsub.add_parser("edit", help="Edit a specific comment by id.")
+    pce.add_argument("key", help="Issue key.")
+    pce.add_argument("--id", required=True, help="Comment id.")
+    _add_rich_text_args(pce)
+    pce.set_defaults(handler=cmd_comment_edit)
+
+    # assign
+    p = _sp("assign", help="Assign an issue.")
+    p.add_argument("key", help="Issue key.")
+    p.add_argument("user", help="@me, default, none, email, or display name.")
+    p.set_defaults(handler=cmd_assign)
+
+    # users
+    p = _sp(
+        "users",
+        help="Find users by name or email (returns accountId for @mentions / assignment).",
+    )
+    p.add_argument("query", help="Email, display name, or substring.")
+    p.add_argument(
+        "--include-apps",
+        action="store_true",
+        help="Include app/bot accounts (default: only human accounts).",
+    )
+    p.add_argument(
+        "--active-only",
+        action="store_true",
+        help="Filter to active users only.",
+    )
+    p.add_argument(
+        "--limit", type=int, default=0,
+        help="Cap the number of results returned (0 = no cap).",
+    )
+    p.set_defaults(handler=cmd_users)
+
+    # issue-types
+    p = _sp("issue-types", help="List issue types available in a project.")
+    p.add_argument("project", help="Project key.")
+    p.set_defaults(handler=cmd_issue_types)
+
+    # me / ping
+    p = _sp("me", help="Show the authenticated user.")
+    p.set_defaults(handler=cmd_me)
+
+    p = _sp("ping", help="Verify connectivity and auth.")
+    p.set_defaults(handler=cmd_ping)
+
+    return ap
+
+
+def main(argv: list[str] | None = None) -> int:
+    raw = list(sys.argv[1:] if argv is None else argv)
+    flags, rest = _extract_globals(raw)
+    parser = build_parser()
+    args = parser.parse_args(rest)
+
+    # Explicit flags win; otherwise auto-detect from stdout.
+    if flags["markdown"]:
+        mode = "markdown"
+    elif flags["json"]:
+        mode = "json"
+    else:
+        mode = "auto"
+    out = Out(mode=mode, quiet=flags["quiet"])
+    try:
+        config = Config.from_env()
+        client = Client(config)
+        return args.handler(args, client, out)
+    except JiraError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+    except FileNotFoundError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+    except KeyboardInterrupt:
+        return 130
+
+
+if __name__ == "__main__":
+    sys.exit(main())
