@@ -109,6 +109,14 @@ find . -maxdepth 3 \( \
   - _How_: brief approach summary if non-obvious
 - Leave any section that can't be meaningfully inferred with a `<!-- TODO: fill in -->` comment rather than invented content.
 
+**Formatting — do NOT hard-wrap prose:**
+
+- **Each paragraph is a single line.** GitHub reflows prose to the available column width; hard-wrapping at ~72/80 columns produces awkward ragged breaks in the rendered PR view (especially in the narrow main column when the sidebar is visible).
+- Use blank lines to separate paragraphs.
+- **Hard newlines are fine** for: code fences, lists, tables, headings, and intentional line breaks (e.g. address blocks).
+- Mental model: write Markdown the way it renders, not the way it reads in a terminal. If you wouldn't put a `\n` in a `<p>` tag in HTML, don't put one in the source either.
+- This applies whether you're using `gh pr create --body-file` or piping a heredoc — the file/string itself should not contain mid-paragraph wraps.
+
 ## Step 4 — Preview and Confirm
 
 Show the user the proposed PR using `AskUserQuestion`:
@@ -177,3 +185,7 @@ After successful creation, output:
 | `gh pr create` fails (already exists) | Show existing PR URL from the error output |
 | No Jira key found and user skips | Omit the Jira link; continue without it |
 | Template not parseable | Fall back to minimal template; warn the user |
+
+# Other common operations
+
+- View comments on a Github PR: gh api repos/foo/bar/pulls/123/comments

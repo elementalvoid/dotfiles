@@ -23,6 +23,25 @@ agent: Explore
 7. For each commit (or the single commit if not split), creates a commit message using Conventional Commits specification
 8. Optionally pushes after committing based on flags
 
+## Best Practices and Rules
+
+- Atomic commits: each commit should contain related changes that serve a single purpose
+- Present tense, imperative mood: write commit messages as commands (e.g., "add feature" not "added feature")
+- Concise first line: keep the first line under 72 characters
+- Never commit to `main`/`master`: always use a feature branch
+- Do not commit files that likely contain secrets (.env, credentials.json, etc) without approval. Warn the user if they specifically request to commit those files
+- Never use git commands with the -i flag (like git rebase -i or git add -i) since they require interactive input which is not supported
+- If there are no changes to commit (i.e., no untracked files and no modifications), do not create an empty commit
+- **Never use heredocs (`<<EOF`)** in commit commands — the `Bash` tool runs commands via `bash -c`, which does not support heredocs reliably and will produce `unexpected EOF` errors.
+- For multi-line commit messages, write the message to a temp file and use `git commit -F`:
+<example>
+printf '%s\n' 'feat: add new feature' '' 'Body of the commit message' 'with multiple lines' '' 'Refs: PROJ-123' > /tmp/commit_msg.txt && git commit -F /tmp/commit_msg.txt && rm -f /tmp/commit_msg.txt
+</example>
+- For single-line commit messages, a simple `-m` string is fine:
+<example>
+git commit -m "fix: correct typo in README"
+</example>
+
 ## Step 0 — Parse Arguments
 
 Parse `$ARGUMENTS` for optional flags before doing anything else:
@@ -109,10 +128,12 @@ If multiple distinct changes are detected, suggest breaking into multiple smalle
 For each commit (or the single commit):
 
 **Jira Issue Key:**
+
 - If the branch name has the scheme `PROJ-123/branch-name` or `proj-58/feat/branch-name`, extract the issue key (e.g. `PROJ-123` or `PROJ-58`).
 - Otherwise use `AskUserQuestion` to ask the user for a Jira issue key (may be left blank).
 
 **Commit message (Conventional Commits):**
+
 - Derive the type from the diff: `feat` / `fix` / `chore` / `refactor` / `docs` / `ci` / `test`
 - Concise imperative subject line ≤ 72 characters
 - Optional body if the change warrants explanation
@@ -134,10 +155,3 @@ git rev-parse --abbrev-ref @{u} 2>/dev/null
 - If upstream exists: run `git push`.
 - If no upstream: run `git push -u origin $(git branch --show-current)`.
 - If push fails (non-fast-forward or other error): report the error and stop — do not force-push.
-
-## Best Practices
-
-- **Atomic commits**: each commit should contain related changes that serve a single purpose
-- **Present tense, imperative mood**: write commit messages as commands (e.g., "add feature" not "added feature")
-- **Concise first line**: keep the first line under 72 characters
-- **Never commit to `main`/`master`**: always use a feature branch
