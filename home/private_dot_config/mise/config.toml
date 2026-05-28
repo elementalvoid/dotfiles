@@ -9,7 +9,6 @@
 
 experimental = true                    # enable experimental features such as shims and core plugins
 disable_hints = ["python_precompiled"]
-python_compile = false
 idiomatic_version_file_enable_tools = ["terraform", "opentofu", "go", "node", "java"]
 
 [settings.npm]
@@ -51,7 +50,7 @@ helm = "4"
 helm-docs = "1"
 hey = "0"
 iam-policy-json-to-terraform = "1"
-java = "corretto-25"
+java = "corretto-26"
 jq = "1"
 k9s = "0"
 kind = "0"
@@ -74,8 +73,8 @@ terraform-validator = "3"
 tflint = "0"
 tfsec = "1"
 tonnage = "0"
-usage = "2"
-viddy = "1"
+usage = "3"
+viddy = "latest"
 yq = "4"
 rust = "latest"
 powerpipe = "latest"
@@ -119,4 +118,8 @@ terraform-ls = "latest"
 rumdl = "latest"
 ty = "latest"
 "github:benjajaja/mdfried" = "latest"
+acli = "latest"
+node = "26"
 pi = "latest"
+"cargo:tilth" = "latest"
+"pipx:ddapm-test-agent" = "latest"

@@ -52,6 +52,10 @@ generate_completion() {
     return
   fi
 
+  # Invalidate recipe if the binary is newer — a new install may have added or
+  # changed completion support, including tools that previously had none.
+  [[ -f $recipe && $bin -nt $recipe ]] && rm -f "$recipe"
+
   # Cached-recipe path: use the previously-discovered invocation.
   if ((!force)) && [[ -s $recipe ]]; then
     local args
@@ -123,7 +127,7 @@ generate_completions() {
     print -- "generating completions (jobs=$jobs)"
   fi
 
-  local exclude='^(kubent|iam-policy-json-to-terraform|sopstool|stern|tonnage|viddy)$'
+  local exclude='' #^(kubent|iam-policy-json-to-terraform|sopstool|stern|tonnage|viddy)$'
 
   autoload -Uz zargs
 
@@ -133,7 +137,7 @@ generate_completions() {
   local cmd
   while read -r cmd; do
     [[ -n $cmd ]] && tools+=("$cmd")
-  done < <(mise ls -c | awk '{print $1}' | grep -vE "$exclude")
+  done < <(mise ls -c | awk '{print $1}' | { if [[ -n $exclude ]]; then grep -vE "$exclude"; else cat; fi; })
 
   # Run zargs in a subshell so option changes don't touch the interactive shell.
   # - no_monitor: suppresses [N] PID noise from zargs's internal & calls

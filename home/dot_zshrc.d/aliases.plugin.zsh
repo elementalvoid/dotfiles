@@ -41,6 +41,7 @@ alias ccode='cd $code'
 alias cgo='cd $code/go'
 alias cgithub='cd $code/github'
 alias cibotta='cd $code/ibotta'
+alias cproj='cd ~/projects'
 
 alias gcd='cd-gitroot' # alias to plugin
 alias cvim='cd ~/.config/nvim/'
