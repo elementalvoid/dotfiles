@@ -151,6 +151,7 @@ class Client:
     """Thin Jira Cloud REST client. v3 by default."""
 
     API_V3 = "/rest/api/3"
+    API_AGILE = "/rest/agile/1.0"
 
     def __init__(self, config: Config):
         self.config = config
@@ -180,8 +181,9 @@ class Client:
         *,
         params: dict | None = None,
         json_body: Any = None,
+        api_base: str | None = None,
     ) -> Any:
-        url = f"{self.config.base_url}{self.API_V3}{path}"
+        url = f"{self.config.base_url}{api_base or self.API_V3}{path}"
         resp = self.session.request(
             method, url, params=params, json=json_body, timeout=30
         )
@@ -200,6 +202,10 @@ class Client:
     def get(self, path: str, params: dict | None = None) -> Any:
         return self._request("GET", path, params=params)
 
+    def agile_get(self, path: str, params: dict | None = None) -> Any:
+        """GET against the Jira Software Agile API (/rest/agile/1.0)."""
+        return self._request("GET", path, params=params, api_base=self.API_AGILE)
+
     def post(self, path: str, json_body: Any = None, params: dict | None = None) -> Any:
         return self._request("POST", path, params=params, json_body=json_body)
 
@@ -216,6 +222,71 @@ class Client:
 
     def get_server_info(self) -> dict:
         return self.get("/serverInfo")
+
+    # Greenhopper/Jira-Software sprint field. The customfield id varies per
+    # instance, so resolve it by schema rather than hardcoding.
+    _SPRINT_SCHEMA = "com.pyxis.greenhopper.jira:gh-sprint"
+
+    def sprint_field_id(self) -> str:
+        """Return the customfield key for the Sprint field on this instance.
+
+        Cached on the client. Raises SystemExit with a clear message if the
+        instance has no Jira-Software sprint field (e.g. Jira Work Mgmt only)."""
+        cached = getattr(self, "_sprint_field_id", None)
+        if cached is not None:
+            return cached
+        for field in self.get("/field"):
+            schema = field.get("schema") or {}
+            if schema.get("custom") == self._SPRINT_SCHEMA:
+                self._sprint_field_id = field["id"]
+                return self._sprint_field_id
+        raise SystemExit(
+            "error: no Sprint field found on this Jira instance "
+            "(Jira Software / agile boards required)."
+        )
+
+    def active_sprint_for_project(self, project_key: str) -> dict:
+        """Resolve the single active sprint for a project's board.
+
+        Sprints belong to boards, not projects, so "current sprint" means
+        "the active sprint on this project's board." Errors loudly when the
+        answer is ambiguous (multiple boards/sprints) or empty, rather than
+        guessing -- the caller should then pass an explicit --sprint <id>."""
+        boards = (self.agile_get(
+            "/board", params={"projectKeyOrId": project_key}
+        ) or {}).get("values") or []
+        if not boards:
+            raise SystemExit(
+                f"error: no agile board found for project {project_key}; "
+                f"cannot resolve a current sprint. Pass --sprint <id>."
+            )
+        # Collect active sprints across all of the project's boards, deduped
+        # by sprint id (one sprint can appear on several boards).
+        found: dict[int, dict] = {}
+        for board in boards:
+            try:
+                sprints = (self.agile_get(
+                    f"/board/{board['id']}/sprint", params={"state": "active"}
+                ) or {}).get("values") or []
+            except JiraError:
+                # Kanban boards (and some board types) reject /sprint; skip.
+                continue
+            for sprint in sprints:
+                found[sprint["id"]] = sprint
+        if not found:
+            raise SystemExit(
+                f"error: no active sprint on any board for project "
+                f"{project_key}. Start a sprint or pass --sprint <id>."
+            )
+        if len(found) > 1:
+            listing = ", ".join(
+                f"{s['name']} (id {sid})" for sid, s in sorted(found.items())
+            )
+            raise SystemExit(
+                f"error: multiple active sprints for project {project_key}: "
+                f"{listing}. Disambiguate with --sprint <id>."
+            )
+        return next(iter(found.values()))
 
     def get_issue(self, key: str, fields: list[str] | None = None) -> dict:
         params = {}
@@ -809,6 +880,32 @@ def cmd_edit(args, client: Client, out: Out) -> int:
     if args.assignee is not None:
         acct = resolve_user(client, args.assignee)
         fields["assignee"] = {"accountId": acct}
+    if args.sprint is not None:
+        # The gh-sprint field reports an array schema but its `set` op takes a
+        # bare integer sprint id. "none"/"backlog"/"" clears it (set to null).
+        spec = args.sprint.strip().lower()
+        if spec in ("", "none", "backlog", "null"):
+            fields[client.sprint_field_id()] = None
+        elif spec in ("current", "active", "@current"):
+            issue = client.get_issue(args.key, fields=["project"])
+            proj = (issue.get("fields") or {}).get("project") or {}
+            proj_key = proj.get("key")
+            if not proj_key:
+                raise SystemExit(
+                    f"error: could not resolve project for {args.key} "
+                    f"(cannot find current sprint)."
+                )
+            sprint = client.active_sprint_for_project(proj_key)
+            fields[client.sprint_field_id()] = sprint["id"]
+        else:
+            try:
+                sprint_id = int(args.sprint)
+            except ValueError:
+                raise SystemExit(
+                    f"error: --sprint expects a numeric sprint id, "
+                    f"current/active, or none/backlog, got {args.sprint!r}."
+                )
+            fields[client.sprint_field_id()] = sprint_id
     desc_adf = load_rich_text(args.md, args.adf)
     if desc_adf is not None:
         fields["description"] = desc_adf
@@ -817,7 +914,7 @@ def cmd_edit(args, client: Client, out: Out) -> int:
         raise SystemExit(
             "error: no changes specified. Pass at least one of --summary, "
             "--md/--adf, --add-labels, --remove-labels, --set-labels, "
-            "--type, --assignee."
+            "--type, --assignee, --sprint."
         )
 
     client.update_issue(args.key, fields=fields or None, update=update or None)
@@ -825,6 +922,11 @@ def cmd_edit(args, client: Client, out: Out) -> int:
     # Build a useful 'updated' list for both the JSON payload and the
     # human summary -- labels collapse to a single key with a short detail.
     changed: list[str] = sorted(fields.keys())
+    if args.sprint is not None:
+        sf = client.sprint_field_id()
+        if sf in changed:
+            changed[changed.index(sf)] = "sprint"
+            changed.sort()
     if "labels" in update:
         adds = [op["add"] for op in update["labels"] if "add" in op]
         removes = [op["remove"] for op in update["labels"] if "remove" in op]
@@ -1364,6 +1466,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--assignee",
         help="User spec: @me, default, none, email, or display name.",
+    )
+    p.add_argument(
+        "--sprint",
+        help="Sprint to move the issue into: a numeric sprint id, "
+        "'current'/'active' for the active sprint on the issue's board, "
+        "or 'none'/'backlog' to remove it from its sprint.",
     )
     _add_rich_text_args(p)
     p.set_defaults(handler=cmd_edit)

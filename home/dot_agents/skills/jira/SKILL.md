@@ -79,7 +79,8 @@ Containers nest; use `:::::` (more colons) to wrap a container holding a literal
 ```bash
 jira view K [K2...]                                            # batch read; --comments, --fields
 jira search --jql "..." [--all] [--limit N]                    # JQL; --all paginates everything
-jira edit K --md plan.md                                        # also --summary, --add-labels, --remove-labels, --set-labels, --type, --assignee
+jira edit K --md plan.md                                        # also --summary, --add-labels, --remove-labels, --set-labels, --type, --assignee, --sprint
+jira edit K --sprint current                                    # current/active sprint on the issue's board (or <id>, none/backlog)
 jira create --project P --type Story --parent E --summary "..." --md s.md
 jira create --from K                                            # REST clone replacement: preserves parent, drops comments
 jira create-bulk issues.json                                    # JSON array; one round-trip; prefer for 5+ issues

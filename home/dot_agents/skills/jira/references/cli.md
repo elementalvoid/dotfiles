@@ -120,6 +120,7 @@ Update one or more fields on an issue. At least one change is required.
 | `--set-labels A,B,C` | **Replace** the entire label set. Mutually exclusive with `--add-labels` / `--remove-labels`. |
 | `--type NAME` | New issue type. Case-insensitive; canonical name resolved via REST. |
 | `--assignee SPEC` | See [User specs](#user-specs). |
+| `--sprint SPEC` | Move the issue into a sprint. `<id>` (numeric), `current`/`active` (the active sprint on the issue's board), or `none`/`backlog` (remove from sprint). |
 
 Label ops use Jira's atomic per-field update API, so concurrent edits by other users aren't clobbered (only the specific labels you add/remove change).
 
@@ -130,7 +131,12 @@ jira edit ENP-134 --add-labels new1 --remove-labels stale,old             # one 
 jira edit ENP-134 --set-labels "only,these"                                # replaces wholesale
 jira edit ENP-134 --type Bug                                           # case-insensitive
 jira edit ENP-134 --assignee @me
+jira edit ENP-134 --sprint current                                         # active sprint on the board
+jira edit ENP-134 --sprint 13794                                           # explicit sprint id
+jira edit ENP-134 --sprint none                                            # back to backlog
 ```
+
+**Sprint resolution.** The Sprint customfield id is discovered per-instance (by `gh-sprint` schema), so no id is hardcoded. `current`/`active` reads the issue's project board(s) via the Agile API and picks the single active sprint; if a project has multiple boards/active sprints it errors and asks for an explicit `--sprint <id>` rather than guessing.
 
 ## `jira create [...]`
 
