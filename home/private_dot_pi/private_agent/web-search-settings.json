@@ -1,0 +1,8 @@
+{
+  "model": "claude-haiku-4-5",
+  "thinking": "low",
+  "maxUses": 5,
+  "allowedDomains": [],
+  "blockedDomains": [],
+  "location": null
+}

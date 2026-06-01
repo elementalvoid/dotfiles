@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "tilth": {
+      "args": [
+        "--mcp"
+      ],
+      "command": "/Users/matt.klich/.local/share/mise/installs/cargo-tilth/latest/bin/tilth",
+      "directTools": true
+    }
+  }
+}

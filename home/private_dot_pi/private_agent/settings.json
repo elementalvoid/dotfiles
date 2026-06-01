@@ -1,0 +1,65 @@
+{
+  "lastChangelogVersion": "0.78.0",
+  "defaultProvider": "anthropic",
+  "defaultModel": "claude-opus-4-8",
+  "defaultThinkingLevel": "medium",
+  "modelStrategy": {
+    "01-brainstorm": "claude-opus-4-7",
+    "02-plan": "claude-opus-4-7",
+    "03-work": "claude-opus-4-7",
+    "04-review": "claude-sonnet-4-6",
+    "05-learn": "claude-haiku-4-5",
+    "default": "claude-sonnet-4-6"
+  },
+  "thinkingStrategy": {
+    "01-brainstorm": "high",
+    "02-plan": "high",
+    "03-work": "medium",
+    "04-review": "high",
+    "05-learn": "medium",
+    "default": "high"
+  },
+  "theme": "terminal",
+  "enabledModels": [
+    "anthropic/claude-haiku-4-5",
+    "anthropic/claude-sonnet-4-6",
+    "anthropic/claude-opus-4-7",
+    "anthropic/claude-opus-4-8"
+  ],
+  "warnings": {
+    "anthropicExtraUsage": true
+  },
+  "followUpMode": "all",
+  "steeringMode": "all",
+  "markdown": {
+    "codeBlockIndent": ""
+  },
+  "npmCommand": ["mise", "exec", "node@25", "--", "npm"],
+  "packages": [
+    {
+      "source": "git:github.com/prateekmedia/pi-hooks",
+      "extensions": ["lsp/*.ts"]
+    },
+    "git:github.com/jeanchristophe13v/pi-rewind",
+    "git:github.com/leing2021/super-pi",
+    "npm:@dreki-gg/pi-context7",
+    "npm:@plannotator/pi-extension",
+    "npm:pi-ask-user",
+    "npm:pi-image-tools",
+    "npm:pi-intercom",
+    "npm:pi-mcp-adapter",
+    "npm:pi-subagents",
+    "npm:pi-tool-display"
+  ],
+  "hideThinkingBlock": false,
+  "collapseChangelog": false,
+  "quietStartup": false,
+  "skills": [
+    "-../../.agents/skills/slidev/SKILL.md",
+    "+../../.agents/skills/skill-creator/SKILL.md",
+    "+../../.agents/skills/tdd/SKILL.md",
+    "+../../.agents/skills/to-issues/SKILL.md",
+    "+../../.agents/skills/to-prd/SKILL.md",
+    "+../../.agents/skills/triage/SKILL.md"
+  ]
+}

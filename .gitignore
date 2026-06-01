@@ -1,3 +1,5 @@
 Brewfile.lock.json
 home/private_dot_config/nvim/spell/
 *.zsh.zwc
+node_modules/
+.pi/rewind/
