@@ -371,6 +371,40 @@ class Client:
         r = self.get(f"/issue/{key}/comment")
         return r.get("comments", [])
 
+    def add_attachment(self, key: str, file_path: str) -> list[dict]:
+        """Upload a file as an attachment on an issue.
+
+        The attachment endpoint is the one place the JSON contract breaks:
+        it wants multipart/form-data with the file under the field name
+        `file`, and it mandates the `X-Atlassian-Token: no-check` header
+        (XSRF guard). We bypass `_request` (which is JSON-only) and drive
+        the session directly, letting requests set the multipart boundary
+        by clearing the session's default Content-Type.
+
+        Returns the list of created attachment metadata objects.
+        """
+        url = f"{self.config.base_url}{self.API_V3}/issue/{key}/attachments"
+        filename = os.path.basename(file_path)
+        with open(file_path, "rb") as fh:
+            resp = self.session.post(
+                url,
+                files={"file": (filename, fh)},
+                headers={
+                    "X-Atlassian-Token": "no-check",
+                    # None removes the session's application/json default so
+                    # requests can set multipart/form-data + boundary itself.
+                    "Content-Type": None,
+                },
+                timeout=60,
+            )
+        if not (200 <= resp.status_code < 300):
+            try:
+                payload = resp.json()
+            except ValueError:
+                payload = resp.text
+            raise JiraError(resp.status_code, payload, "POST", url)
+        return resp.json()
+
     def assign_issue(self, key: str, account_id: str | None) -> None:
         # accountId=None unassigns; "-1" sets to default assignee.
         self.put(f"/issue/{key}/assignee", json_body={"accountId": account_id})
@@ -1277,6 +1311,25 @@ def cmd_comment_edit(args, client: Client, out: Out) -> int:
     return 0
 
 
+def cmd_attach(args, client: Client, out: Out) -> int:
+    results: list[dict] = []
+    for path in args.files:
+        if not os.path.isfile(path):
+            raise SystemExit(f"error: file not found: {path}")
+        created = client.add_attachment(args.key, path)
+        results.extend(created if isinstance(created, list) else [created])
+    url = browse_url(client.config, args.key)
+    names = ", ".join(a.get("filename", "?") for a in results)
+    out.emit(
+        results,
+        human=(
+            f"Attached {len(results)} file(s) to "
+            f"{out.link(args.key, url)}: {names}\n  {url}"
+        ),
+    )
+    return 0
+
+
 def cmd_assign(args, client: Client, out: Out) -> int:
     acct = resolve_user(client, args.user)
     client.assign_issue(args.key, acct)
@@ -1579,6 +1632,14 @@ def build_parser() -> argparse.ArgumentParser:
     pce.add_argument("--id", required=True, help="Comment id.")
     _add_rich_text_args(pce)
     pce.set_defaults(handler=cmd_comment_edit)
+
+    # attach
+    p = _sp("attach", help="Upload one or more file attachments to an issue.")
+    p.add_argument("key", help="Issue key.")
+    p.add_argument(
+        "files", nargs="+", help="Path(s) to local file(s) to upload."
+    )
+    p.set_defaults(handler=cmd_attach)
 
     # assign
     p = _sp("assign", help="Assign an issue.")

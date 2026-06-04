@@ -1,6 +1,6 @@
 ---
 name: jira
-description: Drive Jira Cloud from the terminal using the purpose-built `jira` CLI in this skill — read issues, search via JQL, create/edit issues (including children under an epic with `--parent`), link dependencies with sane semantics (`<blocker> --blocks <blocked>`), transition status, add/edit comments, and assign users. Rich text is authored in Markdown (with `:::panel`, `:::expand`, `:::quote` containers for ADF-only constructs) and converted to ADF automatically; ADF can also be supplied directly when needed. Use this skill whenever the user asks to view/edit/create Jira issues, plan out an epic's children, update an issue description from a plan or mind-map, wire up "blocks"/"is blocked by" relationships, push a planning doc into Jira, or transition a workflow. Also use it any time the user mentions Atlassian, ADF, JQL, or wants to push a planning doc into Jira — even if they don't explicitly say "Jira."
+description: Drive Jira Cloud from the terminal using the purpose-built `jira` CLI in this skill — read issues, search via JQL, create/edit issues (including children under an epic with `--parent`), link dependencies with sane semantics (`<blocker> --blocks <blocked>`), transition status, add/edit comments, upload file attachments, and assign users. Rich text is authored in Markdown (with `:::panel`, `:::expand`, `:::quote` containers for ADF-only constructs) and converted to ADF automatically; ADF can also be supplied directly when needed. Use this skill whenever the user asks to view/edit/create Jira issues, plan out an epic's children, update an issue description from a plan or mind-map, wire up "blocks"/"is blocked by" relationships, push a planning doc into Jira, or transition a workflow. Also use it any time the user mentions Atlassian, ADF, JQL, or wants to push a planning doc into Jira — even if they don't explicitly say "Jira."
 ---
 
 # Jira CLI
@@ -26,6 +26,7 @@ jira create --project ENP --type Story --parent ENP-44 --summary "..." --md stor
 jira link ENP-44 --blocks ENP-45
 jira transition ENP-134 "In Progress"
 jira comment add ENP-134 --md update.md
+jira attach ENP-134 screenshot.png                            # upload an attachment
 jira users "Alice"                                             # find accountIds
 ```
 
@@ -88,6 +89,7 @@ jira link <blocker> --blocks <blocked> [--type ...]             # semantic namin
 jira link list K   /   link delete <id>   /   link types
 jira transition K [STATUS]                                      # no STATUS = list available transitions
 jira comment add K --md u.md [--edit-last]                      # add new, or edit your most recent
+jira attach K file.png [more.pdf ...]                           # upload file attachment(s)
 jira assign K (@me | email | "Display Name" | none | default)
 jira users QUERY                                                # find accountId by name/email
 jira issue-types P   /   me   /   ping

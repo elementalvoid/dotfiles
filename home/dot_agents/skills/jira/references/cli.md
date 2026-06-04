@@ -290,6 +290,25 @@ Edit a specific comment.
 jira comment edit ENP-134 --id 10001 --md fix.md
 ```
 
+## `jira attach KEY FILE [FILE...]`
+
+Upload one or more local files as attachments on an issue. Uses Jira's
+multipart attachment endpoint (with the mandatory `X-Atlassian-Token: no-check`
+header) — no ADF/Markdown conversion is involved.
+
+```bash
+jira attach ENP-134 screenshot.png
+jira attach ENP-134 logs.txt report.pdf      # multiple files in one call
+```
+
+Each file is uploaded in its own request; the command exits non-zero if any
+file is missing locally or rejected by Jira. JSON output is the list of created
+attachment metadata objects (`id`, `filename`, `size`, `mimeType`, `content`
+URL, ...).
+
+Note: attachments must be enabled on the instance, and uploads are subject to
+the site's maximum attachment size.
+
 ## `jira assign KEY USER_SPEC`
 
 ```bash
