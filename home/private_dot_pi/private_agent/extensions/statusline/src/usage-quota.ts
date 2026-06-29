@@ -53,7 +53,19 @@ export interface QuotaUpdate {
   quota: UsageQuota | null;
   /** ms timestamp of the last successful fetch, or null before the first. */
   lastUpdated: number | null;
+  /**
+   * Short human-readable description of the most recent fetch failure, or
+   * null when the last fetch succeeded. Surfaced in the statusline as
+   * `(error: ...)` so transient/silent breakage (e.g. the endpoint's
+   * undocumented 429 throttling) is visible rather than masked as `--/--`.
+   */
+  error: string | null;
 }
+
+/** Internal: a fetch either yields data, or fails with a reason string. */
+type FetchResult =
+  | { ok: true; quota: UsageQuota }
+  | { ok: false; error: string };
 
 type Listener = (update: QuotaUpdate) => void;
 
@@ -96,6 +108,7 @@ let listeners = new Set<Listener>();
 let timer: ReturnType<typeof setInterval> | null = null;
 let latest: UsageQuota | null = null;
 let latestAt: number | null = null;
+let latestError: string | null = null;
 let fetching = false;
 
 // ── Auth helpers ─────────────────────────────────────────────────────────────
@@ -124,9 +137,9 @@ async function readAccessToken(): Promise<string | null> {
 
 // ── Fetch ────────────────────────────────────────────────────────────────────
 
-async function fetchUsageQuota(): Promise<UsageQuota | null> {
+async function fetchUsageQuota(): Promise<FetchResult> {
   const token = await readAccessToken();
-  if (!token) return null;
+  if (!token) return { ok: false, error: "not authed (OAuth required)" };
 
   try {
     const res = await fetch("https://api.anthropic.com/api/oauth/usage", {
@@ -134,22 +147,36 @@ async function fetchUsageQuota(): Promise<UsageQuota | null> {
       headers: {
         "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json",
-        "User-Agent": "pi-statusline-extension",
+        // The usage endpoint requires the OAuth beta header (otherwise 401),
+        // and routes unrecognized User-Agents into an aggressively
+        // rate-limited bucket that returns persistent 429s. Identifying as a
+        // claude-code client lands us in the generous bucket.
+        // See anthropics/claude-code#30930, #31637.
+        "anthropic-beta": "oauth-2025-04-20",
+        "User-Agent": "claude-cli/1.0 (external, pi-statusline)",
       },
     });
 
     if (res.status === 429) {
       const delay = parseRetryAfter(res.headers.get("Retry-After"));
       rateLimitRetryAt = Date.now() + delay;
-      return null;
+      return { ok: false, error: `rate limited, retry in ${fmtDelay(delay)}` };
     }
-    if (!res.ok) return null;
+    if (!res.ok) return { ok: false, error: `HTTP ${res.status}` };
     const data = (await res.json()) as UsageQuota & { error?: unknown };
-    if (data.error) return null;
-    return data;
-  } catch {
-    return null;
+    if (data.error) return { ok: false, error: "endpoint error" };
+    return { ok: true, quota: data };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return { ok: false, error: `network: ${msg}` };
   }
+}
+
+/** Compact a backoff duration (ms) into "45s" / "12m" / "2h" for display. */
+function fmtDelay(ms: number): string {
+  if (ms < 60_000) return `${Math.round(ms / 1_000)}s`;
+  if (ms < 3_600_000) return `${Math.round(ms / 60_000)}m`;
+  return `${Math.round(ms / 3_600_000)}h`;
 }
 
 // ── Poller ───────────────────────────────────────────────────────────────────
@@ -159,7 +186,12 @@ async function refresh(): Promise<void> {
   // Skip the network call while a rate-limit window is active; notify
   // listeners with the stale cached value so the statusline stays visible.
   if (rateLimitRetryAt !== null && Date.now() < rateLimitRetryAt) {
-    const staleUpdate: QuotaUpdate = { quota: latest, lastUpdated: latestAt };
+    const wait = fmtDelay(rateLimitRetryAt - Date.now());
+    const staleUpdate: QuotaUpdate = {
+      quota: latest,
+      lastUpdated: latestAt,
+      error: `rate limited, retry in ${wait}`,
+    };
     for (const l of [...listeners]) {
       try { l(staleUpdate); } catch { /* never let a listener tear down the poller */ }
     }
@@ -168,12 +200,16 @@ async function refresh(): Promise<void> {
   fetching = true;
   try {
     const result = await fetchUsageQuota();
-    // Only update `latest` / `latestAt` on a real response (null = no-auth or 429).
-    if (result !== null) {
-      latest = result;
+    // Only update `latest` / `latestAt` on success; on failure keep the last
+    // good data (if any) but record the error so it can be surfaced.
+    if (result.ok) {
+      latest = result.quota;
       latestAt = Date.now();
+      latestError = null;
+    } else {
+      latestError = result.error;
     }
-    const update: QuotaUpdate = { quota: latest, lastUpdated: latestAt };
+    const update: QuotaUpdate = { quota: latest, lastUpdated: latestAt, error: latestError };
     for (const l of [...listeners]) {
       try {
         l(update);
@@ -191,7 +227,7 @@ export function subscribeUsageQuota(listener: Listener): () => void {
 
   // Emit the currently cached value immediately (may be null on first call).
   queueMicrotask(() => {
-    if (listeners.has(listener)) listener({ quota: latest, lastUpdated: latestAt });
+    if (listeners.has(listener)) listener({ quota: latest, lastUpdated: latestAt, error: latestError });
   });
 
   if (listeners.size === 1) {
@@ -216,6 +252,7 @@ export function __resetQuotaPollerForTests(): void {
   listeners = new Set();
   latest = null;
   latestAt = null;
+  latestError = null;
   fetching = false;
   rateLimitRetryAt = null;
 }

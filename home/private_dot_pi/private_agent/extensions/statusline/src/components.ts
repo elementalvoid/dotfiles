@@ -68,6 +68,9 @@ interface StatsLineData {
   thinking: string;
   anthropic: AnthropicStatus;
   usageQuota: UsageQuota | null;
+  usageEnabled: boolean;
+  usageLastUpdated: number | null;
+  usageError: string | null;
 }
 
 interface CwdLineData {
@@ -165,12 +168,35 @@ export class StatsLine extends Container {
     const { dot: statusDot, slot: statusSlot } = statusDotFor(d.anthropic);
     const modelId = d.modelId ?? "no-model";
 
-    // --/-- when the poller is active but no data yet (startup or error).
-    const quotaLabel = d.usageEnabled
-      ? (formatUsageQuota(d.usageQuota) ?? "--/--")
-      : null;
+    // Three distinct states for the quota label:
+    //   real value  → formatted usage, shown in `warning` (the normal case)
+    //   "n/a"       → authenticated and fetched OK, but the endpoint had
+    //                 nothing to report (common on enterprise/org-billed
+    //                 plans). Dimmed, so it reads as "working, not applicable".
+    //   "--/--"     → poller active but no successful fetch yet (startup).
+    const formattedQuota = d.usageEnabled ? formatUsageQuota(d.usageQuota) : null;
+    let quotaLabel: string | null = null;
+    let quotaSlot: string = "warning";
+    if (d.usageEnabled) {
+      if (formattedQuota !== null) {
+        quotaLabel = formattedQuota;
+        quotaSlot = "warning";
+      } else if (d.usageLastUpdated !== null) {
+        // Fetched successfully at least once, but no usable data.
+        quotaLabel = "n/a";
+        quotaSlot = "dim";
+      } else {
+        quotaLabel = "--/--";
+        quotaSlot = "warning";
+      }
+    }
     const ageLabel = d.usageEnabled && d.usageLastUpdated !== null
       ? fmtQuotaAge(d.usageLastUpdated)
+      : null;
+    // Surface fetch failures (e.g. the endpoint's 429 throttling) so the
+    // segment doesn't silently sit at --/-- with no explanation.
+    const errLabel = d.usageEnabled && d.usageError
+      ? `(error: ${d.usageError})`
       : null;
 
     const leftPlain =
@@ -181,6 +207,7 @@ export class StatsLine extends Container {
       ` ${statusDot} Anthropic` +
       (quotaLabel ? `  ${quotaLabel}` : "") +
       (ageLabel ? ` \u00b7 ${ageLabel}` : "") +
+      (errLabel ? ` ${errLabel}` : "") +
       ` `;
     const rightPlain = `\uDB85\uDE7A ${modelId} (${d.thinking}) `;
 
@@ -195,8 +222,9 @@ export class StatsLine extends Container {
     const centerUrl = sanitizeUrl(d.anthropic.incidentUrl ?? UPDOG_PAGE);
     const centerStyled =
       " " + hyperlink(centerUrl, centerInner) +
-      (quotaLabel ? "  " + theme.fg("warning", quotaLabel) : "") +
+      (quotaLabel ? "  " + theme.fg(quotaSlot, quotaLabel) : "") +
       (ageLabel ? theme.fg("dim", ` \u00b7 ${ageLabel}`) : "") +
+      (errLabel ? theme.fg("error", ` ${errLabel}`) : "") +
       " ";
 
     const rightStyled =
@@ -362,6 +390,8 @@ export interface StatuslineInputs {
   usageEnabled?: boolean;
   /** ms timestamp of last successful fetch; drives the · just now / · Xm age label. */
   usageLastUpdated?: number | null;
+  /** Most recent fetch error (e.g. 429 throttling), surfaced as `(error: ...)`. */
+  usageError?: string | null;
 }
 
 export class StatuslineRoot extends Container {
@@ -398,6 +428,7 @@ export class StatuslineRoot extends Container {
       usageQuota: inputs.usageQuota ?? null,
       usageEnabled: inputs.usageEnabled ?? false,
       usageLastUpdated: inputs.usageLastUpdated ?? null,
+      usageError: inputs.usageError ?? null,
     });
     this.cwd.setData({
       sessionCwd: inputs.sessionCwd,

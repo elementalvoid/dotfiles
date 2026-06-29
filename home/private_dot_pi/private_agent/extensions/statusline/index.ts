@@ -104,6 +104,7 @@ export default function (pi: ExtensionAPI) {
   // Usage-quota poller unsubscribe handle. Null when the feature is disabled.
   let usageUnsubscribe: (() => void) | null = null;
   let usageLastUpdated: number | null = null;
+  let usageError: string | null = null;
 
   pi.events.on("web-search:state", (state: unknown) => {
     webSearch = state as WebSearchState;
@@ -160,6 +161,7 @@ export default function (pi: ExtensionAPI) {
           usageUnsubscribe = null;
           usageQuota = null;
           usageLastUpdated = null;
+          usageError = null;
           requestRender();
           const cfg = await loadConfig();
           await saveConfig({ ...cfg, anthropicUsage: false });
@@ -168,9 +170,10 @@ export default function (pi: ExtensionAPI) {
         }
         if (val === "on") {
           if (!usageUnsubscribe) {
-            usageUnsubscribe = subscribeUsageQuota(({ quota, lastUpdated }) => {
+            usageUnsubscribe = subscribeUsageQuota(({ quota, lastUpdated, error }) => {
               usageQuota = quota;
               usageLastUpdated = lastUpdated;
+              usageError = error;
               requestRender();
             });
           }
@@ -261,9 +264,10 @@ export default function (pi: ExtensionAPI) {
       // Load config and conditionally start the usage-quota poller.
       void loadConfig().then(cfg => {
         if (cfg.anthropicUsage !== false && !usageUnsubscribe) {
-          usageUnsubscribe = subscribeUsageQuota(({ quota, lastUpdated }) => {
+          usageUnsubscribe = subscribeUsageQuota(({ quota, lastUpdated, error }) => {
             usageQuota = quota;
             usageLastUpdated = lastUpdated;
+            usageError = error;
             tui.requestRender();
           });
         }
@@ -337,6 +341,7 @@ export default function (pi: ExtensionAPI) {
             usageQuota,
             usageEnabled: usageUnsubscribe !== null,
             usageLastUpdated,
+            usageError,
           });
 
           return root.render(width);
