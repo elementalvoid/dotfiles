@@ -6,6 +6,10 @@
       ],
       "command": "/Users/matt.klich/.local/share/mise/installs/cargo-tilth/latest/bin/tilth",
       "directTools": true
+    },
+    "miro-mcp": {
+      "url": "https://mcp.miro.com/",
+      "directTools": true
     }
   }
 }
