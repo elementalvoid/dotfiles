@@ -29,6 +29,7 @@ Parse `$ARGUMENTS` for optional flags:
 - `--reviewer <handle>` → add reviewer(s) (can repeat; accepts `@org/team` or `@user`)
 - `--base <branch>` → override base branch (default: `main`)
 - `--no-template` → skip PR template discovery
+- `--big-threshold <n>` → override the changed-line count that triggers a diff breakdown (default: `400`)
 - A bare Jira issue key like `ENP-123` → override auto-detected issue
 
 **If `--help` / `-h` is passed**, print the following and stop — do not run any git or gh commands:
@@ -42,6 +43,7 @@ Options:
   --reviewer <handle>     Add a reviewer (repeatable; @user or @org/team)
   --base <branch>         Set the base branch (default: main)
   --no-template           Skip PR template discovery
+  --big-threshold <n>     Changed-line count that triggers a diff breakdown (default: 400)
 
 Arguments:
   JIRA-KEY                Override the Jira issue key auto-detected from the branch name (e.g. ENP-123)
@@ -117,6 +119,38 @@ find . -maxdepth 3 \( \
 - Mental model: write Markdown the way it renders, not the way it reads in a terminal. If you wouldn't put a `\n` in a `<p>` tag in HTML, don't put one in the source either.
 - This applies whether you're using `gh pr create --body-file` or piping a heredoc — the file/string itself should not contain mid-paragraph wraps.
 
+## Step 3.5 — Assess PR Size and Add a Diff Breakdown if Big
+
+Determine whether this PR counts as **big**:
+
+```bash
+git diff <base>...HEAD --shortstat
+git diff <base>...HEAD --stat
+```
+
+- **Big** if insertions + deletions from `--shortstat` exceed `400` (or `--big-threshold` if given), OR the diff touches more than 15 files.
+- If not big, skip this step entirely — do not add a breakdown to a small PR.
+
+If big, run the categorization workflow in `references/diff-breakdown.md` against the same base branch:
+
+1. Fetch `git diff <base>...HEAD --numstat` and `git log <base>...HEAD --oneline`; reason about categories from file paths and commit messages together (reference sections 2–3).
+2. Assign every file to a category with an awk script (reference section 4) and verify the TOTAL row against `--shortstat` — fix the awk if it doesn't match, never eyeball the totals.
+3. Render the fixed-width table per the reference's section 5 format, plus the one-sentence interpretation from section 6.
+
+Insert the result into the PR body as its own section, placed after Summary/Changes:
+
+```markdown
+## Change Breakdown
+
+The line count is large but much of it is <one-sentence explanation of dominant non-production categories>:
+
+\`\`\`
+ <table>
+\`\`\`
+```
+
+If the template already has a section clearly meant for this (e.g. "## Size" or "## Diff Stats"), fill that section instead of adding a duplicate. Then continue to Step 4 with the augmented body.
+
 ## Step 4 — Preview and Confirm
 
 Show the user the proposed PR using `AskUserQuestion`:
@@ -171,10 +205,7 @@ EOF
 
 ## Step 6 — Report
 
-After successful creation, output:
-
-- The PR URL (from `gh pr create` stdout)
-- Offer: "Would you like to open it in the browser? (`gh pr view --web`)"
+After successful creation, output the PR URL (from `gh pr create` stdout).
 
 ## Error Handling
 
@@ -185,6 +216,11 @@ After successful creation, output:
 | `gh pr create` fails (already exists) | Show existing PR URL from the error output |
 | No Jira key found and user skips | Omit the Jira link; continue without it |
 | Template not parseable | Fall back to minimal template; warn the user |
+| Diff breakdown totals don't match `--shortstat` | Recompute the awk categorization; never hand-adjust numbers to fit |
+
+## Reference files
+
+- `references/diff-breakdown.md` — diff categorization workflow used by Step 3.5 to build a "Change Breakdown" section for big PRs
 
 # Other common operations
 
