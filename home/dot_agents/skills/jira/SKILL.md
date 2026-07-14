@@ -5,7 +5,9 @@ description: Drive Jira Cloud from the terminal using the purpose-built `jira` C
 
 # Jira CLI
 
-`scripts/jira` is a self-contained CLI that talks directly to Jira Cloud REST. Use it — don't write shell or Python wrappers. For full verb-by-verb usage see `references/cli.md`; for API landmines see `references/gotchas.md`.
+`scripts/jira` is a self-contained CLI that talks directly to Jira Cloud REST. Use it — don't write shell or Python wrappers. Run `jira <cmd> --help` for flag reference. For API landmines see `references/gotchas.md`.
+
+**Path note:** `<skill>` below means *the directory containing this SKILL.md file* — i.e. `dirname` of whatever path you read to load these instructions. Don't assume a fixed location (e.g. `~/.pi/agent/skills/jira`); resolve it from how you actually got here, since skills can be loaded from more than one root.
 
 ## TL;DR
 
@@ -80,7 +82,7 @@ Containers nest; use `:::::` (more colons) to wrap a container holding a literal
 ```bash
 jira view K [K2...]                                            # batch read; --comments, --fields
 jira search --jql "..." [--all] [--limit N]                    # JQL; --all paginates everything
-jira edit K --md plan.md                                        # also --summary, --add-labels, --remove-labels, --set-labels, --type, --assignee, --sprint
+jira edit K --md plan.md                                        # also --summary, --add-labels, --remove-labels, --set-labels, --add-components, --remove-components, --set-components, --type, --assignee, --sprint
 jira edit K --sprint current                                    # current/active sprint on the issue's board (or <id>, none/backlog)
 jira create --project P --type Story --parent E --summary "..." --md s.md
 jira create --from K                                            # REST clone replacement: preserves parent, drops comments
@@ -97,9 +99,38 @@ jira issue-types P   /   me   /   ping
 
 Out of scope (use the Jira web UI): `clone` (use `create --from`), `archive`/`unarchive`/`delete`, bulk-edit/transition/assign-by-JQL, cross-project clone.
 
+## JQL patterns
+
+```text
+project = ENP AND type = Bug AND status != Done
+assignee = currentUser() AND status != Done
+parent = ENP-44                                  # epic's children
+"Epic Link" = ENP-44                             # legacy fallback if parent returns 0
+project = ENP AND labels = 'tech-debt'
+project = ENP AND updated >= -7d ORDER BY updated DESC
+```
+
+## `create-bulk` JSON schema
+
+Input is a JSON array; each item:
+
+```json
+{
+  "project": "ENP",
+  "type": "Story",
+  "summary": "...",
+  "parent": "ENP-44",
+  "labels": ["api"],
+  "components": ["kestrel"],
+  "assignee": "alice@example.com",
+  "description_md": "# Heading\n\nBody..."
+}
+```
+
+`project`, `type`, `summary` required. `description_md` and `description_adf` are mutually exclusive.
+
 ## Reference files
 
-- `references/cli.md` — verb-by-verb reference (read for non-trivial usage)
 - `references/gotchas.md` — Jira API landmines the CLI can't shield you from
 - `references/adf.md` — ADF node/mark reference for raw-ADF use
 - `scripts/jira` — the CLI (PEP-723; needs `uv` on PATH)

@@ -690,6 +690,7 @@ def render_issue_human(
     reporter = _name(fields.get("reporter"))
     priority = _name(fields.get("priority"))
     labels = fields.get("labels") or []
+    components = [c.get("name") for c in (fields.get("components") or []) if c.get("name")]
     parent = fields.get("parent")
     parent_key = parent.get("key") if isinstance(parent, dict) else None
     created = (fields.get("created") or "")[:10]
@@ -719,6 +720,8 @@ def render_issue_human(
         rows.append(("Created", created))
     if updated and updated != created:
         rows.append(("Updated", updated))
+    if components:
+        rows.append(("Components", ", ".join(components)))
     if labels:
         rows.append(("Labels", ", ".join(labels)))
     lines.append("| | |")
@@ -818,7 +821,7 @@ def render_search_human(config: Config, out: "Out", issues: list[dict]) -> str:
 
 DEFAULT_VIEW_FIELDS = [
     "summary", "issuetype", "status", "assignee", "reporter", "priority",
-    "labels", "parent", "description", "issuelinks", "created", "updated",
+    "labels", "components", "parent", "description", "issuelinks", "created", "updated",
 ]
 
 
@@ -901,6 +904,25 @@ def cmd_edit(args, client: Client, out: Out) -> int:
         if label_ops:
             update["labels"] = label_ops
 
+    # Components: --set-components replaces wholesale; --add/--remove are atomic.
+    if args.set_components is not None and (
+        args.add_components is not None or args.remove_components is not None
+    ):
+        raise SystemExit(
+            "error: --set-components is mutually exclusive with --add-components "
+            "and --remove-components."
+        )
+    if args.set_components is not None:
+        fields["components"] = [{"name": n} for n in _split_csv(args.set_components)]
+    else:
+        comp_ops: list[dict] = []
+        for name in _split_csv(args.add_components or ""):
+            comp_ops.append({"add": {"name": name}})
+        for name in _split_csv(args.remove_components or ""):
+            comp_ops.append({"remove": {"name": name}})
+        if comp_ops:
+            update["components"] = comp_ops
+
     if args.type is not None:
         # Need the project key to resolve case. Fetch the issue first.
         issue = client.get_issue(args.key, fields=["project"])
@@ -948,6 +970,7 @@ def cmd_edit(args, client: Client, out: Out) -> int:
         raise SystemExit(
             "error: no changes specified. Pass at least one of --summary, "
             "--md/--adf, --add-labels, --remove-labels, --set-labels, "
+            "--add-components, --remove-components, --set-components, "
             "--type, --assignee, --sprint."
         )
 
@@ -970,6 +993,16 @@ def cmd_edit(args, client: Client, out: Out) -> int:
         if removes:
             parts.append("-" + ",".join(removes))
         changed.append("labels(" + " ".join(parts) + ")")
+        changed.sort()
+    if "components" in update:
+        adds = [op["add"]["name"] for op in update["components"] if "add" in op]
+        removes = [op["remove"]["name"] for op in update["components"] if "remove" in op]
+        parts = []
+        if adds:
+            parts.append("+" + ",".join(adds))
+        if removes:
+            parts.append("-" + ",".join(removes))
+        changed.append("components(" + " ".join(parts) + ")")
         changed.sort()
     payload = {"key": args.key, "updated": changed}
     url = browse_url(client.config, args.key)
@@ -1002,6 +1035,10 @@ def cmd_create(args, client: Client, out: Out) -> int:
     if args.labels:
         fields["labels"] = [
             label.strip() for label in args.labels.split(",") if label.strip()
+        ]
+    if args.components:
+        fields["components"] = [
+            {"name": n.strip()} for n in args.components.split(",") if n.strip()
         ]
     desc_adf = load_rich_text(args.md, args.adf)
     if desc_adf is not None:
@@ -1466,7 +1503,7 @@ def build_parser() -> argparse.ArgumentParser:
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    sub = ap.add_subparsers(dest="cmd", required=True)
+    sub = ap.add_subparsers(dest="cmd")
 
     def _sp(name: str, **kwargs) -> argparse.ArgumentParser:
         return sub.add_parser(name, **kwargs)
@@ -1515,6 +1552,19 @@ def build_parser() -> argparse.ArgumentParser:
         help="Comma-separated labels that REPLACE the entire label set. "
         "Mutually exclusive with --add-labels and --remove-labels.",
     )
+    p.add_argument(
+        "--add-components", dest="add_components",
+        help="Comma-separated component names to add. Combine with --remove-components.",
+    )
+    p.add_argument(
+        "--remove-components", dest="remove_components",
+        help="Comma-separated component names to remove. Combinable with --add-components.",
+    )
+    p.add_argument(
+        "--set-components", dest="set_components",
+        help="Comma-separated component names that REPLACE the entire component set. "
+        "Mutually exclusive with --add-components and --remove-components.",
+    )
     p.add_argument("--type", help="New issue type name (case-insensitive).")
     p.add_argument(
         "--assignee",
@@ -1539,6 +1589,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Parent (epic) key. First-class field; do not also create a link.",
     )
     p.add_argument("--labels", help="Comma-separated labels.")
+    p.add_argument("--components", help="Comma-separated component names.")
     p.add_argument(
         "--assignee",
         help="User spec: @me, default, none, email, or display name.",
@@ -1701,6 +1752,9 @@ def main(argv: list[str] | None = None) -> int:
     try:
         config = Config.from_env()
         client = Client(config)
+        if not hasattr(args, "handler"):
+            parser.print_help()
+            return 0
         return args.handler(args, client, out)
     except JiraError as e:
         print(f"error: {e}", file=sys.stderr)
