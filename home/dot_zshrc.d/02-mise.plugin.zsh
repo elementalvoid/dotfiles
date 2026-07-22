@@ -6,7 +6,6 @@ source <(mise activate --quiet zsh)
 # Handle some base mise stuff required for the rest of the setup
 command -v cargo >/dev/null 2>&1 || mise use -g cargo
 command -v cargo-binstall >/dev/null 2>&1 || mise use -g cargo-binstall
-command -v ubi >/dev/null 2>&1 || mise use -g ubi
 command -v uv >/dev/null 2>&1 || mise use -g uv
 
 # cargo from github needs some help
