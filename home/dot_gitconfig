@@ -7,6 +7,7 @@
   pager = delta --paging always
   preloadindex = true
 
+	hooksPath = /Users/matt.klich/.config/git/hooks
 [alias]
   cv = commit -v
   cva = commit -v -a

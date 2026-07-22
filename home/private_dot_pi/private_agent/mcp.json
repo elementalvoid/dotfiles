@@ -4,12 +4,26 @@
       "args": [
         "--mcp"
       ],
-      "command": "/Users/matt.klich/.local/share/mise/installs/cargo-tilth/latest/bin/tilth",
-      "directTools": true
+      "command": "/Users/matt.klich/.local/share/mise/installs/cargo-tilth/latest/bin/tilth"
     },
     "miro-mcp": {
-      "url": "https://mcp.miro.com/",
-      "directTools": true
+      "url": "https://mcp.miro.com/"
+    },
+    "aws-mcp": {
+      "command": "uvx",
+      "args": [
+        "mcp-proxy-for-aws@latest",
+        "https://aws-mcp.us-east-1.api.aws/mcp",
+        "--metadata",
+        "AWS_REGION=us-east-1",
+        "--read-only"
+      ]
+    },
+    "tokensave": {
+      "command": "/opt/homebrew/bin/tokensave",
+      "args": [
+        "serve"
+      ]
     }
   }
 }

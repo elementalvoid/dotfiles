@@ -14,6 +14,8 @@
 
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
+import { Text, Container, Markdown } from "@earendil-works/pi-tui";
+import { keyHint, getMarkdownTheme, DynamicBorder } from "@earendil-works/pi-coding-agent";
 import { Readability } from "@mozilla/readability";
 import { parseHTML } from "linkedom";
 import TurndownService from "turndown";
@@ -113,6 +115,93 @@ function fetchUrl(rawUrl: string, signal?: AbortSignal, maxRedirects = 10): Prom
 
     doRequest(rawUrl, maxRedirects);
   });
+}
+
+// ---------------------------------------------------------------------------
+// Markdown-first site adapters
+//
+// Some sites serve JS-rendered SPA shells at their canonical HTML URLs but also
+// publish a clean Markdown twin of every page. For these, we fetch the Markdown
+// directly and SKIP Readability entirely.
+//
+// To add a new site: append an entry below. `match` decides if the adapter
+// applies to a given URL; `toMarkdownUrl` returns the Markdown URL to fetch.
+// ---------------------------------------------------------------------------
+
+interface SiteAdapter {
+  name: string;
+  match: (url: URL) => boolean;
+  toMarkdownUrl: (url: URL) => string;
+}
+
+const MD_FIRST_SITES: SiteAdapter[] = [
+  {
+    // AWS docs publish a `.md` twin for every `.html` page.
+    name: "docs.aws.amazon.com",
+    match: (url) => url.hostname === "docs.aws.amazon.com" && url.pathname.endsWith(".html"),
+    toMarkdownUrl: (url) => {
+      const u = new URL(url.toString());
+      u.pathname = u.pathname.replace(/\.html$/, ".md");
+      u.search = "";
+      u.hash = "";
+      return u.toString();
+    },
+  },
+];
+
+function findMdAdapter(rawUrl: string): SiteAdapter | null {
+  let parsed: URL;
+  try {
+    parsed = new URL(rawUrl);
+  } catch {
+    return null;
+  }
+  return MD_FIRST_SITES.find((a) => a.match(parsed)) ?? null;
+}
+
+// A response "looks like Markdown" if it isn't an HTML document. AWS returns a
+// 200 HTML error page for missing `.md` files, so guard on both status + shape.
+function looksLikeHtml(body: string): boolean {
+  const head = body.trimStart().slice(0, 200).toLowerCase();
+  return head.startsWith("<!doctype") || head.startsWith("<html") || head.includes("<html");
+}
+
+// ---------------------------------------------------------------------------
+// JS-redirect / SPA stub detection
+//
+// Tiny HTML bodies that only contain a meta-refresh or location.replace are
+// redirect shells with no real content. We do NOT follow these blindly — we
+// surface the detected target and let the caller decide.
+// ---------------------------------------------------------------------------
+
+const STUB_MAX_BYTES = 3000;
+
+function detectStubRedirect(body: string, baseUrl: string): string | null {
+  if (body.length > STUB_MAX_BYTES) return null;
+
+  let target: string | null = null;
+
+  // <meta http-equiv="refresh" content="0;URL=foo.html">
+  const metaMatch = body.match(
+    /http-equiv=["']?refresh["']?[^>]*content=["'][^"']*url=([^"';]+)/i,
+  );
+  if (metaMatch) target = metaMatch[1].trim();
+
+  // location.replace("foo.html") or self.location = "foo.html"
+  if (!target) {
+    const jsMatch = body.match(
+      /location(?:\.href)?\s*(?:=|\.replace\s*\()\s*["']([^"']+)["']/i,
+    );
+    if (jsMatch) target = jsMatch[1].trim();
+  }
+
+  if (!target) return null;
+
+  try {
+    return new URL(target, baseUrl).toString();
+  } catch {
+    return null;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -223,6 +312,89 @@ function formatOutput(result: ExtractResult): string {
   return lines.join("\n\n");
 }
 
+function formatRawMarkdown(
+  url: string,
+  adapterName: string,
+  markdown: string,
+): { output: string; wordCount: number } {
+  const clean = markdown.replace(/\n{3,}/g, "\n\n").trim();
+  const wordCount = clean.split(/\s+/).filter(Boolean).length;
+  const output = [
+    `**Source:** ${adapterName} (Markdown)  \n**URL:** ${url}  \n**Words:** ~${wordCount.toLocaleString()}`,
+    "---",
+    clean,
+  ].join("\n\n");
+  return { output, wordCount };
+}
+
+// ---------------------------------------------------------------------------
+// Shared resolver: md-first adapter → stub detection → Readability extraction
+// ---------------------------------------------------------------------------
+
+type ResolveResult =
+  | { kind: "markdown"; output: string; finalUrl: string; title?: string; wordCount?: number }
+  | { kind: "nonhtml"; output: string; finalUrl: string; contentType: string }
+  | { kind: "stub"; finalUrl: string; redirectTarget: string }
+  | { kind: "article"; output: string; result: ExtractResult };
+
+async function resolveContent(
+  rawUrl: string,
+  includeImages: boolean,
+  signal: AbortSignal | undefined,
+  onStage?: (stage: string) => void,
+): Promise<ResolveResult> {
+  const url = rawUrl.replace(/^@/, "");
+
+  // 1. Markdown-first adapters: fetch the .md twin and skip Readability.
+  const adapter = findMdAdapter(url);
+  if (adapter) {
+    const mdUrl = adapter.toMarkdownUrl(new URL(url));
+    onStage?.(`Fetching Markdown from ${mdUrl}…`);
+    try {
+      const md = await fetchUrl(mdUrl, signal);
+      if (md.status < 400 && md.body.trim() && !looksLikeHtml(md.body)) {
+        const { output, wordCount } = formatRawMarkdown(mdUrl, adapter.name, md.body);
+        return { kind: "markdown", output, finalUrl: mdUrl, wordCount };
+      }
+      // Otherwise fall through to normal fetch of the original URL.
+    } catch {
+      // Ignore and fall back to the normal path.
+    }
+  }
+
+  // 2. Normal fetch of the original URL.
+  onStage?.(`Fetching ${url}…`);
+  const fetched = await fetchUrl(url, signal);
+
+  if (fetched.status >= 400) {
+    throw new Error(`HTTP ${fetched.status} from ${fetched.finalUrl}`);
+  }
+
+  const ct = fetched.contentType.toLowerCase();
+  if (!ct.includes("html") && !ct.includes("xml") && ct !== "") {
+    const preview = fetched.body.slice(0, 2000);
+    return {
+      kind: "nonhtml",
+      finalUrl: fetched.finalUrl,
+      contentType: fetched.contentType,
+      output: `[Non-HTML content: ${fetched.contentType}]\n\n${preview}${
+        fetched.body.length > 2000 ? "\n\n…(truncated)" : ""
+      }`,
+    };
+  }
+
+  // 3. Stub / SPA-shell detection — do not follow blindly.
+  const redirectTarget = detectStubRedirect(fetched.body, fetched.finalUrl);
+  if (redirectTarget && redirectTarget !== fetched.finalUrl) {
+    return { kind: "stub", finalUrl: fetched.finalUrl, redirectTarget };
+  }
+
+  // 4. Readability extraction.
+  onStage?.(`Extracting content from ${url}…`);
+  const result = extractAndConvert(fetched.body, fetched.finalUrl, includeImages);
+  return { kind: "article", output: formatOutput(result), result };
+}
+
 // ---------------------------------------------------------------------------
 // Extension entry point
 // ---------------------------------------------------------------------------
@@ -259,63 +431,115 @@ export default function webfetchExtension(pi: ExtensionAPI) {
       const url = params.url.replace(/^@/, ""); // handle accidental @ prefix
       const includeImages = params.include_images ?? false;
 
-      onUpdate?.({
-        content: [{ type: "text", text: `Fetching ${url}…` }],
-        details: { stage: "fetch", url },
-      });
-
-      let fetched: FetchResult;
+      let resolved: ResolveResult;
       try {
-        fetched = await fetchUrl(url, signal ?? undefined);
+        resolved = await resolveContent(url, includeImages, signal ?? undefined, (stage) =>
+          onUpdate?.({ content: [{ type: "text", text: stage }], details: { stage, url } }),
+        );
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);
         throw new Error(`Failed to fetch ${url}: ${msg}`);
       }
 
-      if (fetched.status >= 400) {
-        throw new Error(`HTTP ${fetched.status} from ${fetched.finalUrl}`);
-      }
+      switch (resolved.kind) {
+        case "markdown":
+          return {
+            content: [{ type: "text", text: resolved.output }],
+            details: { url: resolved.finalUrl, source: "markdown", wordCount: resolved.wordCount },
+          };
 
-      const ct = fetched.contentType.toLowerCase();
-      if (!ct.includes("html") && !ct.includes("xml") && ct !== "") {
-        // Likely a PDF, image, etc. — return raw truncated text
-        const preview = fetched.body.slice(0, 2000);
-        return {
-          content: [
-            {
-              type: "text",
-              text: `[Non-HTML content: ${fetched.contentType}]\n\n${preview}${fetched.body.length > 2000 ? "\n\n…(truncated)" : ""}`,
+        case "nonhtml":
+          return {
+            content: [{ type: "text", text: resolved.output }],
+            details: { url: resolved.finalUrl, contentType: resolved.contentType },
+          };
+
+        case "stub":
+          return {
+            content: [
+              {
+                type: "text",
+                text:
+                  `The page at ${resolved.finalUrl} is a redirect/SPA shell with no readable content. ` +
+                  `It points to:\n\n  ${resolved.redirectTarget}\n\n` +
+                  `This redirect was not followed automatically. If you want its content, ask the user ` +
+                  `to confirm, then call webfetch again with that URL.`,
+              },
+            ],
+            details: { url: resolved.finalUrl, redirectTarget: resolved.redirectTarget, stub: true },
+          };
+
+        case "article":
+          return {
+            content: [{ type: "text", text: resolved.output }],
+            details: {
+              url: resolved.result.url,
+              title: resolved.result.title,
+              byline: resolved.result.byline,
+              siteName: resolved.result.siteName,
+              wordCount: resolved.result.wordCount,
             },
-          ],
-          details: { url: fetched.finalUrl, contentType: fetched.contentType },
-        };
+          };
+      }
+    },
+
+    // ── Custom rendering: compact summary by default, full content on expand ──
+    renderResult(result, { expanded, isPartial }, theme, _context) {
+      if (isPartial) {
+        return new Text(theme.fg("warning", "Fetching…"), 0, 0);
       }
 
-      onUpdate?.({
-        content: [{ type: "text", text: `Extracting content from ${url}…` }],
-        details: { stage: "extract", url },
-      });
-
-      let result: ExtractResult;
-      try {
-        result = extractAndConvert(fetched.body, fetched.finalUrl, includeImages);
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : String(err);
-        throw new Error(`Extraction failed for ${url}: ${msg}`);
-      }
-
-      const output = formatOutput(result);
-
-      return {
-        content: [{ type: "text", text: output }],
-        details: {
-          url: result.url,
-          title: result.title,
-          byline: result.byline,
-          siteName: result.siteName,
-          wordCount: result.wordCount,
-        },
+      const d = (result.details ?? {}) as {
+        title?: string;
+        url?: string;
+        source?: string;
+        wordCount?: number;
+        contentType?: string;
+        stub?: boolean;
+        redirectTarget?: string;
       };
+      const fullText = result.content?.map((c) => (c.type === "text" ? c.text : "")).join("") ?? "";
+
+      // Stub redirect: warn and always show the target (short, no expand needed).
+      if (d.stub) {
+        return new Text(
+          theme.fg("warning", "⚠ Redirect shell — not followed") +
+            "\n  " +
+            theme.fg("dim", `→ ${d.redirectTarget ?? "unknown"}`),
+          0,
+          0,
+        );
+      }
+
+      // Build a one-line summary.
+      const label = d.title || d.url || "content";
+      const bits: string[] = [];
+      if (typeof d.wordCount === "number") bits.push(`~${d.wordCount.toLocaleString()} words`);
+      if (d.source === "markdown") bits.push("Markdown");
+      else if (d.contentType) bits.push(d.contentType);
+      const suffix = bits.length ? theme.fg("dim", ` (${bits.join(", ")})`) : "";
+      const summary = theme.fg("success", "✓ ") + theme.fg("toolTitle", label) + suffix;
+
+      if (!expanded) {
+        return new Text(
+          summary + theme.fg("dim", `  ${keyHint("app.tools.expand", "to expand")}`),
+          0,
+          0,
+        );
+      }
+
+      // Expanded: frame the fetched content in an accent-bordered panel so it
+      // reads as clearly distinct from normal agent output.
+      const accent = (s: string) => theme.fg("accent", s);
+      const container = new Container();
+      container.addChild(new DynamicBorder(accent));
+      container.addChild(
+        new Text(summary + theme.fg("dim", `  ${keyHint("app.tools.expand", "to collapse")}`), 1, 0),
+      );
+      container.addChild(new DynamicBorder(accent));
+      container.addChild(new Markdown(fullText, 1, 0, getMarkdownTheme()));
+      container.addChild(new DynamicBorder(accent));
+      return container;
     },
   });
 
@@ -332,26 +556,42 @@ export default function webfetchExtension(pi: ExtensionAPI) {
       ctx.ui.setStatus("webfetch", `Fetching ${url}…`);
 
       try {
-        const fetched = await fetchUrl(url);
+        let resolved = await resolveContent(url, false, undefined, (stage) =>
+          ctx.ui.setStatus("webfetch", stage),
+        );
 
-        if (fetched.status >= 400) {
-          ctx.ui.notify(`HTTP ${fetched.status} from ${url}`, "error");
+        // Stub redirect: ask the user before following (don't trust it blindly).
+        if (resolved.kind === "stub") {
           ctx.ui.setStatus("webfetch", "");
+          const follow = await ctx.ui.confirm(
+            "Follow redirect?",
+            `${resolved.finalUrl} is a redirect shell pointing to:\n\n${resolved.redirectTarget}\n\nFetch that URL instead?`,
+          );
+          if (!follow) {
+            ctx.ui.notify("webfetch: redirect not followed.", "info");
+            return;
+          }
+          ctx.ui.setStatus("webfetch", `Fetching ${resolved.redirectTarget}…`);
+          resolved = await resolveContent(resolved.redirectTarget, false, undefined, (stage) =>
+            ctx.ui.setStatus("webfetch", stage),
+          );
+        }
+
+        if (resolved.kind === "stub") {
+          ctx.ui.notify("webfetch: target is still a redirect shell.", "warning");
           return;
         }
 
-        ctx.ui.setStatus("webfetch", `Extracting content…`);
+        const output = resolved.output;
+        pi.sendUserMessage(`Here is the fetched content from ${url}:\n\n${output}`, {
+          deliverAs: "followUp",
+        });
 
-        const result = extractAndConvert(fetched.body, fetched.finalUrl, false);
-        const output = formatOutput(result);
-
-        // Inject as a user message so the LLM can see and work with the content
-        pi.sendUserMessage(
-          `Here is the fetched content from ${url}:\n\n${output}`,
-          { deliverAs: "followUp" },
-        );
-
-        ctx.ui.notify(`Fetched: "${result.title}" (~${result.wordCount.toLocaleString()} words)`, "success");
+        const label =
+          resolved.kind === "article"
+            ? `"${resolved.result.title}" (~${resolved.result.wordCount.toLocaleString()} words)`
+            : "content";
+        ctx.ui.notify(`Fetched: ${label}`, "info");
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);
         ctx.ui.notify(`webfetch error: ${msg}`, "error");

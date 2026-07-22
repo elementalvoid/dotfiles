@@ -6,5 +6,7 @@
 .DS_Store
 .terraform/
 .serena/
-.pi/
+node_modules/
 .pi-lens/
+.pi/rewind/
+.pi-subagents/

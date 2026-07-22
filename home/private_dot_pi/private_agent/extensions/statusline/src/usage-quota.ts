@@ -12,11 +12,16 @@
  * On any error (auth, network, not-OAuth) we return null and retry on the
  * next poll cycle — the statusline simply omits the segment.
  *
- * Same singleton/refcounting pattern as poller.ts so multiple sessions share
- * one interval.
+ * Cross-process sharing: successful results (and rate-limit / error state) are
+ * persisted to a shared cache file under the agent dir, guarded by a lock
+ * directory. Every pi session read-throughs this cache and only hits the
+ * network when the cached entry is older than the poll interval AND it wins the
+ * lock. This keeps all sessions showing identical numbers and collapses N
+ * sessions' request volume down to ~one call per interval — which also keeps us
+ * well under the endpoint's aggressive 429 threshold.
  */
 
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile, mkdir, rm, rename, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { homedir } from "node:os";
 
@@ -65,7 +70,7 @@ export interface QuotaUpdate {
 /** Internal: a fetch either yields data, or fails with a reason string. */
 type FetchResult =
   | { ok: true; quota: UsageQuota }
-  | { ok: false; error: string };
+  | { ok: false; error: string; retryAt?: number };
 
 type Listener = (update: QuotaUpdate) => void;
 
@@ -73,7 +78,8 @@ type Listener = (update: QuotaUpdate) => void;
 
 /**
  * Absolute timestamp (ms) until which we must not hit the endpoint.
- * Set when the API responds with HTTP 429.
+ * Mirrors the shared cache's `rateLimitRetryAt`; kept in-process only as a
+ * fast-path hint. The shared cache file is authoritative across sessions.
  */
 let rateLimitRetryAt: number | null = null;
 
@@ -111,6 +117,99 @@ let latestAt: number | null = null;
 let latestError: string | null = null;
 let fetching = false;
 
+// ── Shared cross-process cache ───────────────────────────────────────────────
+
+/** On-disk shape shared by every pi session. */
+interface CacheFile {
+  /** Last successfully-fetched quota, or null. */
+  quota: UsageQuota | null;
+  /** ms timestamp of the last SUCCESSFUL fetch. */
+  lastUpdated: number | null;
+  /** ms timestamp of the last network ATTEMPT (success or failure). */
+  lastAttempt: number | null;
+  /** Reason string from the last failed attempt, or null after a success. */
+  error: string | null;
+  /** Absolute ms until which no session may hit the endpoint (429 backoff). */
+  rateLimitRetryAt: number | null;
+}
+
+/** Shared cache lives under ~/.pi/cache, independent of the agent dir. */
+function cacheDir(): string {
+  return join(homedir(), ".pi", "cache");
+}
+
+function cacheJsonPath(): string {
+  return join(cacheDir(), "statusline-usage.json");
+}
+
+/** Lock is a directory (mkdir is atomic and portable) next to the cache. */
+function lockDirPath(): string {
+  return join(cacheDir(), "statusline-usage.lock");
+}
+
+/** A held lock older than this is presumed abandoned (crashed process). */
+const STALE_LOCK_MS = 30_000;
+
+async function readCache(): Promise<CacheFile | null> {
+  try {
+    const raw = await readFile(cacheJsonPath(), "utf-8");
+    return JSON.parse(raw) as CacheFile;
+  } catch {
+    return null;
+  }
+}
+
+async function writeCache(c: CacheFile): Promise<void> {
+  const path = cacheJsonPath();
+  try {
+    await mkdir(cacheDir(), { recursive: true });
+    // Write-then-rename for atomicity so readers never see a partial file.
+    const tmp = `${path}.${process.pid}.tmp`;
+    await writeFile(tmp, JSON.stringify(c), "utf-8");
+    await rename(tmp, path);
+  } catch {
+    /* cache is best-effort; a write failure just means less sharing */
+  }
+}
+
+/** Try to acquire the shared lock, stealing it if it looks abandoned. */
+async function acquireLock(): Promise<boolean> {
+  const dir = lockDirPath();
+  // The lock is a non-recursive mkdir (atomic), so its parent must exist first.
+  try {
+    await mkdir(cacheDir(), { recursive: true });
+  } catch {
+    /* parent creation best-effort; the mkdir below will report real failures */
+  }
+  try {
+    await mkdir(dir);
+    return true;
+  } catch {
+    // Already held — check whether it's stale and steal it if so.
+    try {
+      const st = await stat(dir);
+      if (Date.now() - st.mtimeMs > STALE_LOCK_MS) {
+        await rm(dir, { recursive: true, force: true });
+        await mkdir(dir);
+        return true;
+      }
+    } catch {
+      /* lost the race to inspect/steal; treat as not acquired */
+    }
+    return false;
+  }
+}
+
+async function releaseLock(): Promise<void> {
+  try {
+    await rm(lockDirPath(), { recursive: true, force: true });
+  } catch {
+    /* best-effort */
+  }
+}
+
+const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
+
 // ── Auth helpers ─────────────────────────────────────────────────────────────
 
 interface AuthEntry {
@@ -119,27 +218,57 @@ interface AuthEntry {
   expires?: number;
 }
 
-async function readAccessToken(): Promise<string | null> {
+/**
+ * Resolve pi's global auth.json. Honors the same overrides pi does so we don't
+ * read a stale/nonexistent file when the agent dir is relocated (env var, or a
+ * rebranded/VM install with a different HOME than the one on disk we expect).
+ */
+function authJsonPath(): string {
+  const dir =
+    process.env.PI_CODING_AGENT_DIR ||
+    process.env.PI_AGENT_DIR ||
+    join(homedir(), ".pi", "agent");
+  return join(dir, "auth.json");
+}
+
+/**
+ * Read the OAuth access token, returning either the token or a specific reason
+ * it's unavailable. The reason is surfaced in the statusline so a null token
+ * no longer collapses into an opaque "not authed" — we can tell a missing file
+ * apart from an API-key entry, an expired token, or a mid-rewrite parse error.
+ */
+async function readAccessToken(): Promise<{ token: string } | { error: string }> {
+  const authPath = authJsonPath();
+  let raw: string;
   try {
-    const authPath = join(homedir(), ".pi", "agent", "auth.json");
-    const raw = await readFile(authPath, "utf-8");
-    const auth = JSON.parse(raw) as Record<string, AuthEntry>;
-    const entry = auth["anthropic"];
-    if (!entry || entry.type !== "oauth") return null;
-    if (!entry.access) return null;
-    // If the token is expired, skip — pi will refresh it on the next API call.
-    if (typeof entry.expires === "number" && entry.expires < Date.now()) return null;
-    return entry.access;
+    raw = await readFile(authPath, "utf-8");
   } catch {
-    return null;
+    return { error: "auth.json not found" };
   }
+  let auth: Record<string, AuthEntry>;
+  try {
+    auth = JSON.parse(raw) as Record<string, AuthEntry>;
+  } catch {
+    // Almost always a non-atomic rewrite by pi's token refresh — transient.
+    return { error: "auth.json unreadable (refreshing?)" };
+  }
+  const entry = auth["anthropic"];
+  if (!entry) return { error: "no anthropic credential" };
+  if (entry.type !== "oauth") return { error: "anthropic auth is not OAuth" };
+  if (!entry.access) return { error: "no access token" };
+  // If expired, pi refreshes lazily on its next API call — transient for us.
+  if (typeof entry.expires === "number" && entry.expires < Date.now()) {
+    return { error: "token expired (awaiting refresh)" };
+  }
+  return { token: entry.access };
 }
 
 // ── Fetch ────────────────────────────────────────────────────────────────────
 
 async function fetchUsageQuota(): Promise<FetchResult> {
-  const token = await readAccessToken();
-  if (!token) return { ok: false, error: "not authed (OAuth required)" };
+  const auth = await readAccessToken();
+  if ("error" in auth) return { ok: false, error: auth.error };
+  const token = auth.token;
 
   try {
     const res = await fetch("https://api.anthropic.com/api/oauth/usage", {
@@ -159,8 +288,11 @@ async function fetchUsageQuota(): Promise<FetchResult> {
 
     if (res.status === 429) {
       const delay = parseRetryAfter(res.headers.get("Retry-After"));
-      rateLimitRetryAt = Date.now() + delay;
-      return { ok: false, error: `rate limited, retry in ${fmtDelay(delay)}` };
+      return {
+        ok: false,
+        error: `rate limited, retry in ${fmtDelay(delay)}`,
+        retryAt: Date.now() + delay,
+      };
     }
     if (!res.ok) return { ok: false, error: `HTTP ${res.status}` };
     const data = (await res.json()) as UsageQuota & { error?: unknown };
@@ -181,41 +313,78 @@ function fmtDelay(ms: number): string {
 
 // ── Poller ───────────────────────────────────────────────────────────────────
 
+/** Adopt a cache snapshot into module memory and notify listeners. */
+function emitFromCache(c: CacheFile | null): void {
+  const now = Date.now();
+  if (c) {
+    latest = c.quota;
+    latestAt = c.lastUpdated;
+    // A live rate-limit window takes precedence and shows a fresh countdown.
+    if (c.rateLimitRetryAt !== null && now < c.rateLimitRetryAt) {
+      latestError = `rate limited, retry in ${fmtDelay(c.rateLimitRetryAt - now)}`;
+    } else {
+      latestError = c.error;
+    }
+    rateLimitRetryAt = c.rateLimitRetryAt;
+  }
+  const update: QuotaUpdate = { quota: latest, lastUpdated: latestAt, error: latestError };
+  for (const l of [...listeners]) {
+    try { l(update); } catch { /* never let a listener tear down the poller */ }
+  }
+}
+
+/** True when the cache is recent enough that no session should re-fetch. */
+function cacheIsFresh(c: CacheFile | null, now: number): boolean {
+  if (!c) return false;
+  if (c.rateLimitRetryAt !== null && now < c.rateLimitRetryAt) return true;
+  return c.lastAttempt !== null && now - c.lastAttempt < QUOTA_POLL_INTERVAL_MS;
+}
+
 async function refresh(): Promise<void> {
   if (fetching) return;
-  // Skip the network call while a rate-limit window is active; notify
-  // listeners with the stale cached value so the statusline stays visible.
-  if (rateLimitRetryAt !== null && Date.now() < rateLimitRetryAt) {
-    const wait = fmtDelay(rateLimitRetryAt - Date.now());
-    const staleUpdate: QuotaUpdate = {
-      quota: latest,
-      lastUpdated: latestAt,
-      error: `rate limited, retry in ${wait}`,
-    };
-    for (const l of [...listeners]) {
-      try { l(staleUpdate); } catch { /* never let a listener tear down the poller */ }
-    }
-    return;
-  }
   fetching = true;
   try {
-    const result = await fetchUsageQuota();
-    // Only update `latest` / `latestAt` on success; on failure keep the last
-    // good data (if any) but record the error so it can be surfaced.
-    if (result.ok) {
-      latest = result.quota;
-      latestAt = Date.now();
-      latestError = null;
-    } else {
-      latestError = result.error;
+    const now = Date.now();
+    let cache = await readCache();
+
+    // Fast path: a recent shared result (or active 429 window) — no network.
+    if (cacheIsFresh(cache, now)) {
+      emitFromCache(cache);
+      return;
     }
-    const update: QuotaUpdate = { quota: latest, lastUpdated: latestAt, error: latestError };
-    for (const l of [...listeners]) {
-      try {
-        l(update);
-      } catch {
-        /* never let a listener tear down the poller */
+
+    // Stale: exactly one session should fetch. Try to win the lock.
+    if (!(await acquireLock())) {
+      // Another session is fetching. Give it a moment, then re-read its result.
+      await sleep(1_500);
+      cache = await readCache();
+      emitFromCache(cache);
+      return;
+    }
+
+    try {
+      // Re-check under the lock: the previous holder may have just written.
+      const fresh = await readCache();
+      if (cacheIsFresh(fresh, Date.now())) {
+        emitFromCache(fresh);
+        return;
       }
+
+      const result = await fetchUsageQuota();
+      const prev = fresh ?? cache;
+      const next: CacheFile = {
+        quota: result.ok ? result.quota : (prev?.quota ?? null),
+        lastUpdated: result.ok ? Date.now() : (prev?.lastUpdated ?? null),
+        lastAttempt: Date.now(),
+        error: result.ok ? null : result.error,
+        rateLimitRetryAt: result.ok
+          ? null
+          : (result.retryAt ?? prev?.rateLimitRetryAt ?? null),
+      };
+      await writeCache(next);
+      emitFromCache(next);
+    } finally {
+      await releaseLock();
     }
   } finally {
     fetching = false;

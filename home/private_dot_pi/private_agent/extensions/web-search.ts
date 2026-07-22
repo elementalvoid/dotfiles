@@ -3,6 +3,8 @@ import { join } from "node:path";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
 import type { AutocompleteItem } from "@earendil-works/pi-tui";
+import { Text, Container, Markdown } from "@earendil-works/pi-tui";
+import { keyHint, getMarkdownTheme, DynamicBorder } from "@earendil-works/pi-coding-agent";
 
 /**
  * Anthropic Web Search Extension
@@ -255,10 +257,58 @@ export default function (pi: ExtensionAPI) {
         .map((b) => b.text!)
         .join("\n\n");
 
+      const wordCount = (text || "").split(/\s+/).filter(Boolean).length;
       return {
         content: [{ type: "text", text: text || "No results found." }],
-        details: { query: params.query, model, toolType: searchToolType(model), thinking: thinking ?? null },
+        details: { query: params.query, model, toolType: searchToolType(model), thinking: thinking ?? null, wordCount },
       };
+    },
+
+    // ── Custom rendering: compact summary by default, framed results on expand ──
+    renderResult(result, { expanded, isPartial }, theme, context) {
+      if (isPartial) {
+        return new Text(theme.fg("warning", "Searching…"), 0, 0);
+      }
+
+      const d = (result.details ?? {}) as {
+        query?: string;
+        model?: string;
+        wordCount?: number;
+      };
+      const fullText = result.content?.map((c) => (c.type === "text" ? c.text : "")).join("") ?? "";
+
+      if (context.isError) {
+        return new Text(theme.fg("error", `✖ ${fullText}`), 0, 0);
+      }
+
+      // One-line summary.
+      const label = d.query ? `"${d.query}"` : "web search";
+      const bits: string[] = [];
+      if (typeof d.wordCount === "number") bits.push(`~${d.wordCount.toLocaleString()} words`);
+      if (d.model) bits.push(d.model);
+      const suffix = bits.length ? theme.fg("dim", ` (${bits.join(", ")})`) : "";
+      const summary = theme.fg("success", "🔍 ") + theme.fg("toolTitle", label) + suffix;
+
+      if (!expanded) {
+        return new Text(
+          summary + theme.fg("dim", `  ${keyHint("app.tools.expand", "to expand")}`),
+          0,
+          0,
+        );
+      }
+
+      // Expanded: frame the results in an accent-bordered panel so they read as
+      // clearly distinct from normal agent output.
+      const accent = (s: string) => theme.fg("accent", s);
+      const container = new Container();
+      container.addChild(new DynamicBorder(accent));
+      container.addChild(
+        new Text(summary + theme.fg("dim", `  ${keyHint("app.tools.expand", "to collapse")}`), 1, 0),
+      );
+      container.addChild(new DynamicBorder(accent));
+      container.addChild(new Markdown(fullText, 1, 0, getMarkdownTheme()));
+      container.addChild(new DynamicBorder(accent));
+      return container;
     },
   });
 

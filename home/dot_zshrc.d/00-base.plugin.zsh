@@ -37,6 +37,9 @@ export LESS="-R"
 alias less='bat --paging always --wrap never'
 alias yaml='less -l yaml'
 
+# unified diff for k8s/argocd
+export KUBECTL_EXTERNAL_DIFF='diff -u --label=current --label=desired'
+
 # bat is cat
 # alias cat='bat --theme OneHalfLight --paging=never --wrap=never'
 alias cat='bat --paging=never --wrap=never'
