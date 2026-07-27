@@ -1,0 +1,204 @@
+{
+  "version": 3,
+  "skills": {
+    "dd-apm": {
+      "source": "datadog-labs/agent-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/datadog-labs/agent-skills.git",
+      "skillPath": "dd-apm/SKILL.md",
+      "skillFolderHash": "e866c9df2051651c57ae6cc198b89b57cb5b0022",
+      "installedAt": "2026-04-16T20:17:07.039Z",
+      "updatedAt": "2026-07-07T04:19:38.071Z"
+    },
+    "dd-docs": {
+      "source": "datadog-labs/agent-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/datadog-labs/agent-skills.git",
+      "skillPath": "dd-docs/SKILL.md",
+      "skillFolderHash": "654bbbb1e0fa0553dd691b1c3c9785ff2a326553",
+      "installedAt": "2026-04-16T20:17:07.306Z",
+      "updatedAt": "2026-04-16T20:17:07.306Z"
+    },
+    "dd-logs": {
+      "source": "datadog-labs/agent-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/datadog-labs/agent-skills.git",
+      "skillPath": "dd-logs/SKILL.md",
+      "skillFolderHash": "f6aea9148d2fea3ba15e56f98888a4763577f14d",
+      "installedAt": "2026-04-16T20:17:07.613Z",
+      "updatedAt": "2026-06-01T16:39:23.121Z"
+    },
+    "dd-monitors": {
+      "source": "datadog-labs/agent-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/datadog-labs/agent-skills.git",
+      "skillPath": "dd-monitors/SKILL.md",
+      "skillFolderHash": "113e883977ec9f9335a157b1d16901a00a6ba7b0",
+      "installedAt": "2026-04-16T20:17:07.907Z",
+      "updatedAt": "2026-06-01T16:39:25.958Z"
+    },
+    "dd-pup": {
+      "source": "datadog-labs/agent-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/datadog-labs/agent-skills.git",
+      "skillPath": "dd-pup/SKILL.md",
+      "skillFolderHash": "cf90e8429d15d2ed449151245d918fc859e72be8",
+      "installedAt": "2026-04-16T20:17:08.202Z",
+      "updatedAt": "2026-06-01T16:39:28.988Z"
+    },
+    "use-modern-go": {
+      "source": "jetbrains/go-modern-guidelines",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/jetbrains/go-modern-guidelines.git",
+      "skillPath": "claude/modern-go-guidelines/skills/use-modern-go/SKILL.md",
+      "skillFolderHash": "e44d45d26b32ec08c949a365f2ef44ed27f5572f",
+      "installedAt": "2026-04-24T15:43:53.802Z",
+      "updatedAt": "2026-04-24T15:43:53.802Z"
+    },
+    "diataxis": {
+      "source": "rlespinasse/agent-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/rlespinasse/agent-skills.git",
+      "skillPath": "skills/diataxis/SKILL.md",
+      "skillFolderHash": "027210c67c11bdcc2d02e05221ca14f844c7e9cc",
+      "installedAt": "2026-04-28T16:30:37.541Z",
+      "updatedAt": "2026-04-28T16:30:37.541Z"
+    },
+    "grill-with-docs": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/mattpocock/skills.git",
+      "skillPath": "skills/engineering/grill-with-docs/SKILL.md",
+      "skillFolderHash": "21adba95de7d93065d9fec725ddf37f871e01d05",
+      "installedAt": "2026-05-21T19:12:29.688Z",
+      "updatedAt": "2026-07-07T04:19:40.823Z"
+    },
+    "improve-codebase-architecture": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/mattpocock/skills.git",
+      "skillPath": "skills/engineering/improve-codebase-architecture/SKILL.md",
+      "skillFolderHash": "e5beae48471adf87c513b5cbcb0ca347467546da",
+      "installedAt": "2026-05-21T19:12:33.430Z",
+      "updatedAt": "2026-07-07T04:19:42.942Z"
+    },
+    "setup-matt-pocock-skills": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/mattpocock/skills.git",
+      "skillPath": "skills/engineering/setup-matt-pocock-skills/SKILL.md",
+      "skillFolderHash": "720ff07c579bf9d15e9fe62fd4f81e25aaa9001c",
+      "installedAt": "2026-05-21T19:12:36.958Z",
+      "updatedAt": "2026-07-07T04:19:44.924Z"
+    },
+    "tdd": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/mattpocock/skills.git",
+      "skillPath": "skills/engineering/tdd/SKILL.md",
+      "skillFolderHash": "57e1bee887816ed2af745e5fd388f224f6e61ada",
+      "installedAt": "2026-05-21T19:12:40.484Z",
+      "updatedAt": "2026-07-07T04:19:46.785Z"
+    },
+    "to-issues": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/mattpocock/skills.git",
+      "skillPath": "skills/engineering/to-issues/SKILL.md",
+      "skillFolderHash": "dd8a83cc54e114c0149e7e2d69e45c01d558ddc2",
+      "installedAt": "2026-05-21T19:12:46.700Z",
+      "updatedAt": "2026-07-07T04:19:48.802Z"
+    },
+    "to-prd": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/mattpocock/skills.git",
+      "skillPath": "skills/engineering/to-prd/SKILL.md",
+      "skillFolderHash": "d74909eec8906ceb3341a9b30e2e51cdf62a67c7",
+      "installedAt": "2026-05-21T19:12:52.527Z",
+      "updatedAt": "2026-07-07T04:19:50.538Z"
+    },
+    "triage": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/mattpocock/skills.git",
+      "skillPath": "skills/engineering/triage/SKILL.md",
+      "skillFolderHash": "3e7a49151929d884365035cb322de099c15b33d3",
+      "installedAt": "2026-05-21T19:13:02.025Z",
+      "updatedAt": "2026-07-07T04:19:52.762Z"
+    },
+    "grill-me": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/mattpocock/skills.git",
+      "skillPath": "skills/productivity/grill-me/SKILL.md",
+      "skillFolderHash": "8320e7b87f7b208f50ce165b1dd43d1e93c8e801",
+      "installedAt": "2026-05-27T16:12:09.007Z",
+      "updatedAt": "2026-07-07T04:19:54.690Z"
+    },
+    "caveman": {
+      "source": "JuliusBrussee/caveman",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
+      "skillPath": "skills/caveman/SKILL.md",
+      "skillFolderHash": "166040c027f7764d43df36abc5df0079bfc6394b",
+      "installedAt": "2026-07-20T18:16:25.372Z",
+      "updatedAt": "2026-07-20T18:16:25.372Z"
+    },
+    "caveman-compress": {
+      "source": "JuliusBrussee/caveman",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
+      "skillPath": "skills/caveman-compress/SKILL.md",
+      "skillFolderHash": "1284ac809fbdaeb9e871f84ee850aebe10c85030",
+      "installedAt": "2026-07-20T18:16:25.376Z",
+      "updatedAt": "2026-07-20T18:16:25.376Z"
+    },
+    "caveman-help": {
+      "source": "JuliusBrussee/caveman",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
+      "skillPath": "skills/caveman-help/SKILL.md",
+      "skillFolderHash": "b4f5ebc5f3ce9bfa652996b5161bbe3cc0b88297",
+      "installedAt": "2026-07-20T18:16:25.377Z",
+      "updatedAt": "2026-07-20T18:16:25.377Z"
+    },
+    "caveman-stats": {
+      "source": "JuliusBrussee/caveman",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
+      "skillPath": "skills/caveman-stats/SKILL.md",
+      "skillFolderHash": "62b175240e2851f0b9be4f279737cbd74ed2e769",
+      "installedAt": "2026-07-20T18:16:25.378Z",
+      "updatedAt": "2026-07-20T18:16:25.378Z"
+    },
+    "caveman-review": {
+      "source": "JuliusBrussee/caveman",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
+      "skillPath": "skills/caveman-review/SKILL.md",
+      "skillFolderHash": "2d9762b7aec395b9713fde57fb8965bc3bbd2c3f",
+      "installedAt": "2026-07-20T18:16:25.379Z",
+      "updatedAt": "2026-07-20T18:16:25.379Z"
+    }
+  },
+  "dismissed": {
+    "findSkillsPrompt": true
+  },
+  "lastSelectedAgents": [
+    "amp",
+    "antigravity",
+    "antigravity-cli",
+    "cline",
+    "codex",
+    "cursor",
+    "deepagents",
+    "gemini-cli",
+    "github-copilot",
+    "kimi-code-cli",
+    "opencode",
+    "warp",
+    "zed",
+    "claude-code"
+  ]
+}
