@@ -167,18 +167,33 @@ export default function (pi: ExtensionAPI) {
       }
 
       const model = settings.model;
+      // Map effort level → thinking token budget (Messages API expects
+      // { type: "enabled", budget_tokens }, min 1024).
+      const THINKING_BUDGETS: Record<Exclude<ThinkingEffort, "off">, number> = {
+        low: 1024,
+        medium: 4096,
+        high: 8192,
+      };
       const thinking =
         settings.thinking !== "off" && supportsThinking(model)
-          ? { type: "adaptive", effort: settings.thinking }
+          ? { type: "enabled", budget_tokens: THINKING_BUDGETS[settings.thinking] }
           : undefined;
 
       onUpdate?.({ content: [{ type: "text", text: `Searching: ${params.query}…` }] });
 
+      const toolType = searchToolType(model);
       const searchTool: Record<string, unknown> = {
-        type: searchToolType(model),
+        type: toolType,
         name: "web_search",
         max_uses: settings.maxUses,
       };
+      // The dynamic tool (web_search_20260209) defaults to *programmatic* calling,
+      // which drives the search through the code-execution tool over multiple turns.
+      // We make a single non-streaming request, so force direct calling to get
+      // web_search_tool_result + text back in one response.
+      if (toolType === "web_search_20260209") {
+        searchTool.allowed_callers = ["direct"];
+      }
       const effectiveAllowed = params.allowed_domains?.length ? params.allowed_domains : settings.allowedDomains;
       const effectiveBlocked = params.blocked_domains?.length ? params.blocked_domains : settings.blockedDomains;
       if (effectiveAllowed.length) searchTool.allowed_domains = effectiveAllowed;
@@ -187,7 +202,8 @@ export default function (pi: ExtensionAPI) {
 
       const body: Record<string, unknown> = {
         model,
-        max_tokens: 4096,
+        // max_tokens must exceed the thinking budget; give room for the answer too.
+        max_tokens: thinking ? (thinking.budget_tokens as number) + 4096 : 4096,
         messages: [{
           role: "user",
           content: (() => {
@@ -199,16 +215,31 @@ export default function (pi: ExtensionAPI) {
               ` (or late ${currentYear - 1} if nothing newer exists) to ensure the information is current.\n\n` +
               `Search the web for: "${params.query}"\n\n` +
               `Respond with a clear, well-structured markdown summary that directly answers the query. ` +
-              `Use headers, bullet points, or numbered lists where they improve readability. ` +
-              `**You MUST cite every factual claim with an inline markdown link to its source**, ` +
-              `e.g. [Source Name](https://example.com). End your response with a ## Sources section ` +
-              `listing every URL referenced.`
+              `Use headers, bullet points, or numbered lists where they improve readability.\n\n` +
+              `**Grounding & citations:**\n` +
+              `- Ground every factual claim in your web_search results and keep each cited statement as a ` +
+              `distinct sentence or clause, so the source attached to it is unambiguous.\n` +
+              `- Cite generously: attach a citation to every sentence, statistic, quote, or claim drawn ` +
+              `from a source. When a statement combines multiple sources, cite all of them.\n` +
+              `- The tool automatically renders inline numbered markers ([1], [2], …) and a matching ` +
+              `## Sources list from your citations, so DO NOT write your own bracketed numbers or a ` +
+              `Sources section — just cite the results and let the citations carry the attribution.`
             );
           })(),
         }],
         tools: [searchTool],
       };
       if (thinking) body.thinking = thinking;
+
+      // OAuth (subscription/enterprise) tokens REQUIRE the Claude Code identity as
+      // the first system block. Without it, Anthropic's unified rate limiter shunts
+      // the request into a degraded bucket that only serves the Haiku fallback tier,
+      // so premium models (Sonnet/Opus) return 429. See getAuth()/headers below.
+      if (auth.isOAuth) {
+        body.system = [
+          { type: "text", text: "You are Claude Code, Anthropic's official CLI for Claude." },
+        ];
+      }
 
       const headers: Record<string, string> = {
         "anthropic-version": ANTHROPIC_VERSION,
@@ -217,6 +248,8 @@ export default function (pi: ExtensionAPI) {
       if (auth.isOAuth) {
         headers["Authorization"] = `Bearer ${auth.key}`;
         headers["anthropic-beta"] = "claude-code-20250219,oauth-2025-04-20";
+        headers["user-agent"] = "claude-cli/2.1.2 (external, cli)";
+        headers["x-app"] = "cli";
       } else {
         headers["x-api-key"] = auth.key;
       }
@@ -248,26 +281,76 @@ export default function (pi: ExtensionAPI) {
       }
 
       const data = await response.json() as {
-        content: Array<{ type: string; text?: string }>;
+        content: Array<{
+          type: string;
+          text?: string;
+          citations?: Array<{ type?: string; url?: string; title?: string; cited_text?: string }>;
+        }>;
         stop_reason?: string;
       };
 
-      const text = data.content
-        .filter((b) => b.type === "text" && b.text)
-        .map((b) => b.text!)
-        .join("\n\n");
+      // The web_search server tool attaches *structured* citations to each text
+      // block (it does NOT emit literal [n] markers). We convert those citation
+      // objects into inline numbered markers plus a matching Sources table, so
+      // the reader can see exactly which source each part of the answer came from.
+      const sources: Array<{ url: string; title: string }> = [];
+      const urlToNum = new Map<string, number>();
+      const numberFor = (url: string, title: string): number => {
+        let n = urlToNum.get(url);
+        if (n === undefined) {
+          n = sources.length + 1;
+          urlToNum.set(url, n);
+          sources.push({ url, title: title || url });
+        }
+        return n;
+      };
+
+      let assembled = "";
+      for (const b of data.content) {
+        if (b.type !== "text" || !b.text) continue;
+        let chunk = b.text;
+        const cited = b.citations?.filter((c) => c.url) ?? [];
+        if (cited.length) {
+          const nums = Array.from(
+            new Set(cited.map((c) => numberFor(c.url!, c.title ?? ""))),
+          ).sort((a, z) => a - z);
+          const markers = nums.map((n) => `[${n}]`).join("");
+          // Attach markers to the end of the cited sentence (before trailing space).
+          chunk = chunk.replace(/(\s*)$/, (_m, ws) => `${markers}${ws}`);
+        }
+        assembled += chunk;
+      }
+
+      let text = assembled;
+      if (sources.length) {
+        // Replace any model-authored Sources section with our generated one so the
+        // numbered list always matches the inline markers.
+        text = text.replace(/\n*(?:---+\s*\n)?\s*#{1,6}\s*Sources\b[\s\S]*$/i, "").trimEnd();
+        const list = sources.map((s, i) => `${i + 1}. [${s.title}](${s.url})`).join("\n");
+        text += `\n\n## Sources\n\n${list}`;
+      }
 
       const wordCount = (text || "").split(/\s+/).filter(Boolean).length;
       return {
         content: [{ type: "text", text: text || "No results found." }],
-        details: { query: params.query, model, toolType: searchToolType(model), thinking: thinking ?? null, wordCount },
+        details: { query: params.query, model, toolType: searchToolType(model), thinking: thinking ?? null, wordCount, sourceCount: sources.length },
       };
     },
 
     // ── Custom rendering: compact summary by default, framed results on expand ──
     renderResult(result, { expanded, isPartial }, theme, context) {
       if (isPartial) {
-        return new Text(theme.fg("warning", "Searching…"), 0, 0);
+        const partialText =
+          result.content?.map((c) => (c.type === "text" ? c.text : "")).join("").trim() ?? "";
+        const d = (result.details ?? {}) as { query?: string };
+        // Prefer the streamed "Searching: <query>…" update; fall back to details.query.
+        const query = d.query ?? partialText.replace(/^Searching:\s*/, "").replace(/…$/, "").trim();
+        return new Text(
+          theme.fg("warning", "🔍 Searching ") +
+            (query ? theme.fg("toolTitle", `"${query}"`) + theme.fg("warning", "…") : theme.fg("warning", "…")),
+          0,
+          0,
+        );
       }
 
       const d = (result.details ?? {}) as {
