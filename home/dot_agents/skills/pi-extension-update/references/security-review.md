@@ -1,6 +1,6 @@
 # Deep Security Review & Risk Rubric
 
-This is the inspection contract for every candidate update. The goal is not to
+This is the inspection contract for every candidate **install or update**. The goal is not to
 read every line — it is to catch the classes of change that turn a routine
 version bump into a supply-chain compromise. Extensions run with full system
 permissions, so treat each update as installing new code from a third party.
@@ -31,6 +31,17 @@ and the manager can change. Rate install-script findings against the active
   published tarball, not just the git tag. For git it is the exact commit.
 - **Diff the metadata before the logic.** `package.json`, dependencies, scripts,
   bin, and ownership carry more risk signal per line than app code.
+
+## First install: no baseline, so review everything
+
+For a package that is not installed yet there is no trusted prior version to
+diff against. Apply the same checklist to the **whole** artifact rather than a
+diff, and additionally assess the source's trustworthiness (repo age, history,
+authorship, archived status, whether npm `repositoryUrl` really points at the
+repo, whether the `pi` manifest's registered hooks match what the README
+claims). Since "lines changed" is meaningless here, rate on capability: what the
+extension can reach (shell, network, credentials, home dir, pi hooks) is the
+risk, and an unreviewable amount of code is itself a medium-or-worse finding.
 
 ## What to gather per candidate
 
