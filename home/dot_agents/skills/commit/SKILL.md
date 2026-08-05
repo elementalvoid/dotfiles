@@ -29,6 +29,7 @@ agent: Explore
 - Present tense, imperative mood: write commit messages as commands (e.g., "add feature" not "added feature")
 - Concise first line: keep the first line under 72 characters
 - Never commit to `main`/`master`: always use a feature branch
+- Always use lowercase branch names (never uppercase, never mixed case)
 - Do not commit files that likely contain secrets (.env, credentials.json, etc) without approval. Warn the user if they specifically request to commit those files
 - Never use git commands with the -i flag (like git rebase -i or git add -i) since they require interactive input which is not supported
 - If there are no changes to commit (i.e., no untracked files and no modifications), do not create an empty commit
