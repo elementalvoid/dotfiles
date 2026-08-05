@@ -46,51 +46,6 @@
       "installedAt": "2026-07-27T16:26:22.134Z",
       "updatedAt": "2026-07-27T16:26:22.134Z"
     },
-    "caveman": {
-      "source": "JuliusBrussee/caveman",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
-      "skillPath": "skills/caveman/SKILL.md",
-      "skillFolderHash": "166040c027f7764d43df36abc5df0079bfc6394b",
-      "installedAt": "2026-07-27T16:30:32.312Z",
-      "updatedAt": "2026-07-27T16:30:32.312Z"
-    },
-    "caveman-compress": {
-      "source": "JuliusBrussee/caveman",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
-      "skillPath": "skills/caveman-compress/SKILL.md",
-      "skillFolderHash": "1284ac809fbdaeb9e871f84ee850aebe10c85030",
-      "installedAt": "2026-07-27T16:30:32.315Z",
-      "updatedAt": "2026-07-27T16:30:32.315Z"
-    },
-    "caveman-help": {
-      "source": "JuliusBrussee/caveman",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
-      "skillPath": "skills/caveman-help/SKILL.md",
-      "skillFolderHash": "b4f5ebc5f3ce9bfa652996b5161bbe3cc0b88297",
-      "installedAt": "2026-07-27T16:30:32.315Z",
-      "updatedAt": "2026-07-27T16:30:32.315Z"
-    },
-    "caveman-review": {
-      "source": "JuliusBrussee/caveman",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
-      "skillPath": "skills/caveman-review/SKILL.md",
-      "skillFolderHash": "2d9762b7aec395b9713fde57fb8965bc3bbd2c3f",
-      "installedAt": "2026-07-27T16:30:32.316Z",
-      "updatedAt": "2026-07-27T16:30:32.316Z"
-    },
-    "caveman-stats": {
-      "source": "JuliusBrussee/caveman",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
-      "skillPath": "skills/caveman-stats/SKILL.md",
-      "skillFolderHash": "62b175240e2851f0b9be4f279737cbd74ed2e769",
-      "installedAt": "2026-07-27T16:30:32.316Z",
-      "updatedAt": "2026-07-27T16:30:32.316Z"
-    },
     "grill-with-docs": {
       "source": "mattpocock/skills",
       "sourceType": "github",
@@ -168,6 +123,15 @@
       "skillFolderHash": "027210c67c11bdcc2d02e05221ca14f844c7e9cc",
       "installedAt": "2026-07-27T16:32:21.540Z",
       "updatedAt": "2026-07-27T16:32:21.540Z"
+    },
+    "liteparse": {
+      "source": "run-llama/llamaparse-agent-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/run-llama/llamaparse-agent-skills.git",
+      "skillPath": "skills/liteparse/SKILL.md",
+      "skillFolderHash": "c8a6189b121b7333a84892d3f43e33dde0bc88cb",
+      "installedAt": "2026-07-28T19:45:43.613Z",
+      "updatedAt": "2026-07-28T19:45:43.613Z"
     }
   },
   "dismissed": {
