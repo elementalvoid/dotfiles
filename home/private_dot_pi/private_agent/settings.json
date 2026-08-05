@@ -1,8 +1,8 @@
 {
-  "lastChangelogVersion": "0.80.10",
+  "lastChangelogVersion": "0.83.0",
   "defaultProvider": "anthropic",
-  "defaultModel": "claude-opus-4-8",
-  "defaultThinkingLevel": "low",
+  "defaultModel": "claude-opus-5",
+  "defaultThinkingLevel": "medium",
   "modelStrategy": {
     "01-brainstorm": "claude-opus-4-7",
     "02-plan": "claude-opus-4-7",
@@ -21,8 +21,8 @@
   },
   "theme": "terminal",
   "enabledModels": [
-    "anthropic/claude-opus-4-8",
-    "anthropic/claude-sonnet-5"
+    "anthropic/claude-sonnet-5",
+    "anthropic/claude-opus-5"
   ],
   "warnings": {
     "anthropicExtraUsage": false
@@ -58,7 +58,8 @@
     "npm:pi-image-tools@1.4.0",
     "npm:pi-mcp-adapter@2.11.0",
     "npm:pi-subagents@0.34.0",
-    "npm:pi-tool-display@0.5.0"
+    "npm:pi-tool-display@0.5.0",
+    "git:github.com/DietrichGebert/ponytail@bc9ee949d5f439e8b9f3bb92c6d6d3d1e6ebd324"
   ],
   "hideThinkingBlock": false,
   "collapseChangelog": false,
