@@ -6,6 +6,7 @@ brew "asciinema"
 brew "automake"
 brew "bash"
 brew "certigo"
+brew "cmake"
 brew "colima", restart_service: :changed
 brew "comby"
 brew "coreutils"

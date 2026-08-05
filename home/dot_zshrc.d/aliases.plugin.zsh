@@ -4,7 +4,7 @@ alias history='history -iD'
 
 # ls / eza
 export EZA_CONFIG_DIR=~/.config/eza
-alias ls='eza -F -g -h --group-directories-first --git --icons --hyperlink'
+alias ls='eza -F -g -h --group-directories-first --git --icons --hyperlink=auto'
 alias ll='ls -l'
 alias la='ll -a'
 # eza ls sort by time
@@ -23,6 +23,8 @@ alias d='stat -c "%A (%a) %8s %.19y %n" ' # usage: d <filename>
 alias apt-get='sudo /usr/bin/apt-get $@'
 alias color='pygmentize -O style=monokai -f console256 -g'
 alias sbash='sudo -E bash'
+
+alias skills='bunx skills'
 
 # dotfiles management
 alias chezmoi-private='chezmoi --source ~/.local/share/chezmoi-private'

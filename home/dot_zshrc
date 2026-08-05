@@ -22,11 +22,6 @@ fpath=(
   $fpath
 )
 
-# Initialize mise
-if ! command mise 2>&1 > /dev/null; then
-  curl https://mise.run | sh
-fi
-
 # Initialize zcomet
 if [[ ! -f ${ZDOTDIR:-${HOME}}/.zcomet/bin/zcomet.zsh ]]; then
   command git clone https://github.com/agkozak/zcomet.git ${ZDOTDIR:-${HOME}}/.zcomet/bin
