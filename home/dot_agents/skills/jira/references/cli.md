@@ -6,18 +6,13 @@ Complete reference for `scripts/jira`. SKILL.md has the workflow framing; this f
 
 **Single-stream output.** Each invocation prints exactly one thing to stdout. stderr is reserved for errors only — never duplicated renderings, never status messages.
 
-The mode is **TTY-aware** by default:
-
-| stdout is... | Default |
-|---|---|
-| a terminal | Markdown to stdout |
-| a pipe or file | JSON to stdout |
+**Markdown is the default**, terminal or pipe alike — raw Jira JSON is mostly `self` URLs, avatar maps and field ids, which is noise in a log or an agent session. Ask for JSON only when you're going to parse it.
 
 Force a mode (mutually exclusive):
 
 ```text
---json       Force JSON to stdout.
---markdown   Force Markdown to stdout.
+--json       Raw JSON to stdout (for parsing / jq).
+--markdown   Markdown to stdout (already the default).
 --quiet      Suppress stdout entirely (exit code only).
 ```
 
@@ -71,7 +66,7 @@ Default fields: `summary, issuetype, status, assignee, reporter, priority, label
 The human renderer converts the ADF description and comment bodies back to Markdown via `adf_to_markdown.py`, and emits browse URLs for the issue and any linked work items.
 
 ```bash
-jira view ENP-134            # auto-markdown on a TTY
+jira view ENP-134            # markdown (default)
 jira view ENP-134 ENP-135 --comments
 jira view ENP-134 --fields '*all'
 ```

@@ -13,10 +13,9 @@ Design contract:
   * Single-stream output. Each invocation prints exactly one thing
     to stdout. stderr carries errors only -- never status messages
     or duplicate renderings.
-      stdout is a terminal -> Markdown.
-      stdout is a pipe     -> JSON.
-      --json               -> Force JSON.
-      --markdown           -> Force Markdown.
+      default              -> Markdown (compact, readable).
+      --json               -> Raw JSON (for parsing/jq).
+      --markdown           -> Force Markdown (explicit default).
       --quiet              -> Suppress stdout entirely (exit code only).
 
   * Markdown is the primary rich-text interface. Every command that
@@ -27,7 +26,10 @@ Design contract:
     text, @mentions with accountIds, inlineCard, etc.).
 
   * Gotchas are fixed at the CLI boundary, not propagated:
-      - link add takes <blocker> --blocks <blocked>. No --in/--out.
+      - link add reads as a sentence: <A> --blocks <B> means A blocks B
+        (also --blocked-by, and --to for other --type values). The
+        inward/outward mapping the REST API wants is inverted from what
+        the field names suggest; see link_create's docstring.
       - --type, --status, --link-type are case-folded; we resolve
         the canonical form via REST before sending.
       - `comment add` and `comment edit` use identical flag shapes.
@@ -421,9 +423,17 @@ class Client:
         return r.get("issueLinkTypes", [])
 
     def link_create(self, inward_key: str, outward_key: str, type_name: str) -> None:
-        """Create a link of type `type_name`. Semantics:
-            outward_key  --(type)-->  inward_key
-        For Blocks: outward = blocker, inward = blocked.
+        """Create a link of type `type_name`. Semantics, verified against
+        Jira Cloud with `linkedIssues()` JQL (see references/gotchas.md):
+
+            inward_key  --(type.outward description)-->  outward_key
+
+        For Blocks (outward='blocks', inward='is blocked by'):
+            inward_key = the BLOCKER, outward_key = the BLOCKED issue.
+
+        This reads backwards from the field names, which is exactly why it
+        was wrong before. Do not "tidy" it without re-verifying via
+        `search --jql 'issue in linkedIssues("KEY","blocks")'`.
         """
         self.post(
             "/issueLink",
@@ -487,20 +497,24 @@ def resolve_transition(client: Client, key: str, status_name: str) -> dict:
     )
 
 
-def resolve_link_type(client: Client, name: str) -> str:
-    """Return the canonical link-type `name` field. Matches on `name`,
-    `inward`, or `outward` descriptions, case-insensitively."""
+def resolve_link_type(client: Client, name: str) -> tuple[str, bool]:
+    """Return `(canonical_name, reversed)` for a link type. Matches on
+    `name`, `inward`, or `outward` descriptions, case-insensitively.
+
+    `reversed` is True only when the caller named the *inward* description
+    (e.g. --type 'is blocked by'), meaning they described the relationship
+    from the other end and the two issues must be swapped."""
     types = client.link_types()
     target = name.lower()
     for t in types:
         if t.get("name", "").lower() == target:
-            return t["name"]
+            return t["name"], False
     # Also accept the outward/inward description (e.g. "blocks", "is blocked by").
     for t in types:
         if (t.get("outward") or "").lower() == target:
-            return t["name"]
+            return t["name"], False
         if (t.get("inward") or "").lower() == target:
-            return t["name"]
+            return t["name"], True
     names = [t.get("name", "") for t in types]
     raise SystemExit(
         f"error: link type '{name}' not configured on this site. "
@@ -606,11 +620,10 @@ class Out:
     reserved for errors -- never duplicates, status, or progress.
 
     Mode resolution:
-      - 'markdown' explicit            -> Markdown to stdout.
-      - 'json' explicit                -> JSON to stdout.
-      - 'auto' (default) + stdout TTY  -> behave like 'markdown'.
-      - 'auto' (default) + stdout pipe -> behave like 'json'.
-      - quiet=True                     -> nothing to stdout (exit code only).
+      - 'auto' (default) -> Markdown. Compact by design: raw Jira JSON is
+        mostly self-URLs, avatar maps and field ids nobody reads.
+      - 'json' explicit  -> raw JSON to stdout, for parsing.
+      - quiet=True       -> nothing to stdout (exit code only).
 
     OSC 8 terminal hyperlinks are used when stdout is a TTY and we're
     rendering Markdown; the inline-link Markdown form is used otherwise
@@ -619,7 +632,7 @@ class Out:
 
     def __init__(self, mode: str = "auto", quiet: bool = False):
         if mode == "auto":
-            mode = "markdown" if sys.stdout.isatty() else "json"
+            mode = "markdown"  # ponytail: JSON is opt-in via --json
         self.mode = mode
         self.quiet = quiet
         # OSC 8 is appropriate only when our Markdown output is going
@@ -1194,26 +1207,50 @@ def cmd_create_bulk(args, client: Client, out: Out) -> int:
 
 
 def cmd_link_add(args, client: Client, out: Out) -> int:
-    type_name = resolve_link_type(client, args.type)
-    # Semantics: outward = blocker, inward = blocked.
-    # I.e. <blocker> --(Blocks)--> <blocked>.
+    type_name, type_reversed = resolve_link_type(client, args.type)
+
+    # The positional is always the SUBJECT of the relationship phrase:
+    #   `link add A --blocks B`     -> "A blocks B"
+    #   `link add A --blocked-by B` -> "B blocks A"
+    #   `link add A --to B --type X`-> "A <X outward description> B"
+    if getattr(args, "blocked_by", None):
+        subject, target = args.blocked_by, args.subject
+    else:
+        subject, target = args.subject, (args.blocks or args.to)
+
+    # --type given as an inward description means the user phrased it from
+    # the other end (e.g. --type 'is blocked by'); swap to normalise.
+    if type_reversed:
+        subject, target = target, subject
+
+    # Verified semantics: inwardIssue --(outward description)--> outwardIssue.
     client.link_create(
-        inward_key=args.blocks, outward_key=args.blocker, type_name=type_name
+        inward_key=subject, outward_key=target, type_name=type_name
+    )
+
+    label = next(
+        (
+            t.get("outward") or type_name
+            for t in client.link_types()
+            if t.get("name") == type_name
+        ),
+        type_name,
     )
     payload = {
         "type": type_name,
-        "blocker": args.blocker,
-        "blocks": args.blocks,
+        "relationship": f"{subject} {label} {target}",
+        "from": subject,
+        "to": target,
     }
-    blocker_url = browse_url(client.config, args.blocker)
-    blocks_url = browse_url(client.config, args.blocks)
+    subject_url = browse_url(client.config, subject)
+    target_url = browse_url(client.config, target)
     out.emit(
         payload,
         human=(
-            f"Linked: {out.link(args.blocker, blocker_url)} {type_name} "
-            f"{out.link(args.blocks, blocks_url)}\n"
-            f"  blocker: {blocker_url}\n"
-            f"  blocked: {blocks_url}"
+            f"Linked: {out.link(subject, subject_url)} {label} "
+            f"{out.link(target, target_url)}\n"
+            f"  {subject}: {subject_url}\n"
+            f"  {target}: {target_url}"
         ),
     )
     return 0
@@ -1491,15 +1528,15 @@ def _extract_globals(argv: list[str]) -> tuple[dict[str, Any], list[str]]:
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(
         prog="jira",
-        description="Jira Cloud CLI. Single-stream output: Markdown on a TTY, JSON when piped.",
+        description="Jira Cloud CLI. Single-stream output: Markdown by default, JSON with --json.",
         epilog=(
             "Global flags (may appear anywhere on the command line):\n"
-            "  --json      Force JSON to stdout.\n"
-            "  --markdown  Force Markdown to stdout.\n"
+            "  --json      Raw JSON to stdout (for parsing).\n"
+            "  --markdown  Markdown to stdout (the default).\n"
             "  --quiet     Suppress stdout entirely (exit code only).\n"
-            "With no flag, the mode is chosen based on whether stdout is a\n"
-            "terminal (Markdown) or a pipe/file (JSON). stderr is for errors\n"
-            "only; never duplicated rendering or status messages."
+            "With no flag, output is Markdown whether stdout is a terminal or\n"
+            "a pipe. stderr is for errors only; never duplicated rendering\n"
+            "or status messages."
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -1624,18 +1661,33 @@ def build_parser() -> argparse.ArgumentParser:
     plsub = pl.add_subparsers(dest="link_cmd", required=True)
 
     pla = plsub.add_parser(
-        "add", help="Add a link. <blocker> --blocks <blocked>."
+        "add",
+        help="Add a link. Reads left to right: <A> --blocks <B> means A blocks B.",
     )
-    pla.add_argument("blocker", help="The blocking (outward) issue key.")
     pla.add_argument(
-        "--blocks", required=True,
-        help="The blocked (inward) issue key.",
+        "subject",
+        help="The issue the relationship is stated FROM (the subject of "
+        "the sentence).",
+    )
+    plad = pla.add_mutually_exclusive_group(required=True)
+    plad.add_argument(
+        "--blocks", metavar="KEY",
+        help="Issue that SUBJECT blocks. `link add A --blocks B` => A blocks B.",
+    )
+    plad.add_argument(
+        "--blocked-by", metavar="KEY", dest="blocked_by",
+        help="Issue that blocks SUBJECT. `link add A --blocked-by B` => B blocks A.",
+    )
+    plad.add_argument(
+        "--to", metavar="KEY",
+        help="Target for a non-Blocks --type. `link add A --to B --type "
+        "Duplicate` => A duplicates B.",
     )
     pla.add_argument(
         "--type", default="Blocks",
         help="Link type name (case-insensitive). Default: Blocks. "
         "Also accepts outward/inward descriptions like 'blocks' or "
-        "'is blocked by'.",
+        "'is blocked by' (an inward description swaps the two issues).",
     )
     pla.set_defaults(handler=cmd_link_add)
 

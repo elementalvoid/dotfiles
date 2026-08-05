@@ -87,3 +87,27 @@ The MD file is the source humans review and redline. The ADF JSON in Jira is gen
 - ❌ Hand-patch the ADF JSON or edit in the Jira UI
 
 Hand-patched JSON and UI-edits drift from the plan doc, and nobody can later reconstruct what the "official" description is supposed to say. If a UI edit must happen (e.g. an exec edited it in-browser), `jira view KEY --markdown > plan.md` to round-trip back.
+
+---
+
+## 8. `inwardIssue`/`outwardIssue` are inverted from intuition on `Blocks`
+
+`POST /issueLink` takes `inwardIssue` and `outwardIssue`, and for link type `Blocks` (`outward: "blocks"`, `inward: "is blocked by"`) the reading is:
+
+```
+inwardIssue  --(outward description)-->  outwardIssue
+i.e.  inwardIssue BLOCKS outwardIssue
+```
+
+So **`inwardIssue` is the blocker.** Almost everyone — including a widely-copied `jira-python` snippet, and an earlier version of this CLI — reads it the other way and creates every link backwards.
+
+The CLI now hides this: `jira link add A --blocks B` means *A blocks B*, and `link_create()` maps `A → inwardIssue`. Its docstring carries a warning; don't "tidy" that mapping.
+
+**Verify direction with JQL, never by eye.** The rendered `link list` label on the issue you just linked is easy to misread, and a fully-backwards dependency graph looks entirely plausible:
+
+```bash
+jira search --jql 'issue in linkedIssues("ENP-408","blocks")'         # what ENP-408 blocks
+jira search --jql 'issue in linkedIssues("ENP-408","is blocked by")'  # what blocks ENP-408
+```
+
+`linkedIssues(key, linkDescription)` is evaluated by Jira from the named issue's perspective, so it is the only unambiguous oracle. After wiring up a set of links, run one of these before reporting done.
