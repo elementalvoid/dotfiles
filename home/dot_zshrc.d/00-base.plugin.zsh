@@ -48,7 +48,6 @@ alias cat='bat --paging=never --wrap=never'
 export MANPAGER="sh -c 'col -bx | bat --paging always -l man -p'"
 
 # use `bat` as "help" formatter
-alias -g -- --help='--help 2>&1 | bat --language=help --style=plain'
 help() {
     "$@" --help 2>&1 | bat --plain --language=help
 }
