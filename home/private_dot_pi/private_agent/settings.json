@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "0.83.0",
+  "lastChangelogVersion": "0.84.2",
   "defaultProvider": "anthropic",
   "defaultModel": "claude-opus-5",
   "defaultThinkingLevel": "medium",
@@ -42,7 +42,7 @@
   ],
   "packages": [
     {
-      "source": "git:github.com/prateekmedia/pi-hooks@5590a3bacbbdd055fb49d2ca031abe2c9f3e6c25",
+      "source": "git:github.com/elementalvoid/pi-hooks@a1e19563b698b87e340a434c928c8722931cae4a",
       "extensions": [
         "lsp/*.ts"
       ]
@@ -55,13 +55,17 @@
     },
     "npm:@dreki-gg/pi-context7@0.2.0",
     "npm:@plannotator/pi-extension@0.23.1",
-    "npm:pi-image-tools@1.4.0",
     "npm:pi-mcp-adapter@2.11.0",
     "npm:pi-subagents@0.34.0",
     "npm:pi-tool-display@0.5.0",
-    "git:github.com/DietrichGebert/ponytail@bc9ee949d5f439e8b9f3bb92c6d6d3d1e6ebd324"
+    "git:github.com/DietrichGebert/ponytail@bc9ee949d5f439e8b9f3bb92c6d6d3d1e6ebd324",
+    "git:git@github.com:Ibotta/pi-extensions@16b3eb6e394a989194cfb575c7af00c5f760c615",
+    "git:github.com/elementalvoid/pi-image-tools@56f372fc133b7cd907981c26873022f1e2355f99"
   ],
   "hideThinkingBlock": false,
   "collapseChangelog": false,
-  "quietStartup": false
+  "quietStartup": false,
+  "tuiMode": "fullscreen",
+  "showCacheMissNotices": true,
+  "fullscreenScrollbar": "always"
 }
