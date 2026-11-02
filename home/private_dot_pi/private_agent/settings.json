@@ -1,28 +1,12 @@
 {
-  "lastChangelogVersion": "0.84.2",
+  "lastChangelogVersion": "1.4.0",
   "defaultProvider": "anthropic",
-  "defaultModel": "claude-opus-5",
-  "defaultThinkingLevel": "medium",
-  "modelStrategy": {
-    "01-brainstorm": "claude-opus-4-7",
-    "02-plan": "claude-opus-4-7",
-    "03-work": "claude-opus-4-7",
-    "04-review": "claude-sonnet-4-6",
-    "05-learn": "claude-haiku-4-5",
-    "default": "claude-sonnet-4-6"
-  },
-  "thinkingStrategy": {
-    "01-brainstorm": "high",
-    "02-plan": "high",
-    "03-work": "medium",
-    "04-review": "high",
-    "05-learn": "medium",
-    "default": "high"
-  },
-  "theme": "terminal",
+  "defaultModel": "claude-opus-5-5",
+  "shellCommandPrefix": "export PATH=\"$HOME/.local/share/mise/shims:$PATH\"",
+  "theme": "system",
   "enabledModels": [
-    "anthropic/claude-sonnet-5",
-    "anthropic/claude-opus-5"
+    "anthropic/claude-opus-5-5",
+    "anthropic/claude-sonnet-5-5"
   ],
   "warnings": {
     "anthropicExtraUsage": false
@@ -32,40 +16,68 @@
   "markdown": {
     "codeBlockIndent": ""
   },
+  "defaultTools": [
+    "+codemode"
+  ],
   "outputPad": 0,
   "npmCommand": [
     "mise",
     "exec",
-    "bun@1.3.14",
+    "pnpm@12",
     "--",
-    "bun"
+    "pnpm"
   ],
   "packages": [
-    {
-      "source": "git:github.com/elementalvoid/pi-hooks@a1e19563b698b87e340a434c928c8722931cae4a",
-      "extensions": [
-        "lsp/*.ts"
-      ]
-    },
-    {
-      "source": "git:github.com/jeanchristophe13v/pi-rewind@bfcae63efda81ebc75e847a816448f0e6d49cee8",
-      "extensions": [
-        "+rewind.ts"
-      ]
-    },
     "npm:@dreki-gg/pi-context7@0.2.0",
-    "npm:@plannotator/pi-extension@0.23.1",
-    "npm:pi-mcp-adapter@2.11.0",
-    "npm:pi-subagents@0.34.0",
-    "npm:pi-tool-display@0.5.0",
-    "git:github.com/DietrichGebert/ponytail@bc9ee949d5f439e8b9f3bb92c6d6d3d1e6ebd324",
-    "git:git@github.com:Ibotta/pi-extensions@16b3eb6e394a989194cfb575c7af00c5f760c615",
-    "git:github.com/elementalvoid/pi-image-tools@56f372fc133b7cd907981c26873022f1e2355f99"
+    {
+      "source": "npm:@plannotator/pi-extension@0.28.36",
+      "extensions": [
+        "-"
+      ]
+    },
+    "/Users/matt.klich/code/github/pi-tool-display",
+    {
+      "source": "git:github.com/DietrichGebert/ponytail@7801d061243d7b753bad0e0b3c057cd250b11755",
+      "skills": [
+        "-skills/ponytail-gain/SKILL.md"
+      ]
+    },
+    "git:github.com/elementalvoid/pi-image-tools@56f372fc133b7cd907981c26873022f1e2355f99",
+    {
+      "source": "git:git@github.com:Ibotta/pi-extensions@12dcfbc517e327bc607e77402de8969c36a6c226",
+      "extensions": [
+        "!extras/**",
+        "!extras/pi-context/index.ts",
+        "+extras/pi-ask/index.ts",
+        "+extras/multipi/index.ts",
+        "-extras/pi-statusline/index.ts"
+      ]
+    },
+    "npm:pi-lens@4.4.6",
+    {
+      "source": "npm:@tintinweb/pi-subagents@0.22.0",
+      "extensions": [
+        "+src/index.ts"
+      ]
+    },
+    "/Users/matt.klich/code/ibotta/pi-extensions/extras/pi-context/",
+    "/Users/matt.klich/code/ibotta/pi-extensions/extras/pi-statusline/",
+    "/Users/matt.klich/code/pi-output-styles",
+    "npm:@ogulcancelik/pi-herdr@0.4.1"
   ],
-  "hideThinkingBlock": false,
-  "collapseChangelog": false,
-  "quietStartup": false,
   "tuiMode": "fullscreen",
   "showCacheMissNotices": true,
-  "fullscreenScrollbar": "always"
+  "fullscreenScrollbar": "always",
+  "images": {
+    "autoResize": true
+  },
+  "terminal": {
+    "imageWidthCells": 80
+  },
+  "httpIdleTimeoutMs": 60000,
+  "fullscreenExitOutput": "resume-hint",
+  "skills": [
+    "-skills/pr/SKILL.md",
+    "-skills/create-pr/SKILL.md"
+  ]
 }
