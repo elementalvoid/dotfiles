@@ -16,10 +16,8 @@ return {
       "neovim/nvim-lspconfig",
     },
     opts = {
-      -- TODO: Produces the following error:
-      --   msg_show [mason-lspconfig.nvim] Server "rumdl" is not a valid entry in ensure_installed. Make sure to only provide lspconfig server names.
       ensure_installed = {
-        -- "rumdl",
+        "rumdl",
         "marksman",
       },
     },
