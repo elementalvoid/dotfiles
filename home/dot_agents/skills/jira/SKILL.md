@@ -11,6 +11,8 @@ description: Drive Jira Cloud from the terminal using the purpose-built `jira` C
 
 **Path note:** `<skill>` below means *the directory containing this SKILL.md file* — i.e. `dirname` of whatever path you read to load these instructions. Don't assume a fixed location (e.g. `~/.pi/agent/skills/jira`); resolve it from how you actually got here, since skills can be loaded from more than one root.
 
+**Run it by its full path.** The examples write `jira …` for short; run each one as `<skill>/scripts/jira …`. Don't add `scripts/` to `PATH`, and don't export `PATH` for `uv`: `uv` is already on `PATH`.
+
 ## STOP: "begin work on KEY" means transition it first
 
 If the user says begin / start / pick up / work on / take a ticket, run these **before** writing any code, reading any repo, or planning anything. The coding task does not replace this — do both, this part first:
@@ -31,7 +33,7 @@ Steps 2–4 are not optional and not "nice to have at the end." Skip step 3 only
 export JIRA_API_USER="you@example.com"
 export JIRA_API_TOKEN="..."
 export JIRA_BASE_URL="https://your-site.atlassian.net"
-<skill>/scripts/jira ping        # verify (needs `uv` on PATH)
+<skill>/scripts/jira ping        # verify
 
 # Read
 jira view ENP-134                                              # TTY: markdown; pipe: JSON
@@ -107,6 +109,8 @@ Body. Containers nest.
 :::
 ````
 
+HTML is not converted: `<details>`, `<br>` and similar tags become literal paragraph text. Use `:::expand` for a collapsible section.
+
 Containers nest; use `:::::` (more colons) to wrap a container holding a literal `:::` line. For **inline** ADF constructs MD can't express (status badges in running text, `@mention` with an accountId, `inlineCard`), hand-build ADF with `scripts/adf_builder.py` (`doc`, `para`, `panel`, `expand`, `b`, `link`, ...) and pass `--adf FILE` instead of `--md`. See `references/adf.md` for raw node shapes.
 
 ## Common commands
@@ -166,5 +170,5 @@ Input is a JSON array; each item:
 
 - `references/gotchas.md` — Jira API landmines the CLI can't shield you from
 - `references/adf.md` — ADF node/mark reference for raw-ADF use
-- `scripts/jira` — the CLI (PEP-723; needs `uv` on PATH)
+- `scripts/jira` — the CLI (PEP-723; runs through `uv`, already on `PATH`)
 - `scripts/adf_{from,to,builder}.py` — MD↔ADF helpers; used by the CLI, also callable directly

@@ -718,13 +718,18 @@ def render_issue_human(
 
     parent_cell = out.link(parent_key, browse_url(config, parent_key)) \
         if parent_key else "—"
-    rows = [
-        ("Summary", summary),
-        ("Type", issuetype),
-        ("Status", status),
-        ("Parent", parent_cell),
-        ("Assignee", assignee),
-    ]
+    # Only render rows for fields actually returned (--fields narrows the payload).
+    rows = []
+    if "summary" in fields:
+        rows.append(("Summary", summary))
+    if "issuetype" in fields:
+        rows.append(("Type", issuetype))
+    if "status" in fields:
+        rows.append(("Status", status))
+    if "parent" in fields:
+        rows.append(("Parent", parent_cell))
+    if "assignee" in fields:
+        rows.append(("Assignee", assignee))
     if priority:
         rows.append(("Priority", priority))
     if reporter:

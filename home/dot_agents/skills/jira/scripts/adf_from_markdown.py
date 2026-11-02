@@ -246,14 +246,37 @@ def _parse_text_run(text: str) -> list[dict]:
     return [{"type": "text", "text": text}] if text else []
 
 
+_CODE_PLACEHOLDER_RE = re.compile("\ue000(\\d+)\ue001")
+
+
 def parse_inlines(text: str) -> list[dict]:
-    """Parse inline Markdown into a list of ADF inline nodes."""
-    out: list[dict] = []
+    """Parse inline Markdown into a list of ADF inline nodes.
+
+    Code spans become private-use placeholders before link/emphasis parsing,
+    so a link or bold that wraps a code span still matches. Each placeholder
+    is then restored as a code node. ADF lets `code` combine only with `link`,
+    so the code node keeps a link mark and drops any other mark.
+    """
+    codes: list[str] = []
+    parts: list[str] = []
     for kind, chunk in _split_codespans(text):
         if kind == "code":
-            out.append({"type": "text", "text": chunk, "marks": [{"type": "code"}]})
+            parts.append(f"\ue000{len(codes)}\ue001")
+            codes.append(chunk)
         else:
-            out.extend(_parse_text_run(chunk))
+            parts.append(chunk)
+    out: list[dict] = []
+    for node in _parse_text_run("".join(parts)):
+        if node.get("type") != "text" or "\ue000" not in node["text"]:
+            out.append(node)
+            continue
+        marks = node.get("marks", [])
+        links = [m for m in marks if m.get("type") == "link"]
+        for i, piece in enumerate(_CODE_PLACEHOLDER_RE.split(node["text"])):
+            if i % 2:
+                out.append({"type": "text", "text": codes[int(piece)], "marks": [{"type": "code"}, *links]})
+            elif piece:
+                out.append(_text_node(piece, marks))
     # Merge adjacent text nodes with identical marks for tidiness.
     return _merge_adjacent_text(out)
 

@@ -1,227 +1,124 @@
 ---
 name: create-pr
-description: Create a GitHub PR using gh CLI, auto-filling the PR template with Jira issue, title, and body synthesized from commits and diff. Use when user says "open a PR", "create a pull request", "raise a PR", "submit for review", "ship this branch", or wants to merge their branch.
-allowed-tools: Bash(git log:*), Bash(git branch:*), Bash(git diff:*), Bash(git push:*), Bash(git remote:*), Bash(gh pr create:*), Bash(gh pr view:*), Bash(gh repo view:*), Bash(find:*), Bash(cat:*), AskUserQuestion
-agent: Explore
+description: "create or update a GitHub PR. Repo template slots + `pr` skill body + diff breakdown on big PRs."
+disable-model-invocation: true
 ---
 
-## Context
+Create or update the GitHub PR for the current branch. The body has three layers:
 
-- Current branch: !`git branch --show-current`
-- Commits since main: !`git log main..HEAD --oneline`
-- Changed files: !`git diff main...HEAD --stat`
+- **Template slots** from the repo's PR template: what reviewers or tooling depend on.
+- **The `pr` body** (Summary, Evidence, Merge Danger): what the change is and proof that it works.
+- **A diff breakdown** when the PR is big.
 
-## What This Skill Does
+The goal is a body a reviewer can read in about one minute. Supporting detail goes into collapsed `<details>` blocks.
 
-1. Extracts Jira issue key and base branch from the current branch name
-2. Discovers and loads the repo's PR template (if one exists)
-3. Synthesizes a PR title and body from commits + diff, filling in the template
-4. Shows the user a preview and collects any edits before creating
-5. Pushes the branch if needed, then runs `gh pr create`
-6. Reports the PR URL
+## Arguments
 
-## Step 1 — Parse Arguments and Branch
+Parse `$ARGUMENTS`:
 
-Parse `$ARGUMENTS` for optional flags:
+- `-d` / `--draft`: create as draft (create mode only).
+- `--reviewer <handle>`: add a reviewer. Repeatable.
+- `--base <branch>`: override the base branch.
+- `--no-template`: skip the template. Use only the `pr` body.
+- `--big-threshold <n>`: changed-line count that makes a PR big. Default `400`.
+- A bare Jira key (`ENP-123`): override the detected key.
+- A quoted string: the PR title.
 
-- `--help` / `-h` → print usage and exit (do not create a PR)
-- `--draft` / `-d` → create as draft PR
-- `--reviewer <handle>` → add reviewer(s) (can repeat; accepts `@org/team` or `@user`)
-- `--base <branch>` → override base branch (default: `main`)
-- `--no-template` → skip PR template discovery
-- `--big-threshold <n>` → override the changed-line count that triggers a diff breakdown (default: `400`)
-- A bare Jira issue key like `ENP-123` → override auto-detected issue
+## 1. Branch, base, and mode
 
-**If `--help` / `-h` is passed**, print the following and stop — do not run any git or gh commands:
+1. If the branch is `main` or `master`, stop. Tell the user to switch to a feature branch.
+2. Detect a stack: `gh stack view --json`. Exit 0 means the branch is in a **stack**. Exit 2 means no stack. Any other exit or a missing `gh stack` extension also means no stack. For all `gh stack` commands, obey the non-interactive rules in `~/.agents/skills/gh-stack/SKILL.md`.
+3. Find the PR for the branch: `gh pr view --json number,url,baseRefName,body,title,isDraft`.
+   - A PR exists → **update mode**. The base is the PR's `baseRefName`.
+   - No PR → **create mode**. In a stack, the base is the branch directly below the current branch in `branches[]`, or `trunk` for the bottom branch. Ignore `--base` and tell the user. With no stack, the base is `--base`, or `main`.
+4. If the base is not `main`/`master`, the PR is **stacked**. In a stack, take the parent PR number from that branch's `pr.number` in the `gh stack view --json` output. With no stack, use `gh pr list --head <base>`.
+5. Get the Jira key: the argument, then the branch name (`PROJ-58/feat/x`, `feat/PROJ-58-x`), then the existing body (update mode). If none is found, ask the user once. For a stack, reuse the same answer for every PR in the stack.
 
-```text
-Usage: /create-pr [options] [JIRA-KEY] ["PR title"]
+Done when: mode, base, stack parent (if any), and Jira key (or "skip") are known.
 
-Options:
-  -h, --help              Show this help message
-  -d, --draft             Open PR as a draft
-  --reviewer <handle>     Add a reviewer (repeatable; @user or @org/team)
-  --base <branch>         Set the base branch (default: main)
-  --no-template           Skip PR template discovery
-  --big-threshold <n>     Changed-line count that triggers a diff breakdown (default: 400)
+## 2. Template slots
 
-Arguments:
-  JIRA-KEY                Override the Jira issue key auto-detected from the branch name (e.g. ENP-123)
-  "PR title"              Override the auto-generated PR title (wrap in quotes)
-
-Examples:
-  /create-pr
-  /create-pr --draft
-  /create-pr ENP-123
-  /create-pr --reviewer @Org/team --base release/v2
-  /create-pr ENP-99 "feat: my custom title"
-```
-
-**Extract Jira issue key from the branch name:**
-
-- Pattern `PROJ-58/feat/branch-name` → `PROJ-58`
-- Pattern `feat/PROJ-58-branch-name` → `PROJ-58`
-- Pattern `fix/type-mismatch` (no issue) → ask the user: "What Jira issue key should be linked to this PR? (leave blank to skip)"
-
-**Branch safety check:** if current branch is `main` or `master`, stop and tell the user they must be on a feature branch before opening a PR.
-
-**Determine base branch:** use `--base` argument if provided, otherwise default to `main`. Verify it exists on the remote with `git remote show origin`.
-
-## Step 2 — Discover PR Template
-
-Search for a PR template in this order (stop at first match, unless `--no-template` was passed):
+Find the template (first match, unless `--no-template`):
 
 ```bash
-find . -maxdepth 3 \( \
-  -name "PULL_REQUEST_TEMPLATE.md" \
-  -o -path "./.github/PULL_REQUEST_TEMPLATE.md" \
-  -o -path "./.github/PULL_REQUEST_TEMPLATE/*.md" \
-\) -not -path "./.git/*" 2>/dev/null
+find . -maxdepth 3 \( -name "PULL_REQUEST_TEMPLATE.md" -o -path "./.github/PULL_REQUEST_TEMPLATE/*.md" \) -not -path "./.git/*"
 ```
 
-- If **one template** is found: use it silently.
-- If **multiple templates** are found: use `AskUserQuestion` to let the user pick.
-- If **no template** is found: use this minimal fallback structure:
+If there is more than one template, ask the user which to use.
 
-```markdown
-## Summary
+Sort each template section into one of two kinds:
 
-## Changes
+- **Slot:** content that someone depends on. Examples: a Jira link, a deployment note, a checklist. Keep the heading. Fill the slot. Keep checklist item text exactly. Check the items that the diff, tests, or evidence show are done.
+- **Prompt:** instructions to the author ("Add background information…", "Why are we making this change?"). Delete the instruction text. The `pr` body answers it.
 
-## Testing
-```
+Keep a section that does not fit either kind, and tell the user about it in the preview.
 
-## Step 3 — Synthesize PR Title and Body
+Fill these slots:
 
-**Title:**
+- **Jira link:** `[KEY]($JIRA_URL/browse/KEY)`, or the repo's own URL pattern if the template has one. With no key, keep `<!-- TODO: add Jira link -->`.
+- **Background** (or the template's equivalent): one or two short paragraphs about why the change exists. If stacked, the first line is `Stacked on #N. Merge that first.`
+- **Deployment:** special steps, or `None.`
 
-- Look at the commits since `main` (`git log main..HEAD --oneline`)
-- Derive the Conventional Commit type from the commit messages (feat / fix / chore / refactor / docs / ci / test)
-- If all commits share a single type, use that; if mixed, pick the most significant (feat > fix > refactor > chore)
-- Compose a concise imperative title: `<type>: <what this PR does>` (≤72 chars)
-- If `$ARGUMENTS` contains a quoted string, treat it as the title override
+In update mode, keep slot content that the author wrote by hand: a filled Jira link, a deployment note, checked boxes.
 
-**Body — fill the template intelligently:**
+With no template, use `Background`, then the `pr` body.
 
-- **Jira link placeholders** (e.g. `JIRA-TICKET`, `JIRA-123`): replace with the real issue key. Construct the link using the `$JIRA_URL` env var if set (e.g. `[PROJ-123]($JIRA_URL/browse/PROJ-123)`); if the env var is absent, render the key as plain text and append a `<!-- TODO: add Jira link -->` comment. If no issue key was found at all, leave the placeholder with a `<!-- TODO -->` note.
-- **Checklist items (`- [ ] ...`)**: keep them as-is — do not check them off; they are for the author to action.
-- **Prose sections** (Summary, Background, Changes, Deployment, etc.): synthesize content from the commit messages and diff stat. Be concise but genuinely useful — 2–5 sentences per section. Include:
-  - _Why_: reason for the change (infer from commit messages and branch name)
-  - _What_: high-level description of what changed (from diff stat)
-  - _How_: brief approach summary if non-obvious
-- Leave any section that can't be meaningfully inferred with a `<!-- TODO: fill in -->` comment rather than invented content.
+## 3. The `pr` body
 
-**Formatting — do NOT hard-wrap prose:**
+Read the `pr` skill (`~/.agents/skills/pr/SKILL.md`). Write its Summary, Evidence, and Merge Danger sections. Put them after Background and before Deployment. Use `-----` underlines when the template uses them, so the headings match.
 
-- **Each paragraph is a single line.** GitHub reflows prose to the available column width; hard-wrapping at ~72/80 columns produces awkward ragged breaks in the rendered PR view (especially in the narrow main column when the sidebar is visible).
-- Use blank lines to separate paragraphs.
-- **Hard newlines are fine** for: code fences, lists, tables, headings, and intentional line breaks (e.g. address blocks).
-- Mental model: write Markdown the way it renders, not the way it reads in a terminal. If you wouldn't put a `\n` in a `<p>` tag in HTML, don't put one in the source either.
-- This applies whether you're using `gh pr create --body-file` or piping a heredoc — the file/string itself should not contain mid-paragraph wraps.
+Read the diff (`git diff <base>...HEAD`) and the commits (`git log <base>..HEAD`) first. In update mode, also read the current body: it often holds evidence and decisions that the diff does not show.
 
-## Step 3.5 — Assess PR Size and Add a Diff Breakdown if Big
+Rules on top of `pr`:
 
-Determine whether this PR counts as **big**:
+- **Evidence has a source.** Every claim points to a test, a corpus or fixture diff, a run table, or command output. A before/after table is the default form. If you find no evidence, write `<!-- TODO: evidence -->` and say so in the preview.
+- **Visible vs collapsed.** Keep visible: the key Summary visual, the main Evidence table, and Merge Danger. Put method, inputs, history, rejected options, and secondary tables into `<details><summary>…</summary>` blocks.
+- **One paragraph per line.** Do not hard-wrap prose. Code fences, lists, and tables keep their line breaks.
+
+Done when: each change in the diff appears in Summary, and each Evidence claim has a source or a TODO.
+
+## 4. Diff breakdown (big PRs only)
 
 ```bash
 git diff <base>...HEAD --shortstat
-git diff <base>...HEAD --stat
 ```
 
-- **Big** if insertions + deletions from `--shortstat` exceed `400` (or `--big-threshold` if given), OR the diff touches more than 15 files.
-- If not big, skip this step entirely — do not add a breakdown to a small PR.
+The PR is big when insertions + deletions are more than the threshold, or when it changes more than 15 files. If it is not big, skip this step.
 
-If big, run the categorization workflow in `references/diff-breakdown.md` against the same base branch:
+If it is big, obey `references/diff-breakdown.md`. The TOTAL row must match `--shortstat`. Put the result as a visible `Change Breakdown` section directly after Summary, outside any `<details>`.
 
-1. Fetch `git diff <base>...HEAD --numstat` and `git log <base>...HEAD --oneline`; reason about categories from file paths and commit messages together (reference sections 2–3).
-2. Assign every file to a category with an awk script (reference section 4) and verify the TOTAL row against `--shortstat` — fix the awk if it doesn't match, never eyeball the totals.
-3. Render the fixed-width table per the reference's section 5 format, plus the one-sentence interpretation from section 6.
+## 5. Title
 
-Insert the result into the PR body as its own section, placed after Summary/Changes:
+- Create mode: `<type>: <what this PR does>`, 72 characters or fewer. Take the type from the commits (feat > fix > refactor > chore). A quoted argument overrides it.
+- Update mode: keep the current title unless the user asks for a new one, or the scope changed. If the scope changed, propose a new title in the preview.
 
-```markdown
-## Change Breakdown
+## 6. Preview
 
-The line count is large but much of it is <one-sentence explanation of dominant non-production categories>:
+Write the body to `/tmp/pr-<branch>.md`. Ask the user to confirm and show:
 
-\`\`\`
- <table>
-\`\`\`
-```
+- the file path (the user reads the full body there)
+- the title
+- the section list, with one line for each section
+- any TODOs, unsorted template sections, and whether a breakdown was added
 
-If the template already has a section clearly meant for this (e.g. "## Size" or "## Diff Stats"), fill that section instead of adding a duplicate. Then continue to Step 4 with the augmented body.
+Options: create/update as-is, edit, draft (create mode), cancel. After an edit, show the preview again.
 
-## Step 4 — Preview and Confirm
+## 7. Publish
 
-Show the user the proposed PR using `AskUserQuestion`:
+With no stack:
 
-```text
-Here's the PR I'll create:
+- Create mode: if the branch has no upstream, run `git push -u origin <branch>`. Then run `gh pr create --title … --body-file /tmp/pr-<branch>.md [--draft] [--base …] [--reviewer …]`.
+- Update mode: run `gh pr edit <number> --body-file /tmp/pr-<branch>.md [--title …]`.
+- If the push is rejected, report it and stop. Do not force push.
 
-**Title:** feat: add retry logic for upstream API timeouts
+In a stack (do not use `git push` or `gh pr create`):
 
-**Body:**
----
-<rendered body>
----
+- Create mode:
+  1. Run `gh stack submit --auto`. It pushes every branch in the stack and opens a draft PR for each branch without a PR. Say this in the preview when other branches have no PR.
+  2. Get the new PR number: `gh pr view --json number`.
+  3. Run `gh pr edit <number> --title … --body-file /tmp/pr-<branch>.md [--add-reviewer …]`.
+  4. Without `-d`/`--draft`, run `gh pr ready <number>`. Do not use `submit --open`, because it marks every PR in the stack ready.
+- Update mode: if the local branch is ahead of its upstream, run `gh stack push`. Then run `gh pr edit <number> --body-file /tmp/pr-<branch>.md [--title …]`.
+- If `gh stack` exits non-zero, report the exit code and stderr, and stop. Do not force push.
 
-How would you like to proceed?
-1. Create PR as-is
-2. Edit the title
-3. Edit the body
-4. Create as draft instead
-5. Cancel
-```
-
-Handle their choice:
-
-- **Edit title / body**: ask for the replacement text, then re-show the preview.
-- **Draft**: set the draft flag and proceed.
-- **Cancel**: stop cleanly.
-
-## Step 5 — Push and Create
-
-**Push if needed:**
-
-```bash
-git push -u origin $(git branch --show-current)
-```
-
-Only push if the branch has no upstream yet (`git branch --show-current` + `git remote show origin` to check). If the push fails, report the error and stop.
-
-**Create the PR:**
-
-```bash
-gh pr create \
-  --title "<title>" \
-  --body "$(cat <<'EOF'
-<body>
-EOF
-)" \
-  [--draft] \
-  [--base <base-branch>] \
-  [--reviewer <handle> ...]
-```
-
-## Step 6 — Report
-
-After successful creation, output the PR URL (from `gh pr create` stdout).
-
-## Error Handling
-
-| Situation | Action |
-|---|---|
-| On `main`/`master` branch | Stop — instruct user to switch to a feature branch |
-| Push rejected (non-fast-forward) | Report error, do not force push, suggest user investigate |
-| `gh pr create` fails (already exists) | Show existing PR URL from the error output |
-| No Jira key found and user skips | Omit the Jira link; continue without it |
-| Template not parseable | Fall back to minimal template; warn the user |
-| Diff breakdown totals don't match `--shortstat` | Recompute the awk categorization; never hand-adjust numbers to fit |
-
-## Reference files
-
-- `references/diff-breakdown.md` — diff categorization workflow used by Step 3.5 to build a "Change Breakdown" section for big PRs
-
-# Other common operations
-
-- View comments on a Github PR: gh api repos/foo/bar/pulls/123/comments
+Report the PR URL and any TODOs left in the body.

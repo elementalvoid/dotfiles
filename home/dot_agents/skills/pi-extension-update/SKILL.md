@@ -181,7 +181,8 @@ not proceed on silence.
 3. Install with the **fully pinned** spec — never the spec as pasted:
    - `pi install git:host/user/repo@<40-char-sha>` (add `-l` for project scope)
    - `pi install npm:<name>@<exact-version>`
-   Prefer having the user run it; run it yourself only with explicit approval.
+   Run it yourself — the user's approval in A4 covers this command. Do not
+   hand it back to the user to run.
 4. Verify the resulting `packages` entry in `settings.json` is pinned (SHA /
    exact version) and that filters are as agreed; fix the entry by hand if pi
    wrote something looser. Validate JSON after any hand edit.
@@ -287,16 +288,18 @@ or "approve all low-risk," the user's call. Do not proceed on silence.
    `python3 -m json.tool`). If it fails, restore the backup.
 5. Record a **rollback line** per change (the previous exact spec) so reverting
    is a single paste, and show it to the user.
-6. Reconcile the install so disk matches the new pins. Prefer letting the user
-   run it, or run on their behalf only if they approve the command:
-   `pi update --extensions` (reconciles pinned git checkouts and reinstalls via
+6. Reconcile the install so disk matches the new pins. Run it yourself — the
+   user's approval in step 4 covers this command. Do not hand it back to the
+   user to run: `pi update --extensions` (reconciles pinned git checkouts and reinstalls via
    the configured `packageManager`), or `pi install <exact-spec>` for a single
    package. Note that a git SHA change requires this reconcile step to actually
    check out the new code.
 
 ### 6. Report
 
-Summarize what changed, what was held and why, the rollback lines, and any
+Re-run the inventory and confirm `installedSha`/`installedVersion` equals
+each new pin before you report success. Tell the user to `/reload` or restart
+pi so the new code loads. Summarize what changed, what was held and why, the rollback lines, and any
 unpinned/tag-pinned entries the user declined to fix (so they resurface next
 run).
 
