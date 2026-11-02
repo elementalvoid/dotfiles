@@ -23,3 +23,5 @@ opt.writebackup = false -- disable making a backup before overwriting a file
 
 -- Disable LazyVim auto format
 vim.g.autoformat = false
+
+vim.g.lazyvim_python_lsp = "ty"
