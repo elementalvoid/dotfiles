@@ -1,5 +1,7 @@
 [[ $- = *i* ]] || return
 
+alias qwen-go="splash serve --model mlx-community/Qwen3.8-27B-4bit"
+
 alias history='history -iD'
 
 # ls / eza
@@ -24,7 +26,7 @@ alias apt-get='sudo /usr/bin/apt-get $@'
 alias color='pygmentize -O style=monokai -f console256 -g'
 alias sbash='sudo -E bash'
 
-alias skills='bunx skills'
+alias skills='pnx --loglevel=warn skills'
 
 # dotfiles management
 alias chezmoi-private='chezmoi --source ~/.local/share/chezmoi-private'
