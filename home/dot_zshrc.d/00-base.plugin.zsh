@@ -87,22 +87,18 @@ export FZF_CTRL_T_OPTS="
 #   --color=spinner:#ff007c \
 # "
 
-# Nord theme -- see also arcticicestudio/nord-vim
+# Nord theme: ANSI colors only, so fzf follows the kitty Nord / Nord Light
+# palettes (~/.config/kitty/*-theme.auto.conf). black = surface, bright-white =
+# strongest text, bright-black = muted text in both modes.
 export FZF_DEFAULT_OPTS="
   --highlight-line \
   --info=inline-right \
   --ansi \
   --layout=reverse \
   --border=none \
-  --color=bg+:#3B4252 \
-  --color=bg:#2E3440 \
-  --color=spinner:#81A1C1 \
-  --color=hl:#616E88 \
-  --color=fg:#D8DEE9 \
-  --color=header:#616E88 \
-  --color=info:#81A1C1 \
-  --color=pointer:#81A1C1 \
-  --color=marker:#81A1C1 \
-  --color=fg+:#D8DEE9 \
-  --color=prompt:#81A1C1 \
-  --color=hl+:#81A1C1"
+  --color=16 \
+  --color=fg:-1,bg:-1,hl:cyan,query:-1 \
+  --color=fg+:bright-white,bg+:black,hl+:cyan,gutter:-1 \
+  --color=info:bright-black,header:bright-black,border:bright-black \
+  --color=separator:bright-black,scrollbar:bright-black \
+  --color=prompt:blue,pointer:blue,spinner:blue,marker:green"

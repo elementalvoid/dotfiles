@@ -1,0 +1,57 @@
+# Nord theme for eza. ANSI colors only, so eza follows the kitty Nord / Nord
+# Light palettes (~/.config/kitty/*-theme.auto.conf). Overrides merge onto the
+# eza defaults: unset fields keep the default style.
+# Frost (blue/cyan) for structure, DarkGray (ANSI 8) for quiet metadata,
+# Aurora (yellow/red) only for writes and warnings.
+
+perms:
+  user_read:          {foreground: Blue, is_bold: false}
+  user_write:         {foreground: Yellow, is_bold: false}
+  user_execute_file:  {foreground: Green, is_bold: false}
+  user_execute_other: {foreground: Green, is_bold: false}
+  group_read:         {foreground: Blue}
+  group_write:        {foreground: Yellow}
+  group_execute:      {foreground: Green}
+  other_read:         {foreground: Blue}
+  other_write:        {foreground: Red} # world-writable is a warning
+  other_execute:      {foreground: Green}
+
+size:
+  major:       {foreground: Cyan, is_bold: false}
+  minor:       {foreground: Cyan}
+  number_byte: {foreground: Cyan, is_bold: false}
+  number_kilo: {foreground: Cyan, is_bold: false}
+  number_mega: {foreground: Cyan, is_bold: false}
+  number_giga: {foreground: Cyan, is_bold: false}
+  number_huge: {foreground: Cyan, is_bold: false}
+  unit_byte:   {foreground: DarkGray, is_bold: false}
+  unit_kilo:   {foreground: DarkGray, is_bold: false}
+  unit_mega:   {foreground: DarkGray, is_bold: false}
+  unit_giga:   {foreground: DarkGray, is_bold: false}
+  unit_huge:   {foreground: DarkGray, is_bold: false}
+
+# Your own files are the common case: mute them so other owners stand out.
+users:
+  user_you:    {foreground: DarkGray, is_bold: false}
+  group_yours: {foreground: DarkGray, is_bold: false}
+
+links:
+  normal:          {foreground: DarkGray, is_bold: false}
+  # Default is red on yellow, about 1.3:1 in dark mode.
+  multi_link_file: {foreground: Yellow, background: Default}
+
+git:
+  modified:   {foreground: Yellow}
+  renamed:    {foreground: Blue}
+  conflicted: {foreground: Red, is_bold: true}
+
+git_repo:
+  branch_other: {foreground: Cyan}
+  git_dirty:    {foreground: Yellow, is_bold: false}
+
+file_type:
+  source:   {foreground: Default, is_bold: false} # default yellow bold is loud
+  build:    {foreground: Yellow, is_bold: false, is_underline: false}
+  compiled: {foreground: DarkGray}
+
+date: {foreground: Blue}
